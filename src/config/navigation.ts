@@ -24,59 +24,54 @@ export interface NavSection {
 export const navigationConfig = {
   sections: [
     {
-      label: 'Overview',
+      label: 'Workspace',
       items: [
         {
-          title: 'Dashboard',
+          title: 'Command Deck',
           href: '/',
           icon: LayoutDashboard,
-          description: 'ภาพรวมระบบและสถานะงาน',
-          subtitle: 'Welcome back. Here is your content operation center.'
-        }
-      ]
-    },
-    {
-      label: 'Content',
-      items: [
+          description: 'ศูนย์ควบคุมการดำเนินงานคอนเทนต์',
+          subtitle: 'Operational workspace for your content business.'
+        },
         {
-          title: 'Create Content',
+          title: 'Editor Canvas',
           href: '/generate',
           icon: Sparkles,
-          description: 'สร้างคอนเทนต์ใหม่ด้วย AI',
-          subtitle: 'Generate 5 or 10 posts from your brand context.'
+          description: 'สตูดิโอสร้างคอนเทนต์ด้วย AI',
+          subtitle: 'Compose fresh content drafts from your brand context.'
         },
         {
-          title: 'Review Content',
+          title: 'Pipeline Board',
           href: '/drafts',
           icon: CheckSquare,
-          description: 'ตรวจสอบและอนุมัติโพสต์',
-          subtitle: 'Approve, edit, and publish generated content drafts.'
+          description: 'บอร์ดตรวจสอบและปรับแต่งโพสต์',
+          subtitle: 'Refine, approve, and queue your content drafts.'
         },
         {
-          title: 'Content Calendar',
+          title: 'Social Scheduler',
           href: '/calendar',
           icon: CalendarIcon,
-          description: 'ตารางเวลาการเผยแพร่',
-          subtitle: 'Schedule and manage approved posts visually.'
+          description: 'ตารางเวลาการเผยแพร่คอนเทนต์',
+          subtitle: 'Plan and schedule approved posts across visual slots.'
         }
       ]
     },
     {
-      label: 'Configuration',
+      label: 'Engine Settings',
       items: [
         {
-          title: 'Brand Profile',
+          title: 'Brand Engine',
           href: '/profile',
           icon: Fingerprint,
-          description: 'ตัวตนแบรนด์และน้ำเสียง',
-          subtitle: 'Configure your target audience, industry guidelines, and voice.'
+          description: 'จัดการตัวตนและน้ำเสียงของแบรนด์',
+          subtitle: 'Configure your company persona, voice guidelines, and target profiles.'
         },
         {
-          title: 'Integrations',
+          title: 'Publishing Channels',
           href: '/settings',
           icon: Link2,
-          description: 'การเชื่อมต่อ API',
-          subtitle: 'Link external services like OpenAI keys and Buffer accounts.'
+          description: 'จัดการการเชื่อมต่อ API และช่องทางโซเชียล',
+          subtitle: 'Manage secure API key vaults for OpenAI and Buffer.'
         }
       ]
     }

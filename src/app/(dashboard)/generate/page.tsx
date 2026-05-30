@@ -11,7 +11,7 @@ export default async function GeneratePage() {
   // Check Brand Profile
   const { data: brand } = await supabase
     .from('brands')
-    .select('tone, personality')
+    .select('*')
     .eq('user_id', user.id)
     .single()
 
@@ -24,12 +24,12 @@ export default async function GeneratePage() {
     .single()
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto px-6 py-8 md:px-8 md:py-10 space-y-6">
       <PageHeader 
-        title="สร้างคอนเทนต์" 
-        subtitle="เปลี่ยนหัวข้อของคุณให้เป็นโพสต์โซเชียลมีเดียคุณภาพสูงด้วยพลังของ AI"
+        title="Editor Canvas" 
+        subtitle="Draft premium social media posts aligned with your brand guidelines."
       />
-      <div className="max-w-3xl mx-auto">
+      <div className="w-full">
         <GenerateForm initialBrand={brand} hasOpenAIKey={!!integration} />
       </div>
     </div>

@@ -5,38 +5,68 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { navigationConfig } from '@/config/navigation';
 import { buttonVariants } from '@/components/ui/button';
-import { Rocket } from 'lucide-react';
+import { ChevronDown, Check, Briefcase } from 'lucide-react';
+import { useState } from 'react';
 
 export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
   const pathname = usePathname();
+  const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 
   return (
-    <div className="flex flex-col h-full border-r bg-white w-72 shadow-[1px_0_0_0_rgba(0,0,0,0.05)]">
-      {/* Brand Identity / Logo Header */}
-      <div className="p-6 pb-2">
-        <Link href="/" className="flex items-center gap-3 font-extrabold group">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-150 group-hover:scale-105 transition-transform">
-            <Rocket className="w-5 h-5 fill-current" />
+    <div className="flex flex-col h-full border-r border-slate-200/60 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950 w-64 shrink-0 select-none">
+      {/* Workspace Selector Dropdown Header */}
+      <div className="p-4 border-b border-slate-100/80 dark:border-slate-800/80 relative">
+        <div 
+          onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
+          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/50 cursor-pointer transition-all duration-200 active:scale-[0.98] group"
+        >
+          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-indigo-500/10 shrink-0">
+            <Briefcase className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <span className="block text-base font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 tracking-tight">
-              AI Content Publisher
+          <div className="flex-1 min-w-0">
+            <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 tracking-tight truncate leading-tight">
+              Content OS Studio
             </span>
-            <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-              Content OS for Professionals
+            <span className="block text-[9px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-wider leading-none mt-0.5">
+              Production Workspace
             </span>
           </div>
-        </Link>
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-400 transition-colors shrink-0" />
+        </div>
+
+        {/* Workspace Dropdown Panel */}
+        {showWorkspaceMenu && (
+          <div className="absolute top-16 left-4 right-4 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-805 rounded-2xl p-2 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="p-2 border-b border-slate-50 dark:border-slate-800 mb-1">
+              <p className="text-[9px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest px-2 py-0.5">Active Workspace</p>
+            </div>
+            <button 
+              onClick={() => setShowWorkspaceMenu(false)}
+              className="flex items-center justify-between w-full p-2 text-left rounded-xl bg-slate-55 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-xs font-bold"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 bg-indigo-100 dark:bg-indigo-900/40 rounded-md flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-[10px] font-black">C</div>
+                <span>Content OS Studio</span>
+              </div>
+              <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            </button>
+            <div className="mt-2 p-1.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl">
+              <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed text-center px-1">
+                Workspace synced with database rules & Supabase auth.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Grouped Navigation sections */}
-      <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
+      {/* Directory Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
         {navigationConfig.sections.map((section) => (
-          <div key={section.label} className="space-y-1.5">
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-4">
+          <div key={section.label} className="space-y-1">
+            <h4 className="text-[9px] font-black text-slate-400/80 dark:text-slate-500/85 uppercase tracking-[0.18em] px-3.5 mb-1.5">
               {section.label}
             </h4>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
@@ -47,14 +77,14 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
                     href={item.href}
                     className={cn(
                       buttonVariants({ variant: 'ghost' }),
-                      'w-full justify-start gap-4 px-4 py-5 rounded-xl transition-all duration-200',
+                      'w-full justify-start gap-3 px-3.5 py-2.5 rounded-xl transition-all duration-200 border-none',
                       isActive 
-                        ? 'bg-indigo-50 text-indigo-700 font-bold shadow-sm hover:bg-indigo-50 hover:text-indigo-700' 
-                        : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                        ? 'bg-slate-150/80 dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-bold shadow-sm' 
+                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-150/40 dark:hover:bg-slate-800/40 hover:text-slate-900 dark:hover:text-slate-100'
                     )}
                   >
-                    <Icon className={cn("w-4 h-4", isActive ? "text-indigo-600" : "text-slate-400")} />
-                    <span className="text-sm font-semibold tracking-tight">{item.title}</span>
+                    <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400 dark:text-slate-500")} />
+                    <span className="text-xs font-semibold tracking-tight">{item.title}</span>
                   </Link>
                 );
               })}
@@ -63,24 +93,17 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
         ))}
       </nav>
 
-      {/* Bottom status card */}
-      <div className="p-6 border-t border-slate-50">
-        <div className="bg-gradient-to-br from-slate-950 to-slate-900 rounded-2xl p-5 text-white shadow-md relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 translate-x-2 translate-y-2 opacity-10">
-            <Rocket className="w-20 h-20 rotate-45 text-white" />
-          </div>
-          <div className="flex items-center gap-2 mb-2 relative z-10">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Milestone 1</span>
-            {isSingleOwner && (
-              <span className="text-[8px] bg-indigo-500/20 text-indigo-300 font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider">Single Owner</span>
-            )}
-          </div>
-          <h4 className="text-xs font-bold mb-1 relative z-10">Generate → Review → Publish</h4>
-          <p className="text-[10px] text-slate-400 leading-normal relative z-10 font-medium">
-            Workflow architecture is fully connected.
-          </p>
+      {/* Simplified Minimal Footer */}
+      <div className="p-4 border-t border-slate-100/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-450 uppercase tracking-wider">Content Pipeline Live</span>
         </div>
+        {isSingleOwner && (
+          <span className="text-[8px] bg-slate-205 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider">
+            Owner Mode
+          </span>
+        )}
       </div>
     </div>
   );

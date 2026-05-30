@@ -12,15 +12,16 @@ export default async function DashboardPage() {
     redirect('/auth/login')
   }
 
-  // Fetch stats from database
+  // Fetch posts from database
   const { data: posts } = await supabase
     .from('content_posts')
-    .select('status')
+    .select('*')
     .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
 
   const { data: brand } = await supabase
     .from('brands')
-    .select('name')
+    .select('*')
     .eq('user_id', user.id)
     .single()
 
@@ -29,13 +30,6 @@ export default async function DashboardPage() {
     .select('provider')
     .eq('user_id', user.id)
 
-  // Fetch recent activity logs
-  const { data: recentActivity } = await supabase
-    .from('workflow_logs')
-    .select('id, action, topic, status, created_at')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(5)
 
   const stats = {
     draft: posts?.filter(p => p.status === 'draft').length || 0,
@@ -52,8 +46,8 @@ export default async function DashboardPage() {
     <DashboardClient
       userEmail={user.email || ''}
       stats={stats}
-      brandName={brand?.name}
-      recentActivity={recentActivity || []}
+      brandData={brand}
+      posts={posts || []}
     />
   )
 }

@@ -12,12 +12,12 @@ export default function DashboardLayout({
   const isSingleOwner = isSingleOwnerMode();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#fafafa]">
+    <div className="flex h-screen overflow-hidden bg-[#F8F9FA]">
       <Sidebar isSingleOwner={isSingleOwner} />
       <div className="flex flex-col flex-1 min-w-0">
         <Navbar isSingleOwner={isSingleOwner} />
-        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10 lg:px-12">
-          <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <main className="flex-1 overflow-y-auto">
+          <div className="h-full w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             {children}
           </div>
         </main>

@@ -1,36 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  FileText, 
-  CheckSquare, 
   Send,
   Fingerprint,
   Link2,
-  KeyRound,
-  ArrowRight,
-  Activity,
   Plus,
-  XCircle,
-  RefreshCw,
-  FolderOpen
+  Sparkles,
+  Cpu,
+  Layers,
+  Check,
+  X,
+  FileEdit,
+  Volume2,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { MetricCard } from '@/components/ui/metric-card';
-import { DashboardCard } from '@/components/ui/dashboard-card';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { EmptyState } from '@/components/ui/empty-state';
-import { DESIGN_SYSTEM } from '@/config/design-system';
-
-interface ActivityLog {
-  id: string;
-  action: string;
-  topic: string | null;
-  status: string;
-  created_at: string;
-}
+import { generatePosts } from '@/actions/generate';
+import { approvePost, rejectPost } from '@/actions/drafts';
+import { sendPostToBuffer } from '@/actions/publish';
+import { toast } from 'sonner';
+import { Post } from '@/types';
 
 interface DashboardClientProps {
   userEmail: string;
@@ -44,425 +36,477 @@ interface DashboardClientProps {
     hasOpenAI: boolean;
     hasBuffer: boolean;
   };
-  brandName?: string;
-  recentActivity: ActivityLog[];
+  brandData?: {
+    name: string;
+    business_type: string;
+    target_audience: string;
+    tone: string;
+    personality: string;
+  } | null;
+  posts: Post[];
 }
 
 export function DashboardClient({ 
   userEmail, 
-  stats, 
-  brandName, 
-  recentActivity 
+  stats: initialStats, 
+  brandData,
+  posts: initialPosts
 }: DashboardClientProps) {
-  const [onboardingSkipped, setOnboardingSkipped] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // Live state for interactive updates
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
+  const [stats, setStats] = useState(initialStats);
+  
+  // Scratchpad state
+  const [scratchpadText, setScratchpadText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStage, setGenerationStage] = useState(0);
 
-  useEffect(() => {
-    const skipped = localStorage.getItem('onboarding-skipped') === 'true';
-    setOnboardingSkipped(skipped);
-    setMounted(true);
-  }, []);
-
-  // Onboarding Steps Calculation
-  const onboardingSteps = [
-    {
-      id: 'brand',
-      title: 'Create Brand Profile',
-      desc: 'Tell AI about your company voice and audience.',
-      completed: stats.hasBrand,
-      href: '/profile',
-      actionLabel: 'Set Up Profile'
-    },
-    {
-      id: 'openai',
-      title: 'Connect OpenAI',
-      desc: 'Provide an API key to enable post generation.',
-      completed: stats.hasOpenAI,
-      href: '/settings',
-      actionLabel: 'Connect Key'
-    },
-    {
-      id: 'buffer',
-      title: 'Connect Buffer',
-      completed: stats.hasBuffer,
-      href: '/settings',
-      actionLabel: 'Connect Buffer'
-    },
-    {
-      id: 'generate',
-      title: 'Generate First Content',
-      completed: stats.generated > 0,
-      href: '/generate',
-      actionLabel: 'Create Post'
-    },
-    {
-      id: 'publish',
-      title: 'Publish First Post',
-      completed: stats.published > 0,
-      href: '/drafts',
-      actionLabel: 'Approve & Publish'
-    }
+  const stages = [
+    { label: 'Ingesting Context', desc: 'Analyzing brand profile parameters and scratchpad prompt' },
+    { label: 'Synthesizing Drafts', desc: 'Drafting multi-format social posts via GPT-4o context engines' },
+    { label: 'Structuring Deliverables', desc: 'Formatting hooks, captions, and hashtags' },
+    { label: 'Committed to OS Pipeline', desc: 'Committing post records to active workspace database' }
   ];
 
-  // Determine completed count and percentage
-  const completedCount = onboardingSteps.filter(s => s.completed).length;
-  const progressPercent = completedCount * 20;
-  const onboardingComplete = completedCount === 5;
-  const showOnboarding = mounted && !onboardingComplete && !onboardingSkipped;
+  // Inline Actions
+  async function handleApprove(postId: string) {
+    // Optimistic UI update
+    const previousPosts = [...posts];
+    setPosts(posts.map(p => p.id === postId ? { ...p, status: 'approved' } : p));
+    setStats(prev => ({
+      ...prev,
+      draft: Math.max(0, prev.draft - 1),
+      approved: prev.approved + 1
+    }));
+    
+    try {
+      await approvePost(postId);
+      toast.success('Post approved in pipeline.');
+    } catch {
+      setPosts(previousPosts);
+      setStats(initialStats);
+      toast.error('Failed to approve post.');
+    }
+  }
 
-  // Next action for onboarding progress
-  const nextAction = onboardingSteps.find(s => !s.completed);
+  async function handleReject(postId: string) {
+    const previousPosts = [...posts];
+    setPosts(posts.map(p => p.id === postId ? { ...p, status: 'rejected' } : p));
+    setStats(prev => ({
+      ...prev,
+      draft: Math.max(0, prev.draft - 1)
+    }));
 
-  const handleSkipOnboarding = () => {
-    localStorage.setItem('onboarding-skipped', 'true');
-    setOnboardingSkipped(true);
-  };
+    try {
+      await rejectPost(postId);
+      toast.success('Post rejected from active list.');
+    } catch {
+      setPosts(previousPosts);
+      setStats(initialStats);
+      toast.error('Failed to reject post.');
+    }
+  }
 
-  const handleRestartOnboarding = () => {
-    localStorage.removeItem('onboarding-skipped');
-    setOnboardingSkipped(false);
-  };
+  async function handlePublish(postId: string) {
+    if (!stats.hasBuffer) {
+      toast.error('Connect your Buffer account in settings first.');
+      return;
+    }
 
-  // Progress circle dimensions
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+    toast.loading('Dispatching post to Buffer queue...', { id: postId });
+    try {
+      const result = await sendPostToBuffer(postId);
+      setPosts(posts.map(p => p.id === postId ? { ...p, status: 'published' } : p));
+      setStats(prev => ({
+        ...prev,
+        approved: Math.max(0, prev.approved - 1),
+        published: prev.published + 1
+      }));
+      toast.success('Dispatched to Buffer queue!', { id: postId });
+      if (result.externalUrl) {
+        window.open(result.externalUrl, '_blank');
+      }
+    } catch {
+      toast.error('Failed to dispatch to Buffer.', { id: postId });
+    }
+  }
+
+  // Handle scratchpad synthesis
+  async function handleSynthesize() {
+    if (!scratchpadText.trim()) {
+      toast.error('Please type a content idea first.');
+      return;
+    }
+    if (!stats.hasOpenAI) {
+      toast.error('Please link your OpenAI API key in settings.');
+      return;
+    }
+    if (!stats.hasBrand) {
+      toast.error('Please configure your Brand Profile first.');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationStage(0);
+
+    const intervalId = setInterval(() => {
+      setGenerationStage(prev => (prev < 3 ? prev + 1 : prev));
+    }, 2000);
+
+    try {
+      await generatePosts({
+        topic: scratchpadText,
+        tone: brandData?.tone || 'Professional',
+        personality: brandData?.personality || 'น่าเชื่อถือ',
+        postCount: 5
+      });
+      
+      toast.success(`Success! Generated 5 fresh drafts.`);
+      setScratchpadText('');
+      
+      // Reload posts from DB or simple reload window since server actions update next cache
+      window.location.reload();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Error generating content';
+      toast.error(message);
+    } finally {
+      clearInterval(intervalId);
+      setIsGenerating(false);
+    }
+  }
+
+  // Columns for Linear-style Board
+  const draftPosts = posts.filter(p => p.status === 'draft');
+  const approvedPosts = posts.filter(p => p.status === 'approved');
+  const publishedPosts = posts.filter(p => p.status === 'published' || p.status === 'failed');
 
   return (
-    <div className="space-y-8 pb-16 animate-in fade-in duration-500">
+    <div className="max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8 space-y-8 pb-16 animate-in fade-in duration-500">
       
-      {/* 1. Hero Section */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-gradient-to-br from-slate-900 to-slate-950 p-8 sm:p-10 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -translate-y-12 translate-x-12" />
-        <div className="space-y-3 relative z-10">
-          <span className="text-[10px] font-black uppercase text-indigo-400 tracking-[0.2em]">Operational Dashboard</span>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight font-heading">
-            Welcome back, Owner
+      {/* 1. Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+        <div>
+          <span className="text-[9px] font-black uppercase text-indigo-650 dark:text-indigo-400 tracking-[0.25em]">Content OS</span>
+          <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-150 tracking-tight font-heading">
+            Workspace Command Deck
           </h1>
-          <p className="text-slate-400 text-sm max-w-xl font-medium leading-relaxed">
-            Logged in as <span className="text-slate-200 font-bold">{userEmail}</span>. You currently have <span className="text-slate-100 font-bold">{stats.draft} drafts</span> pending editor review, <span className="text-slate-100 font-bold">{stats.approved} posts</span> approved, and <span className="text-slate-100 font-bold">{stats.published} posts</span> published successfully.
+          <p className="text-slate-450 dark:text-slate-500 text-xs mt-1">
+            Operating dashboard for <span className="font-bold text-slate-700 dark:text-slate-300">{userEmail}</span>.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3 relative z-10">
-          <Link 
-            href="/generate" 
-            className={cn(
-              buttonVariants({ size: 'default' }), 
-              DESIGN_SYSTEM.buttons.primary,
-              "h-12 rounded-2xl gap-2 font-black shadow-lg shadow-indigo-500/20"
-            )}
-          >
-            <Plus className="w-5 h-5" />
-            Generate Content
+        <div className="flex items-center gap-3">
+          <Link href="/generate" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[10px] font-bold h-8 border-slate-200 bg-white hover:bg-slate-50")}>
+            <Plus className="w-3.5 h-3.5 mr-1" />
+            AI Composer
           </Link>
-          <Link 
-            href="/drafts" 
-            className={cn(
-              buttonVariants({ size: 'default', variant: 'outline' }), 
-              DESIGN_SYSTEM.buttons.outline,
-              "h-12 border-slate-700 bg-slate-900 hover:bg-slate-850 hover:text-white text-slate-300 font-bold rounded-2xl"
-            )}
-          >
-            <FileText className="w-5 h-5 mr-1" />
-            Review Drafts
+          <Link href="/settings" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[10px] font-bold h-8 border-slate-200 bg-white hover:bg-slate-50")}>
+            <Link2 className="w-3.5 h-3.5 mr-1" />
+            Channels
           </Link>
         </div>
       </div>
 
-      {/* 2. Onboarding Progress Ring Section */}
-      {showOnboarding && (
-        <div className="bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.03)]">
-          <div className="flex items-center gap-5 text-left">
-            <div className="relative flex items-center justify-center shrink-0">
-              <svg className="w-24 h-24 transform -rotate-90">
-                <circle
-                  className="text-slate-100 dark:text-slate-800"
-                  strokeWidth="6"
-                  stroke="currentColor"
-                  fill="transparent"
-                  r={radius}
-                  cx="48"
-                  cy="48"
-                />
-                <circle
-                  className="text-indigo-600 dark:text-indigo-400 transition-all duration-700"
-                  strokeWidth="6"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  stroke="currentColor"
-                  fill="transparent"
-                  r={radius}
-                  cx="48"
-                  cy="48"
-                />
-              </svg>
-              <span className="absolute font-heading text-lg font-black text-slate-900 dark:text-slate-50">
-                {progressPercent}%
+      {/* 2. Notion-Style Scratchpad & Brand GUID HUD */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        {/* Notion-style interactive scratchpad */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-650 dark:text-indigo-400">
+                <FileEdit className="w-3 h-3" />
+              </span>
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Notion-Style Scratchpad</h3>
+            </div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Live Synthesis Deck
+            </span>
+          </div>
+
+          {isGenerating ? (
+            <div className="py-8 text-center space-y-6">
+              <div className="relative inline-block">
+                <div className="h-10 w-10 animate-spin rounded-full border-3 border-slate-100 dark:border-slate-800 border-t-indigo-600" />
+                <Sparkles className="w-4.5 h-4.5 text-indigo-600 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">OS AI Composer active...</h4>
+                <p className="text-slate-400 dark:text-slate-500 text-xs max-w-sm mx-auto">
+                  Transforming scratchpad idea into multiple channel distribution drafts.
+                </p>
+              </div>
+
+              {/* Progress logger terminal widget */}
+              <div className="max-w-md mx-auto text-left bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[10px] space-y-2 shadow-inner">
+                {stages.map((stage, idx) => {
+                  const isCompleted = generationStage > idx;
+                  const isActive = generationStage === idx;
+                  return (
+                    <div key={idx} className={cn("flex items-start gap-2 transition-opacity", !isCompleted && !isActive ? "opacity-30" : "opacity-100")}>
+                      <span className={cn("font-bold", isCompleted ? "text-emerald-500" : isActive ? "text-indigo-400" : "text-slate-700")}>
+                        {isCompleted ? '✓' : isActive ? '▶' : '•'}
+                      </span>
+                      <div>
+                        <span className={cn("font-bold", isActive ? "text-indigo-400" : "text-slate-350")}>{stage.label}</span>
+                        {isActive && <span className="block text-slate-500 mt-0.5">{stage.desc}</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <textarea
+                value={scratchpadText}
+                onChange={(e) => setScratchpadText(e.target.value)}
+                placeholder="💡 Jot down a content concept, brief brief, or direct legal tip to synthesis (e.g. '3 tips on Labor Law severance calculations' or 'PDPA consent updates for service business website')..."
+                className="w-full min-h-[120px] bg-transparent text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none resize-none font-medium leading-relaxed"
+              />
+              
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Press compile to generate 5 social drafts formatted automatically.
+                </span>
+                <Button 
+                  onClick={handleSynthesize}
+                  className="bg-indigo-600 hover:bg-indigo-755 text-white font-black text-xs rounded-xl h-9 px-4 gap-1.5 active:scale-[0.98] transition-all"
+                  disabled={!scratchpadText.trim()}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Synthesize Drafts
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Brand Guideline HUD sidebar */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-50 dark:bg-purple-950 text-purple-650 dark:text-purple-400">
+              <Fingerprint className="w-3 h-3" />
+            </span>
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Brand Context HUD</h3>
+          </div>
+
+          {brandData ? (
+            <div className="space-y-3.5 text-xs text-left">
+              <div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Brand & Business</span>
+                <p className="font-bold text-slate-850 dark:text-slate-250 truncate">{brandData.name} • <span className="font-medium text-slate-500">{brandData.business_type}</span></p>
+              </div>
+              <div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Audience Persona</span>
+                <p className="font-medium text-slate-650 dark:text-slate-400 line-clamp-1 leading-normal">
+                  <Users className="w-3 h-3 inline mr-1 text-slate-400" />
+                  {brandData.target_audience}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-50 dark:border-slate-800">
+                <div>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Active Tone</span>
+                  <p className="font-bold text-indigo-650 dark:text-indigo-400 flex items-center gap-1">
+                    <Volume2 className="w-3 h-3" />
+                    {brandData.tone}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Voice Style</span>
+                  <p className="font-bold text-indigo-650 dark:text-indigo-400 flex items-center gap-1">
+                    <Cpu className="w-3 h-3" />
+                    {brandData.personality}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-xs text-slate-400 font-medium mb-3">No active brand profile linked.</p>
+              <Link href="/profile" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[9px] font-black uppercase tracking-widest text-indigo-600")}>
+                Configure HUD Guidelines
+              </Link>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* 3. Linear-Style Kanban Content Pipeline */}
+      <div className="space-y-4 text-left">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-650 dark:text-emerald-400">
+              <Layers className="w-3 h-3" />
+            </span>
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Active Workflow Board</h3>
+          </div>
+          <span className="text-[10px] text-slate-400 font-medium">
+            Drag posts status or approve inline
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
+          
+          {/* Column 1: Drafts needing review */}
+          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
+              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-450 animate-pulse" />
+                In Review Drafts
+              </span>
+              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
+                {draftPosts.length}
               </span>
             </div>
-            <div className="space-y-1.5">
-              <h3 className="text-lg font-black text-slate-900 dark:text-slate-50 tracking-tight font-heading">
-                🚀 Get Started with AI Publisher
-              </h3>
-              <p className="text-slate-400 text-xs font-semibold max-w-md">
-                Configure your profiles and link API keys to unlock automatic social posting features.
-              </p>
-              {nextAction && (
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-[10px] bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
-                    Next Action
-                  </span>
-                  <Link href={nextAction.href} className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-0.5 hover:underline">
-                    {nextAction.title}
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+            
+            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+              {draftPosts.map(post => {
+                const meta = post.metadata || {};
+                return (
+                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3.5 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-sm space-y-3 hover:border-slate-300 dark:hover:border-slate-750 transition-all group">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-650 dark:text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">
+                        {meta.platform || 'General'}
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-medium">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug line-clamp-1">
+                        {meta.title || post.content.split('\n')[0] || 'Untitled Draft'}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
+                        {meta.caption || post.content}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5 pt-2.5 border-t border-slate-50 dark:border-slate-800/80">
+                      <button 
+                        onClick={() => handleReject(post.id)}
+                        className="p-1.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 transition-colors"
+                        title="Reject Draft"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={() => handleApprove(post.id)}
+                        className="p-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1 text-[10px] font-bold px-2.5"
+                        title="Approve Draft"
+                      >
+                        <Check className="w-3.5 h-3.5" /> Approve
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {draftPosts.length === 0 && (
+                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  No pending drafts.
                 </div>
               )}
             </div>
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <button 
-              onClick={handleSkipOnboarding}
-              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline transition-all"
-            >
-              Skip onboarding & view dashboard →
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* 3. Workflow Pipeline */}
-      <div className="bg-white dark:bg-[#1E293B] p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.03)] space-y-4">
-        <div className="flex justify-between items-center pb-2">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Content Publishing Pipeline
-          </h3>
-          <div className="flex items-center gap-2">
-            {onboardingSkipped && (
-              <Button 
-                variant="outline" 
-                size="xs" 
-                onClick={handleRestartOnboarding}
-                className="text-[10px] h-6 rounded-lg font-bold"
-              >
-                <RefreshCw className="w-3 h-3 mr-1" /> Reset Onboarding
-              </Button>
-            )}
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-              {stats.draft} drafts awaiting approval
-            </span>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phase 01</span>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-50 leading-none">Drafts Created</h4>
+          {/* Column 2: Approved / Scheduled queue */}
+          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
+              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                Approved & Ready
+              </span>
+              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
+                {approvedPosts.length}
+              </span>
             </div>
-            <span className="text-lg font-black text-slate-900 dark:text-slate-50 font-heading bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 h-9 w-9 rounded-xl flex items-center justify-center shadow-sm">
-              {stats.draft}
-            </span>
-          </div>
 
-          <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phase 02</span>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-50 leading-none">Review Queue</h4>
+            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+              {approvedPosts.map(post => {
+                const meta = post.metadata || {};
+                return (
+                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3.5 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-sm space-y-3 hover:border-slate-300 dark:hover:border-slate-750 transition-all group">
+                    <div className="flex justify-between items-start">
+                      <span className="text-[9px] bg-emerald-50 dark:bg-emerald-950 text-emerald-650 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">
+                        {meta.platform || 'General'}
+                      </span>
+                      <span className="text-[9px] text-slate-400 font-medium">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug line-clamp-1">
+                        {meta.title || post.content.split('\n')[0] || 'Untitled Draft'}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
+                        {meta.caption || post.content}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-end gap-1.5 pt-2.5 border-t border-slate-50 dark:border-slate-800/80">
+                      <button 
+                        onClick={() => handlePublish(post.id)}
+                        className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-black shadow-sm"
+                        title="Send to Buffer"
+                      >
+                        <Send className="w-3 h-3" /> Dispatch to Buffer
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              {approvedPosts.length === 0 && (
+                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  No approved drafts ready.
+                </div>
+              )}
             </div>
-            <span className="text-lg font-black text-slate-900 dark:text-slate-50 font-heading bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 h-9 w-9 rounded-xl flex items-center justify-center shadow-sm">
-              {stats.draft}
-            </span>
-          </div>
-
-          <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phase 03</span>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-50 leading-none">Approved Queue</h4>
-            </div>
-            <span className="text-lg font-black text-slate-900 dark:text-slate-50 font-heading bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 h-9 w-9 rounded-xl flex items-center justify-center shadow-sm">
-              {stats.approved}
-            </span>
           </div>
 
-          <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phase 04</span>
-              <h4 className="font-bold text-sm text-slate-900 dark:text-slate-50 leading-none">Published Social</h4>
+          {/* Column 3: Published and activity timeline */}
+          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
+              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-slate-400" />
+                Pushed Live / Log
+              </span>
+              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
+                {publishedPosts.length}
+              </span>
             </div>
-            <span className="text-lg font-black text-slate-900 dark:text-slate-50 font-heading bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 h-9 w-9 rounded-xl flex items-center justify-center shadow-sm">
-              {stats.published}
-            </span>
+
+            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
+              {publishedPosts.map(post => {
+                const meta = post.metadata || {};
+                return (
+                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3 border border-slate-200/50 dark:border-slate-805 rounded-xl shadow-xs space-y-2 opacity-80 hover:opacity-100 transition-opacity">
+                    <div className="flex justify-between items-center text-[9px]">
+                      <span className={cn(
+                        "font-bold px-1.5 py-0.5 rounded uppercase tracking-wide",
+                        post.status === 'published' ? "bg-slate-100 text-slate-600" : "bg-red-50 text-red-650"
+                      )}>
+                        {post.status}
+                      </span>
+                      <span className="text-slate-400 font-medium">
+                        {new Date(post.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h4 className="text-[11px] font-bold text-slate-700 dark:text-slate-350 truncate">
+                      {meta.title || post.content.split('\n')[0] || 'Untitled Post'}
+                    </h4>
+                  </div>
+                );
+              })}
+
+              {publishedPosts.length === 0 && (
+                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                  No published history.
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
       </div>
-
-      {/* 4. Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard 
-          title="Draft Posts"
-          value={stats.draft}
-          description="Awaiting reviewer approval"
-          icon={FileText}
-        />
-        <MetricCard 
-          title="Approved Posts"
-          value={stats.approved}
-          description="Queued in social planner"
-          icon={CheckSquare}
-        />
-        <MetricCard 
-          title="Published Posts"
-          value={stats.published}
-          description="Pushed successfully to Buffer"
-          icon={Send}
-        />
-        <MetricCard 
-          title="Failed Logs"
-          value={stats.failed}
-          description="API network failure logs"
-          icon={XCircle}
-        />
-      </div>
-
-      {/* Main 2-Column Command Workspace */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left 2 Columns: System Health & Empty State check */}
-        <div className="lg:col-span-2 space-y-8">
-          
-          {/* 5. System Health Status Panel */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              System Connections & Health
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Profile Status */}
-              <div className="p-4 bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                    <Fingerprint className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide leading-none mb-1">Brand Guideline</h4>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-50 leading-none">
-                      {brandName || "Brand Profile"}
-                    </span>
-                  </div>
-                </div>
-                <StatusBadge status={stats.hasBrand ? "approved" : "draft"} className="scale-90" />
-              </div>
-
-              {/* OpenAI Status */}
-              <div className="p-4 bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-455 flex items-center justify-center">
-                    <KeyRound className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide leading-none mb-1">OpenAI API</h4>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-50 leading-none">
-                      GPT-4o Engine
-                    </span>
-                  </div>
-                </div>
-                <StatusBadge status={stats.hasOpenAI ? "approved" : "draft"} className="scale-90" />
-              </div>
-
-              {/* Buffer Status */}
-              <div className="p-4 bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-slate-800 rounded-2xl flex items-center justify-between shadow-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                    <Link2 className="w-4.5 h-4.5" />
-                  </div>
-                  <div>
-                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wide leading-none mb-1">Buffer Integration</h4>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-50 leading-none">
-                      Queue Planner
-                    </span>
-                  </div>
-                </div>
-                <StatusBadge status={stats.hasBuffer ? "approved" : "draft"} className="scale-90" />
-              </div>
-            </div>
-          </div>
-
-          {/* 6. Context-Aware Empty State */}
-          {stats.generated === 0 && (
-            <EmptyState 
-              icon={FolderOpen}
-              title="Your Content Feed is Quiet"
-              description="No automated posts have been generated yet. Configure your brand guideline context parameters and start creating first posts drafts in seconds."
-              action={{
-                label: "✨ Generate First Content",
-                href: "/generate"
-              }}
-            />
-          )}
-
-        </div>
-
-        {/* Right 1 Column: Recent Activity Timeline */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Recent Activity Log
-          </h3>
-          
-          <DashboardCard className="p-5">
-            {recentActivity && recentActivity.length > 0 ? (
-              <div className="flow-root">
-                <ul className="-mb-8">
-                  {recentActivity.map((log, logIdx) => (
-                    <li key={log.id}>
-                      <div className="relative pb-8">
-                        {logIdx !== recentActivity.length - 1 ? (
-                          <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-100 dark:bg-slate-800" aria-hidden="true" />
-                        ) : null}
-                        <div className="relative flex space-x-3">
-                          <div>
-                            <span className={cn(
-                              "h-8 w-8 rounded-xl flex items-center justify-center ring-4 ring-white dark:ring-slate-900 text-white shadow-sm",
-                              log.action.includes('generate') 
-                                ? "bg-indigo-500" 
-                                : log.action.includes('approve') 
-                                  ? "bg-emerald-500" 
-                                  : log.action.includes('reject')
-                                    ? "bg-rose-500"
-                                    : "bg-slate-500"
-                            )}>
-                              <Activity className="w-4 h-4" />
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0 pt-1.5 text-left">
-                            <p className="text-xs font-bold text-slate-900 dark:text-slate-50 capitalize leading-none mb-0.5">
-                              {log.action.replace(/_/g, ' ')}
-                            </p>
-                            {log.topic && (
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold truncate">
-                                Topic: {log.topic}
-                              </p>
-                            )}
-                            <p className="text-[9px] font-black text-slate-300 dark:text-slate-650 tracking-wider uppercase mt-1">
-                              {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : (
-              <div className="text-center py-12 space-y-2">
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-semibold">No activity logs recorded yet.</p>
-              </div>
-            )}
-          </DashboardCard>
-        </div>
-
-      </div>
+      
     </div>
   );
 }
