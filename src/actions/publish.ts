@@ -1,15 +1,15 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/encryption'
 import { getPublishingAdapter, PublishInput } from '@/lib/publishing'
+import { getDbClient, requireOwner } from '@/lib/owner-context'
 import { revalidatePath } from 'next/cache'
 import { PostMetadata } from '@/types'
 
 export async function sendPostToBuffer(postId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const owner = await requireOwner()
+  const user = owner // Alias user to owner to minimize code changes
 
   // 1. Fetch post and verify
   const { data: post, error: postError } = await supabase
@@ -106,9 +106,9 @@ export async function sendPostToBuffer(postId: string) {
 }
 
 export async function sendApprovedPostsToBuffer() {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Unauthorized')
+    const supabase = await getDbClient()
+    const owner = await requireOwner()
+    const user = owner
 
     const { data: posts, error: fetchError } = await supabase
         .from('content_posts')

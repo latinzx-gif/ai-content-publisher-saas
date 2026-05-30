@@ -27,27 +27,40 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  // Single Owner Mode bypass
+  const isSingleOwner = process.env.APP_MODE === 'single_owner'
+  if (isSingleOwner) {
+    if (
+      request.nextUrl.pathname.startsWith('/auth/login') ||
+      request.nextUrl.pathname.startsWith('/auth/register')
+    ) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+    return supabaseResponse
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect dashboard routes
+  // Protect dashboard routes and redirect to standard login page
   if (
     !user &&
     !request.nextUrl.pathname.startsWith('/auth/login') &&
     !request.nextUrl.pathname.startsWith('/auth/register') &&
-    !request.nextUrl.pathname.startsWith('/auth/callback') &&
-    request.nextUrl.pathname !== '/'
+    !request.nextUrl.pathname.startsWith('/auth/callback')
   ) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
-  // Redirect logged in users away from auth pages
+  // Redirect logged in users away from auth pages to dashboard home
   if (user && (request.nextUrl.pathname.startsWith('/auth/login') || request.nextUrl.pathname.startsWith('/auth/register'))) {
       const url = request.nextUrl.clone()
-      url.pathname = '/drafts'
+      url.pathname = '/'
       return NextResponse.redirect(url)
   }
 

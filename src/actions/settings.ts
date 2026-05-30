@@ -1,9 +1,9 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { encrypt, decrypt } from '@/lib/encryption'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { getCurrentOwner, requireOwner, getDbClient } from '@/lib/owner-context'
 
 const BrandProfileSchema = z.object({
   name: z.string().min(1, 'Business name is required'),
@@ -14,10 +14,8 @@ const BrandProfileSchema = z.object({
 })
 
 export async function saveBrandProfile(formData: z.infer<typeof BrandProfileSchema>) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const validated = BrandProfileSchema.parse(formData)
 
@@ -36,8 +34,8 @@ export async function saveBrandProfile(formData: z.infer<typeof BrandProfileSche
 }
 
 export async function getBrandProfile() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await getDbClient()
+  const user = await getCurrentOwner()
 
   if (!user) return null
 
@@ -52,10 +50,8 @@ export async function getBrandProfile() {
 }
 
 export async function saveIntegrationSecret(provider: 'openai' | 'buffer', api_key: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const encrypted = encrypt(api_key)
 
@@ -83,8 +79,8 @@ export async function saveIntegrationSecret(provider: 'openai' | 'buffer', api_k
 }
 
 export async function getIntegrations() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await getDbClient()
+  const user = await getCurrentOwner()
 
   if (!user) return []
 
@@ -98,10 +94,8 @@ export async function getIntegrations() {
 }
 
 export async function testOpenAIConnection() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const { data, error } = await supabase
     .from('integrations')
@@ -133,10 +127,8 @@ export async function testOpenAIConnection() {
 }
 
 export async function testBufferConnection() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const { data, error } = await supabase
     .from('integrations')

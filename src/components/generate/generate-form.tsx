@@ -49,6 +49,7 @@ const PERSONALITY_OPTIONS = [
 export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [loadingStage, setLoadingStage] = useState(0)
   const [successCount, setSuccessCount] = useState<number | null>(null)
   
   const [selectedTopic, setSelectedTopic] = useState('')
@@ -59,10 +60,27 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     postCount: 5 as 5 | 10
   })
 
+  const stages = [
+    { label: 'Preparing AI Request', desc: 'Analyzing brand profile and topic guidelines' },
+    { label: 'Generating Content', desc: 'Drafting social media posts via GPT-4o' },
+    { label: 'Formatting Posts', desc: 'Structuring hooks, captions, and hashtags' },
+    { label: 'Saving Drafts', desc: 'Storing generated posts in database storage' }
+  ]
+
   async function handleSubmit() {
     const finalTopic = selectedTopic === 'custom' ? customTopic : selectedTopic
     
     setLoading(true)
+    setLoadingStage(0)
+    
+    // Simulate step progress increments every 2.5 seconds
+    const intervalId = setInterval(() => {
+      setLoadingStage(prev => {
+        if (prev < 3) return prev + 1
+        return prev
+      })
+    }, 2500)
+
     try {
       const result = await generatePosts({
         topic: finalTopic,
@@ -74,12 +92,60 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาด'
       toast.error(message)
     } finally {
+      clearInterval(intervalId)
       setLoading(false)
     }
   }
 
   const nextStep = () => setStep(s => s + 1)
   const prevStep = () => setStep(s => s - 1)
+
+  if (loading) {
+    return (
+      <Card className="border-none shadow-2xl bg-white rounded-3xl overflow-hidden animate-in fade-in duration-300">
+        <CardContent className="p-12 text-center space-y-8 flex flex-col items-center justify-center min-h-[450px]">
+          <div className="relative">
+            <div className="h-20 w-20 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" />
+            <Sparkles className="w-8 h-8 text-indigo-600 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-2xl font-black text-gray-900 tracking-tight">Generating Content...</h3>
+            <p className="text-gray-500 text-base font-semibold max-w-sm mx-auto leading-relaxed">
+              Please wait while AI creates your posts.
+            </p>
+          </div>
+
+          <div className="w-full max-w-xs mx-auto space-y-4 pt-4 text-left">
+            {stages.map((stage, idx) => {
+              const isCompleted = loadingStage > idx;
+              const isActive = loadingStage === idx;
+              return (
+                <div key={idx} className={cn("flex items-start gap-3 transition-opacity duration-300", !isCompleted && !isActive ? "opacity-40" : "opacity-100")}>
+                  <div className="flex h-5 w-5 items-center justify-center shrink-0 mt-0.5">
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : isActive ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+                    ) : (
+                      <div className="h-2 w-2 rounded-full bg-gray-300" />
+                    )}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className={cn("text-sm font-bold leading-none", isActive ? "text-indigo-700" : isCompleted ? "text-gray-900" : "text-gray-400")}>
+                      {stage.label}
+                    </p>
+                    {isActive && (
+                      <p className="text-[10px] text-gray-400 font-semibold leading-relaxed">{stage.desc}</p>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   if (successCount !== null) {
     return (

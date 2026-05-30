@@ -26,7 +26,14 @@ APP_URL="http://localhost:3000"
 
 # Publishing
 BUFFER_MOCK_MODE="true" # Set to 'false' to make real API calls to Buffer
+
+# Application Mode
+APP_MODE="single_owner" # Set to 'single_owner' to bypass auth, or 'multi_user' for multi-tenant auth
+DEFAULT_OWNER_ID="00000000-0000-0000-0000-000000000001"
 ```
+
+### Note on Authentication Mode:
+By default, the application is designed to run in `single_owner` mode. This mode uses the `SUPABASE_SERVICE_ROLE_KEY` to securely bypass Postgres Row Level Security (RLS) and authentication forms without requiring a fake login, meaning the app is instantly ready for use by a single admin entity while remaining isolated from public access. If you set `APP_MODE="multi_user"`, the system expects valid JWT sessions and will force users through the login/register flows.
 
 ## 3. Database Setup
 1.  Navigate to your Supabase project dashboard.

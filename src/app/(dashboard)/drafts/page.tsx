@@ -1,12 +1,12 @@
 import { getPosts } from '@/actions/drafts'
 import { DraftsList } from '@/components/drafts/drafts-list'
-import { createClient } from '@/lib/supabase/server'
+import { getCurrentOwner, getDbClient } from '@/lib/owner-context'
 
 export default async function DraftsPage() {
   const posts = await getPosts()
   
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await getDbClient()
+  const user = await getCurrentOwner()
   
   const { data: bufferInt } = await supabase
     .from('integrations')

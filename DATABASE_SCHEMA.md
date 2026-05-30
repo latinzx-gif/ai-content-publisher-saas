@@ -25,7 +25,7 @@ Stores the user's API keys (OpenAI, Buffer) in an encrypted format.
 *   `id` (uuid, primary key)
 *   `user_id` (uuid, references `profiles.id`)
 *   `provider` (text: 'openai' | 'buffer')
-*   `encrypted_key` (text)
+*   `encrypted_value` (text)
 *   `created_at` / `updated_at`
 *   *Unique constraint on `(user_id, provider)`*
 

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { saveIntegrationSecret, testOpenAIConnection, testBufferConnection } from '@/actions/settings'
 import { toast } from 'sonner'
-import { KeyRound, ShieldCheck, Activity, Link2, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { KeyRound, ShieldCheck, Activity, Link2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface IntegrationSettingsFormProps {
@@ -18,6 +18,10 @@ interface IntegrationSettingsFormProps {
 export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: IntegrationSettingsFormProps) {
   const [loading, setLoading] = useState<string | null>(null)
   const [testing, setTesting] = useState<string | null>(null)
+  const [showKey, setShowKey] = useState({
+    openai: false,
+    buffer: false,
+  })
   const [keys, setKeys] = useState({
     openai: '',
     buffer: '',
@@ -111,17 +115,24 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
           <div className="relative">
             <Input
               id={`${provider}_key`}
-              type="password"
+              type={showKey[provider] ? 'text' : 'password'}
               value={value}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => onValueChange(e.target.value)}
               placeholder={status ? '••••••••••••••••••••••••••••••••' : placeholder}
-              className="h-12 text-base rounded-xl border-gray-200 pr-10 focus:ring-blue-500"
+              className="h-12 text-base rounded-xl border-gray-200 pr-20 focus:ring-blue-500"
             />
-            {status && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                </div>
-            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowKey({ ...showKey, [provider]: !showKey[provider] })}
+                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showKey[provider] ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+              {status && (
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              )}
+            </div>
           </div>
           {status && (
             <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">

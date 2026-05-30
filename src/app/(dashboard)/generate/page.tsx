@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
 import { GenerateForm } from '@/components/generate/generate-form'
 import { PageHeader } from '@/components/ui/page-header'
+import { getCurrentOwner, getDbClient } from '@/lib/owner-context'
 
 export default async function GeneratePage() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const supabase = await getDbClient()
+  const user = await getCurrentOwner()
 
   if (!user) return null
 

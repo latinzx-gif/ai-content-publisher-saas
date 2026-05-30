@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { getDbClient, requireOwner } from '@/lib/owner-context'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -12,9 +12,8 @@ const UpdatePostSchema = z.object({
 })
 
 export async function getPosts(status?: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   let query = supabase
     .from('content_posts')
@@ -32,9 +31,8 @@ export async function getPosts(status?: string) {
 }
 
 export async function updatePost(input: z.infer<typeof UpdatePostSchema>) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const validated = UpdatePostSchema.parse(input)
 
@@ -79,9 +77,8 @@ export async function updatePost(input: z.infer<typeof UpdatePostSchema>) {
 }
 
 export async function approvePost(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const { error } = await supabase
     .from('content_posts')
@@ -102,9 +99,8 @@ export async function approvePost(id: string) {
 }
 
 export async function rejectPost(id: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const { error } = await supabase
     .from('content_posts')
@@ -125,9 +121,8 @@ export async function rejectPost(id: string) {
 }
 
 export async function approveAllDrafts() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   const { data: posts, error: fetchError } = await supabase
     .from('content_posts')
@@ -150,6 +145,38 @@ export async function approveAllDrafts() {
   await supabase.from('workflow_logs').insert({
     user_id: user.id,
     action: 'drafts_approved_all',
+    status: 'completed'
+  })
+
+  revalidatePath('/drafts')
+  return { success: true, count: ids.length }
+}
+
+export async function rejectAllDrafts() {
+  const supabase = await getDbClient()
+  const user = await requireOwner()
+
+  const { data: posts, error: fetchError } = await supabase
+    .from('content_posts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('status', 'draft')
+
+  if (fetchError) throw new Error(fetchError.message)
+  if (!posts.length) return { success: true, count: 0 }
+
+  const ids = posts.map(p => p.id)
+
+  const { error: updateError } = await supabase
+    .from('content_posts')
+    .update({ status: 'rejected', updated_at: new Date().toISOString() })
+    .in('id', ids)
+
+  if (updateError) throw new Error(updateError.message)
+
+  await supabase.from('workflow_logs').insert({
+    user_id: user.id,
+    action: 'drafts_rejected_all',
     status: 'completed'
   })
 

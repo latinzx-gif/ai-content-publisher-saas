@@ -1,11 +1,11 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/encryption'
 import { getGeneratePostsPrompt } from '@/prompts/generate-posts'
 import { callOpenAI } from '@/lib/openai'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
+import { requireOwner, getDbClient } from '@/lib/owner-context'
 
 const GeneratePostsSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
@@ -16,10 +16,8 @@ const GeneratePostsSchema = z.object({
 
 export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) {
   const validated = GeneratePostsSchema.parse(input)
-  const supabase = await createClient()
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
+  const supabase = await getDbClient()
+  const user = await requireOwner()
 
   // 1. Get Brand Profile
   const { data: brand, error: brandError } = await supabase

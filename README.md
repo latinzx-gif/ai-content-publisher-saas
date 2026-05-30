@@ -33,8 +33,13 @@ Create a `.env.local` file with the following:
 ```bash
 NEXT_PUBLIC_SUPABASE_URL="your-supabase-url"
 NEXT_PUBLIC_SUPABASE_ANON_KEY="your-supabase-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key" # Required for Single Owner Mode
 ENCRYPTION_KEY="your-32-byte-hex-key"
 BUFFER_MOCK_MODE="true" # Set to false for production Buffer calls
+
+# Configurable Modes
+APP_MODE="single_owner" # Toggle between 'single_owner' and 'multi_user'
+DEFAULT_OWNER_ID="00000000-0000-0000-0000-000000000001"
 ```
 
 ## 🏃 Local Development
@@ -61,3 +66,8 @@ BUFFER_MOCK_MODE="true" # Set to false for production Buffer calls
 **Milestone 1:** COMPLETED (Saturday, May 30, 2026)
 **Current Version:** 1.0.0
 **Status:** Ready for Client Review
+
+## 📖 Single Owner Mode
+This application supports a configurable **Single Owner Mode** that allows running the application without an authentication wall.
+- To configure or switch modes, refer to the [Single Owner Mode Report](file:///Users/jakarinosk/Desktop/AI%20Content%20Legal%20System/docs/implementation/SINGLE_OWNER_MODE_REPORT.md).
+

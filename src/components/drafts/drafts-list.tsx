@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Post, PostMetadata } from '@/types'
+import { Post } from '@/types'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { cn } from '@/lib/utils'
 import { 
@@ -16,7 +16,6 @@ import {
     ExternalLink, 
     AlertCircle, 
     Globe, 
-    Hash, 
     MessageSquare,
     Library,
     CheckCheck,
@@ -28,12 +27,11 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { approvePost, rejectPost, approveAllDrafts } from '@/actions/drafts'
+import { approvePost, rejectPost, approveAllDrafts, rejectAllDrafts } from '@/actions/drafts'
 import { sendPostToBuffer, sendApprovedPostsToBuffer } from '@/actions/publish'
 import { toast } from 'sonner'
 import { EditModal } from '@/components/drafts/edit-modal'
 import { EmptyState } from '@/components/ui/empty-state'
-import { PageHeader } from '@/components/ui/page-header'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 interface DraftsListProps {
@@ -55,7 +53,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
       if (!selectedPost && initialPosts.length > 0) {
           setSelectedPost(initialPosts[0])
       }
-  }, [initialPosts])
+  }, [initialPosts, selectedPost])
 
   const filteredPosts = posts.filter(post => {
     const matchesStatus = filter === 'all' || post.status === filter
@@ -70,7 +68,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           if (action === 'approve') await approvePost(id)
           else await rejectPost(id)
           toast.success('อัปเดตสถานะเรียบร้อย')
-      } catch (err) {
+      } catch {
           toast.error('เกิดข้อผิดพลาด')
       } finally {
           setLoading(null)
@@ -83,7 +81,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           const result = await sendPostToBuffer(id)
           toast.success('ส่งไปยัง Buffer สำเร็จ!')
           if (result.externalUrl) window.open(result.externalUrl, '_blank')
-      } catch (err) {
+      } catch {
           toast.error('การส่งล้มเหลว')
       } finally {
           setPublishing(false)
@@ -96,6 +94,27 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           toast.success(`อนุมัติทั้งหมด ${result.count} รายการ`)
       } catch {
           toast.error('เกิดข้อผิดพลาด')
+      }
+  }
+
+  async function handleRejectAll() {
+      try {
+          const result = await rejectAllDrafts()
+          toast.success(`ปฏิเสธทั้งหมด ${result.count} รายการ`)
+      } catch {
+          toast.error('เกิดข้อผิดพลาด')
+      }
+  }
+
+  async function handlePublishAll() {
+      setPublishing(true)
+      try {
+          const result = await sendApprovedPostsToBuffer()
+          toast.success(`ส่งไปยัง Buffer สำเร็จ ${result.successCount} รายการ (ล้มเหลว ${result.failCount} รายการ)`)
+      } catch {
+          toast.error('เกิดข้อผิดพลาดในการเผยแพร่ทั้งหมด')
+      } finally {
+          setPublishing(false)
       }
   }
 
@@ -183,21 +202,60 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
               )}
             </div>
           </ScrollArea>
-          <div className="p-4 bg-white border-t">
+          <div className="p-4 bg-white border-t space-y-2">
+              {/* Approve All */}
               <AlertDialog>
                   <AlertDialogTrigger>
-                    <Button variant="outline" className="w-full rounded-xl h-11 font-bold text-gray-600 hover:text-green-600 hover:bg-green-50 hover:border-green-100">
+                    <Button variant="outline" className="w-full rounded-xl h-10 font-bold text-gray-600 hover:text-green-600 hover:bg-green-50 hover:border-green-100 justify-start px-4">
                         <CheckCheck className="w-4 h-4 mr-2" /> อนุมัติร่างทั้งหมด
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-3xl">
                       <AlertDialogHeader>
-                          <AlertDialogTitle>ยืนยันการอนุมัติ?</AlertDialogTitle>
+                          <AlertDialogTitle>ยืนยันการอนุมัติทั้งหมด?</AlertDialogTitle>
                           <AlertDialogDescription>ต้องการอนุมัติโพสต์ที่ยังเป็นร่างทั้งหมดในขณะนี้หรือไม่?</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                           <AlertDialogCancel className="rounded-xl">ยกเลิก</AlertDialogCancel>
                           <AlertDialogAction onClick={handleApproveAll} className="bg-green-600 hover:bg-green-700 rounded-xl">ยืนยัน</AlertDialogAction>
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
+              </AlertDialog>
+
+              {/* Reject All */}
+              <AlertDialog>
+                  <AlertDialogTrigger>
+                    <Button variant="outline" className="w-full rounded-xl h-10 font-bold text-gray-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 justify-start px-4">
+                        <X className="w-4 h-4 mr-2" /> ปฏิเสธร่างทั้งหมด
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-3xl">
+                      <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการปฏิเสธทั้งหมด?</AlertDialogTitle>
+                          <AlertDialogDescription>ต้องการปฏิเสธโพสต์ที่ยังเป็นร่างทั้งหมดในขณะนี้หรือไม่?</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-xl">ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleRejectAll} className="bg-rose-600 hover:bg-rose-700 rounded-xl">ยืนยัน</AlertDialogAction>
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
+              </AlertDialog>
+
+              {/* Publish All */}
+              <AlertDialog>
+                  <AlertDialogTrigger>
+                    <Button variant="outline" className="w-full rounded-xl h-10 font-bold text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 justify-start px-4" disabled={!hasBufferKey || publishing}>
+                        <Send className="w-4 h-4 mr-2" /> เผยแพร่โพสต์ที่อนุมัติแล้วทั้งหมด
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-3xl">
+                      <AlertDialogHeader>
+                          <AlertDialogTitle>ยืนยันการเผยแพร่ทั้งหมด?</AlertDialogTitle>
+                          <AlertDialogDescription>ต้องการส่งโพสต์ที่อนุมัติแล้วทั้งหมดไปยัง Buffer ในขณะนี้หรือไม่?</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-xl">ยกเลิก</AlertDialogCancel>
+                          <AlertDialogAction onClick={handlePublishAll} className="bg-blue-600 hover:bg-blue-700 rounded-xl">ยืนยัน</AlertDialogAction>
                       </AlertDialogFooter>
                   </AlertDialogContent>
               </AlertDialog>
