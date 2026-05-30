@@ -1,27 +1,28 @@
 import { Badge } from "@/components/ui/badge"
 import { PostStatus } from "@/types"
 import { cn } from "@/lib/utils"
+import { DESIGN_SYSTEM } from "@/config/design-system"
 
 const statusConfig: Record<PostStatus, { label: string; className: string }> = {
   draft: {
     label: "ร่าง",
-    className: "bg-gray-100 text-gray-700 border-gray-200",
+    className: DESIGN_SYSTEM.badges.draft,
   },
   approved: {
     label: "อนุมัติแล้ว",
-    className: "bg-green-50 text-green-700 border-green-200",
+    className: DESIGN_SYSTEM.badges.success,
   },
   rejected: {
     label: "ปฏิเสธ",
-    className: "bg-red-50 text-red-700 border-red-200",
+    className: DESIGN_SYSTEM.badges.error,
   },
   published: {
     label: "เผยแพร่แล้ว",
-    className: "bg-blue-50 text-blue-700 border-blue-200",
+    className: DESIGN_SYSTEM.badges.info,
   },
   failed: {
     label: "ล้มเหลว",
-    className: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    className: DESIGN_SYSTEM.badges.warning,
   },
 }
 

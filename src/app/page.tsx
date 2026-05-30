@@ -41,6 +41,7 @@ export default async function DashboardPage() {
     draft: posts?.filter(p => p.status === 'draft').length || 0,
     approved: posts?.filter(p => p.status === 'approved').length || 0,
     published: posts?.filter(p => p.status === 'published').length || 0,
+    failed: posts?.filter(p => p.status === 'failed').length || 0,
     generated: posts?.length || 0,
     hasBrand: !!brand,
     hasOpenAI: integrations?.some(i => i.provider === 'openai') || false,
