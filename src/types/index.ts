@@ -9,6 +9,10 @@ export interface PostMetadata {
   topic?: string
   tone?: string
   personality?: string
+  external_id?: string
+  external_url?: string
+  last_error?: string
+  published_at?: string
 }
 
 export interface Post {
