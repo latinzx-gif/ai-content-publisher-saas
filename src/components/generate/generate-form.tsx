@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -10,7 +9,21 @@ import { generatePosts } from '@/actions/generate'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { Sparkles, ArrowRight, CheckCircle2, Cpu, SlidersHorizontal, BookOpen, Layers, Terminal, AlertTriangle } from 'lucide-react'
+import { 
+  Sparkles, 
+  CheckCircle2, 
+  Cpu, 
+  SlidersHorizontal, 
+  BookOpen, 
+  Layers, 
+  AlertTriangle, 
+  Check, 
+  TrendingUp, 
+  Globe, 
+  MoreHorizontal,
+  Zap,
+  Target
+} from 'lucide-react'
 
 interface GenerateFormProps {
   initialBrand?: {
@@ -62,11 +75,15 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     postCount: 5 as 5 | 10
   })
 
+  // C2.1 Content Objective local state
+  const [objective, setObjective] = useState('Educational')
+
   const stages = [
-    { label: 'Preparing AI Request', desc: 'Analyzing brand profile parameters and topic parameters' },
-    { label: 'Generating Content drafts', desc: 'Drafting multi-format social posts via GPT-4o context engines' },
-    { label: 'Formatting and Structuring', desc: 'Adding hooks, captions, and platform-specific hashtags' },
-    { label: 'Saving to Draft Board', desc: 'Committing post entities into database records' }
+    { label: 'Understanding Brand Context', desc: 'Analyzing brand profile parameters and topic guidelines' },
+    { label: 'Preparing Content Structure', desc: 'Drafting multi-format social posts structure' },
+    { label: 'Generating Content', desc: 'Running context synthesis and hook optimization' },
+    { label: 'Optimizing Hooks', desc: 'Adding hooks, captions, and platform-specific hashtags' },
+    { label: 'Preparing Drafts', desc: 'Committing post entities into database records' }
   ]
 
   async function handleSubmit() {
@@ -79,13 +96,13 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     setLoading(true)
     setLoadingStage(0)
     
-    // Simulate step progress increments every 2.5 seconds
+    // Simulate step progress increments every 2 seconds
     const intervalId = setInterval(() => {
       setLoadingStage(prev => {
-        if (prev < 3) return prev + 1
+        if (prev < 4) return prev + 1
         return prev
       })
-    }, 2500)
+    }, 2000)
 
     try {
       const result = await generatePosts({
@@ -104,179 +121,180 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start select-none">
+    <div className="flex flex-col xl:flex-row w-full gap-6 select-none items-start pb-20">
       
-      {/* Left panel: Active Brand Guidelines Engine */}
-      <div className="lg:col-span-1 bg-white border border-slate-200/60 rounded-3xl p-6 space-y-6 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.02)]">
-        <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-          <BookOpen className="w-4 h-4 text-indigo-650" />
-          <h3 className="text-xs font-black uppercase tracking-wider text-slate-800">Brand Engine Guidelines</h3>
+      {/* LEFT PANEL (22%) - Control Deck */}
+      <div className="w-full xl:w-[22%] shrink-0 space-y-5">
+        
+        {/* Brand Context HUD (Insight Card) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Brand Context HUD</h3>
+          </div>
+          {initialBrand ? (
+            <div className="space-y-3.5 text-xs text-left">
+              <div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Brand Identity</span>
+                <p className="font-bold text-slate-800 dark:text-slate-200">{initialBrand.name}</p>
+                <p className="text-[10px] text-slate-500 font-medium">{initialBrand.business_type}</p>
+              </div>
+              <div>
+                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Target Audience</span>
+                <p className="font-semibold text-slate-700 dark:text-slate-400 leading-normal line-clamp-2">{initialBrand.target_audience}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/80">
+                <div>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Default Tone</span>
+                  <p className="font-bold text-indigo-650 dark:text-indigo-400">{initialBrand.tone}</p>
+                </div>
+                <div>
+                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Voice Persona</span>
+                  <p className="font-bold text-indigo-650 dark:text-indigo-400">{initialBrand.personality}</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-xs font-semibold text-slate-400">No brand profile linked.</p>
+              <Link href="/profile" className="text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:underline mt-2 block">Configure Voice →</Link>
+            </div>
+          )}
         </div>
 
-        {initialBrand ? (
-          <div className="space-y-4 text-left">
-            <div className="space-y-0.5">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Business Name</span>
-              <p className="text-xs font-bold text-slate-800">{initialBrand.name}</p>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Industry / Type</span>
-              <p className="text-xs font-bold text-slate-800">{initialBrand.business_type}</p>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Target Audience</span>
-              <p className="text-xs font-semibold text-slate-700 leading-relaxed">{initialBrand.target_audience}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50">
-              <div className="space-y-0.5">
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Default Tone</span>
-                <p className="text-xs font-bold text-indigo-600">{initialBrand.tone}</p>
-              </div>
-              <div className="space-y-0.5">
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Default Voice</span>
-                <p className="text-xs font-bold text-indigo-600">{initialBrand.personality}</p>
-              </div>
-            </div>
+        {/* Content Templates (Secondary Card) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-3 shadow-sm text-left">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <Zap className="w-4 h-4 text-amber-500" />
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Content Templates</h3>
           </div>
-        ) : (
-          <div className="text-center py-6 space-y-2.5">
-            <p className="text-xs font-semibold text-slate-400">No brand profile linked.</p>
-            <Link 
-              href="/profile" 
-              className="inline-flex text-[10px] font-black uppercase tracking-wider text-indigo-600 hover:underline"
-            >
-              Configure Brand Engine →
-            </Link>
+          <div className="space-y-1.5">
+            {[
+              { title: 'Labor Law Advice', desc: 'Educational tip breakdown format' },
+              { title: 'PDPA Compliance Checklist', desc: 'Step-by-step audit checklist' },
+              { title: 'Service Business Q&A', desc: 'Conversational client interview mock' },
+              { title: 'Expert Myth-Buster', desc: 'Confrontational value correction post' }
+            ].map((t, idx) => (
+              <button 
+                key={idx}
+                onClick={() => {
+                  if (t.title.includes('Labor')) setSelectedTopic('กฎหมายแรงงาน');
+                  else if (t.title.includes('PDPA')) setSelectedTopic('PDPA / คุ้มครองข้อมูลส่วนบุคคล');
+                  else if (t.title.includes('Service')) setSelectedTopic('การตลาดธุรกิจบริการ');
+                  else setSelectedTopic('custom');
+                }}
+                className="w-full p-2 rounded-xl text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-800/80 group"
+              >
+                <span className="block text-xs font-bold text-slate-800 dark:text-slate-250 group-hover:text-indigo-600 transition-colors">{t.title}</span>
+                <span className="block text-[9px] text-slate-400 font-semibold">{t.desc}</span>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
 
-        <div className="pt-4 border-t border-slate-50 space-y-3">
-          <div className="flex items-center justify-between text-[10px]">
-            <span className="text-slate-400 font-bold uppercase tracking-wider">Generation Engine</span>
-            <span className="font-bold text-slate-800 flex items-center gap-1">
-              <Cpu className="w-3.5 h-3.5 text-indigo-600" /> GPT-4o (High-Res)
-            </span>
+        {/* Content Angles & Recent Topics (Secondary Card) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 shadow-sm text-left">
+          <div>
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
+              <Target className="w-4 h-4 text-emerald-500" />
+              <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Active Content Angles</h3>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {['Educate & Convert', 'Myth Busting', 'Compliance Alert', 'Interactive Q&A'].map((angle, idx) => (
+                <span key={idx} className="text-[9px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-150/60 dark:border-slate-700/80 px-2 py-0.5 rounded-md">
+                  {angle}
+                </span>
+              ))}
+            </div>
           </div>
+          
+          <div className="pt-2 border-t border-slate-50 dark:border-slate-800/80">
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-1.5">Recent Success Topics</span>
+            <div className="space-y-1.5">
+              {[
+                { title: 'Severance calculation details', date: '3 days ago' },
+                { title: 'Cookie consent rules 2026', date: '5 days ago' }
+              ].map((topic, idx) => (
+                <div key={idx} className="flex justify-between items-center text-[10px]">
+                  <span className="font-bold text-slate-700 dark:text-slate-350 truncate max-w-[120px]">{topic.title}</span>
+                  <span className="text-slate-400 text-[9px] font-semibold">{topic.date}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Integration Status (Action Card) */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-4 space-y-2.5 shadow-sm text-left">
+          <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">OS Engine Status</span>
           <div className="flex items-center justify-between text-[10px]">
-            <span className="text-slate-400 font-bold uppercase tracking-wider">Destination</span>
-            <span className="font-bold text-slate-800 flex items-center gap-1">
-              <Layers className="w-3.5 h-3.5 text-indigo-600" /> Draft Repository
+            <span className="font-bold text-slate-700 dark:text-slate-350 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-indigo-650" /> OpenAI GPT-4o
+            </span>
+            <span className={cn("px-1.5 py-0.5 rounded text-[8px] font-black uppercase", hasOpenAIKey ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700")}>
+              {hasOpenAIKey ? 'Vault Active' : 'Missing Key'}
             </span>
           </div>
         </div>
+
       </div>
 
-      {/* Right panel: Composer Workbench */}
-      <div className="lg:col-span-2 space-y-6">
+      {/* CENTER PANEL (48%) - Content Composer */}
+      <div className="w-full xl:w-[48%] shrink-0 space-y-5">
         
-        {/* Loading / Execution Log view */}
-        {loading && (
-          <Card className="border border-slate-200/60 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.03)] bg-white rounded-3xl overflow-hidden animate-in fade-in duration-300">
-            <CardContent className="p-8 text-center space-y-6 min-h-[380px] flex flex-col items-center justify-center">
-              <div className="relative">
-                <div className="h-14 w-14 animate-spin rounded-full border-4 border-slate-100 border-t-indigo-600" />
-                <Sparkles className="w-6 h-6 text-indigo-600 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <div className="space-y-1.5">
-                <h3 className="text-lg font-black text-slate-800 tracking-tight">AI Composer Running</h3>
-                <p className="text-slate-400 text-xs font-semibold max-w-sm mx-auto leading-relaxed">
-                  Compiling post drafts with your active brand guideline context.
-                </p>
-              </div>
-
-              {/* Compilation terminal interface */}
-              <div className="w-full max-w-md mx-auto space-y-3.5 pt-4 text-left bg-slate-950 p-5 rounded-2xl border border-slate-800 font-mono shadow-inner">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-800 mb-2">
-                  <Terminal className="w-3.5 h-3.5 text-indigo-400" />
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Generation Log Pipeline</span>
-                </div>
-                {stages.map((stage, idx) => {
-                  const isCompleted = loadingStage > idx;
-                  const isActive = loadingStage === idx;
-                  return (
-                    <div key={idx} className={cn("flex items-start gap-2.5 transition-opacity duration-300", !isCompleted && !isActive ? "opacity-30" : "opacity-100")}>
-                      <div className="flex h-4 w-4 items-center justify-center shrink-0 mt-0.5">
-                        {isCompleted ? (
-                          <span className="text-emerald-500 font-bold text-xs">✓</span>
-                        ) : isActive ? (
-                          <div className="h-2 w-2 animate-ping rounded-full bg-indigo-500" />
-                        ) : (
-                          <span className="text-slate-700 text-xs">•</span>
-                        )}
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className={cn("text-xs font-bold leading-none", isActive ? "text-indigo-400" : isCompleted ? "text-slate-100" : "text-slate-600")}>
-                          {stage.label}
-                        </p>
-                        {isActive && (
-                          <p className="text-[9px] text-slate-500 font-semibold leading-relaxed mt-0.5">{stage.desc}</p>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Success screen */}
+        {/* Success screen card */}
         {!loading && successCount !== null && (
-          <Card className="border border-slate-200/60 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.03)] bg-white rounded-3xl overflow-hidden animate-in zoom-in duration-300">
-            <CardContent className="p-8 text-center space-y-6 flex flex-col items-center justify-center min-h-[380px]">
-              <div className="mx-auto w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-150 shadow-inner">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <div className="space-y-1.5">
-                <h2 className="text-xl font-black text-slate-800 tracking-tight">Compilation Complete!</h2>
-                <p className="text-slate-400 text-xs font-semibold">Generated {successCount} content drafts and saved to your repository.</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4 w-full max-w-sm">
-                <Link 
-                  href="/drafts" 
-                  className={cn(buttonVariants({ size: 'default' }), "bg-indigo-600 hover:bg-indigo-750 text-white font-bold rounded-xl text-xs flex-1 h-11 shadow-md")}
-                >
-                  Review Draft Board <ArrowRight className="ml-1.5 w-4 h-4" />
-                </Link>
-                <Button 
-                  variant="outline" 
-                  size="default" 
-                  onClick={() => setSuccessCount(null)} 
-                  className="h-11 rounded-xl font-bold text-slate-500 hover:bg-slate-50 text-xs flex-1 border-slate-200"
-                >
-                  Compose Another Batch
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="border border-slate-200/60 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl p-6 text-center space-y-5 min-h-[300px] flex flex-col items-center justify-center">
+            <div className="mx-auto w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center border border-emerald-150 shadow-inner">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h2 className="text-base font-black text-slate-800 dark:text-slate-200 tracking-tight">AI Synthesis Complete!</h2>
+              <p className="text-slate-400 text-xs font-semibold">Generated {successCount} content drafts and saved to your Pipeline Board.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-3 w-full max-w-sm">
+              <Link 
+                href="/drafts" 
+                className={cn(buttonVariants({ size: 'default' }), "bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs flex-1 h-10 shadow-md")}
+              >
+                Open Pipeline Board
+              </Link>
+              <Button 
+                variant="outline" 
+                size="default" 
+                onClick={() => setSuccessCount(null)} 
+                className="h-10 rounded-xl font-bold text-slate-500 hover:bg-slate-50 text-xs flex-1 border-slate-200"
+              >
+                Compose Again
+              </Button>
+            </div>
+          </div>
         )}
 
-        {/* Workbench Control Panel Form */}
-        {!loading && successCount === null && (
-          <Card className="border border-slate-200/60 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.02)] bg-white rounded-3xl overflow-hidden">
-            <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/20">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center text-slate-700 shadow-sm border border-slate-150">
-                  <SlidersHorizontal className="w-4.5 h-4.5" />
-                </div>
-                <div className="text-left">
-                  <CardTitle className="text-sm font-black text-slate-855 tracking-tight uppercase tracking-wider">Composer Settings</CardTitle>
-                  <CardDescription className="text-[10px] font-semibold text-slate-400 mt-0.5">Parameters for the AI content generation pipeline.</CardDescription>
-                </div>
+        {/* Composer Workbench Form */}
+        {(!loading && successCount === null) && (
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/20 flex items-center gap-2.5">
+              <div className="w-7 h-7 bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-700 dark:text-slate-300 shadow-sm border border-slate-150 dark:border-slate-700">
+                <SlidersHorizontal className="w-4 h-4" />
               </div>
-            </CardHeader>
+              <div className="text-left">
+                <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-wider uppercase">Command Composer</h4>
+                <p className="text-[9px] font-semibold text-slate-400 mt-0.5">Synthesize raw parameters into formatted social updates.</p>
+              </div>
+            </div>
 
-            <CardContent className="p-6 space-y-6">
-              {/* 1. Topic Parameter */}
-              <div className="space-y-2.5 text-left">
-                <Label className="text-xs font-black text-slate-800 uppercase tracking-wider">1. Core Content Track (Topic)</Label>
+            <div className="p-5 space-y-5 text-left">
+              {/* 1. Topic Builder */}
+              <div className="space-y-2">
+                <Label className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">1. Core Content Track (Topic)</Label>
                 <Select value={selectedTopic} onValueChange={(val: string | null) => val && setSelectedTopic(val)}>
-                  <SelectTrigger className="h-11 text-xs rounded-xl border-slate-250/70 focus:ring-indigo-500 bg-white">
+                  <SelectTrigger className="h-10 text-xs rounded-xl border-slate-250/70 focus:ring-indigo-500 bg-white dark:bg-slate-900">
                     <SelectValue placeholder="Select topic category..." />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-100 shadow-2xl">
                     {TOPIC_OPTIONS.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value} className="text-xs font-semibold py-2.5">{opt.label}</SelectItem>
+                      <SelectItem key={opt.value} value={opt.value} className="text-xs font-semibold py-2">{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -284,25 +302,35 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
               {/* Custom Topic Input */}
               {selectedTopic === 'custom' && (
-                <div className="space-y-2 text-left animate-in slide-in-from-top-2 duration-200">
+                <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-200">
                   <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Specify Custom Subject</Label>
                   <Input
                     value={customTopic}
                     onChange={(e) => setCustomTopic(e.target.value)}
                     placeholder="e.g. 3 crucial tips for writing a legal contract..."
-                    className="h-11 text-xs rounded-xl border-slate-200 focus:ring-indigo-500"
+                    className="h-10 text-xs rounded-xl border-slate-200 focus:ring-indigo-500"
                   />
                 </div>
               )}
 
-              {/* 2. Advanced Style Overrides */}
-              <div className="space-y-4 pt-4 border-t border-slate-50 text-left">
-                <Label className="text-xs font-black text-slate-800 uppercase tracking-wider">2. Tone presets override (Optional)</Label>
+              {/* 2. Parameters Grid (Audience, Tone, Style) */}
+              <div className="space-y-4 pt-4 border-t border-slate-50 dark:border-slate-800/80">
+                <Label className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">2. Context Grids Configuration</Label>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider">Language Tone</span>
+                  {/* Audience HUD View */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Target Audience Segment</span>
+                    <div className="h-9 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-150/60 dark:border-slate-850 flex items-center text-[11px] text-slate-700 dark:text-slate-350 font-bold truncate">
+                      {initialBrand?.target_audience || 'General Segment'}
+                    </div>
+                  </div>
+
+                  {/* Language Tone */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Language Tone Register</span>
                     <Select value={formData.tone} onValueChange={(val: string | null) => val && setFormData({ ...formData, tone: val })}>
-                      <SelectTrigger className="h-10 text-xs rounded-xl">
+                      <SelectTrigger className="h-9 text-xs rounded-xl">
                         <SelectValue placeholder="Tone..." />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -312,10 +340,12 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <span className="text-[10px] font-bold text-slate-455 uppercase tracking-wider">Personality Preset</span>
+
+                  {/* Personality Style Selector */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Personality Style Preset</span>
                     <Select value={formData.personality} onValueChange={(val: string | null) => val && setFormData({ ...formData, personality: val })}>
-                      <SelectTrigger className="h-10 text-xs rounded-xl">
+                      <SelectTrigger className="h-9 text-xs rounded-xl">
                         <SelectValue placeholder="Personality..." />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl">
@@ -325,43 +355,71 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Content Objective */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Content Objective</span>
+                    <Select value={objective} onValueChange={(val: string | null) => val && setObjective(val)}>
+                      <SelectTrigger className="h-9 text-xs rounded-xl">
+                        <SelectValue placeholder="Objective..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {['Educational', 'Lead Gen / Sales', 'Brand Awareness', 'Engagement Drive'].map((obj, i) => (
+                          <SelectItem key={i} value={obj} className="text-xs">{obj}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
 
-              {/* 3. Output Volume */}
-              <div className="space-y-2.5 pt-4 border-t border-slate-50 text-left">
-                <Label className="text-xs font-black text-slate-800 uppercase tracking-wider">3. Output Count</Label>
+              {/* 3. Output Volume Count */}
+              <div className="space-y-2.5 pt-4 border-t border-slate-50 dark:border-slate-800/80">
+                <Label className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">3. Output Count</Label>
                 <Select value={formData.postCount.toString()} onValueChange={(val: string | null) => val && setFormData({ ...formData, postCount: parseInt(val) as 5 | 10 })}>
-                  <SelectTrigger className="h-11 text-xs rounded-xl">
+                  <SelectTrigger className="h-10 text-xs rounded-xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl">
-                    <SelectItem value="5" className="text-xs font-bold py-2.5">Generate 5 Social Posts</SelectItem>
-                    <SelectItem value="10" className="text-xs font-bold py-2.5">Generate 10 Social Posts</SelectItem>
+                    <SelectItem value="5" className="text-xs font-bold py-2">Generate 5 Social Posts</SelectItem>
+                    <SelectItem value="10" className="text-xs font-bold py-2">Generate 10 Social Posts</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-            </CardContent>
+            </div>
 
-            <CardFooter className="p-6 border-t border-slate-50 bg-slate-50/20 flex gap-4">
+            <div className="p-4 border-t border-slate-50 dark:border-slate-800 bg-slate-50/20 flex gap-4">
               <Button 
                 onClick={handleSubmit}
-                className={cn(
-                  "w-full h-12 rounded-2xl font-black text-xs transition-all active:scale-[0.98]",
-                  "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 dark:shadow-none"
-                )}
+                className="w-full h-11 rounded-xl font-black text-xs transition-all active:scale-[0.98] bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100 dark:shadow-none"
                 disabled={!selectedTopic || !hasOpenAIKey}
               >
                 <Sparkles className="mr-1.5 w-4 h-4" />
-                Launch AI Composer
+                Generate Content
               </Button>
-            </CardFooter>
-          </Card>
+            </div>
+          </div>
+        )}
+
+        {/* In progress compilation dashboard overlay */}
+        {loading && (
+          <div className="border border-slate-200/60 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 rounded-2xl overflow-hidden p-6 text-center min-h-[350px] flex flex-col items-center justify-center space-y-5 animate-in fade-in duration-300">
+            <div className="relative">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-slate-100 border-t-indigo-600" />
+              <Sparkles className="w-5.5 h-5.5 text-indigo-600 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">OS AI Synthesis Active</h3>
+              <p className="text-slate-400 text-xs font-medium max-w-sm leading-relaxed">
+                Reorganizing brand guidelines parameters and custom topics inputs...
+              </p>
+            </div>
+          </div>
         )}
 
         {!hasOpenAIKey && (
-          <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-500/10 text-rose-800 dark:text-rose-400 rounded-2xl border border-rose-100/50">
+          <div className="flex items-center gap-3 p-4 bg-rose-50 dark:bg-rose-500/10 text-rose-800 dark:text-rose-455 rounded-2xl border border-rose-100/50">
             <AlertTriangle className="w-5 h-5 shrink-0" />
             <p className="text-xs font-bold leading-relaxed text-left">
               API key missing. Connect your OpenAI credentials in the <Link href="/settings" className="underline hover:text-indigo-650">Publishing Channels</Link> setting panel to enable AI generation.
@@ -370,7 +428,116 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         )}
       </div>
 
+      {/* RIGHT PANEL (30%) - Expectation Hub */}
+      <div className="w-full xl:w-[30%] shrink-0 space-y-5">
+        
+        {/* Visual Content Score HUD */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm text-left">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <TrendingUp className="w-4 h-4 text-indigo-650" />
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Content Performance Score</h3>
+          </div>
+          
+          <div className="space-y-3">
+            {[
+              { label: 'Hook Strength', score: 8.5 },
+              { label: 'Readability Meter', score: 9.0 },
+              { label: 'Engagement Potential', score: 7.2 },
+              { label: 'CTA Strength', score: 8.0 }
+            ].map((metric, i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                  <span>{metric.label}</span>
+                  <span className="text-indigo-600 dark:text-indigo-400">{metric.score}/10</span>
+                </div>
+                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500" 
+                    style={{ width: `${metric.score * 10}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Live Expectation preview card */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm text-left">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <Layers className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Platform Preview Feed</h3>
+          </div>
+
+          <div className="w-full bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-150/60 dark:border-slate-850 p-4 space-y-3 shadow-inner">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-[9px] font-black">OS</div>
+                <div>
+                  <div className="text-[10px] font-bold text-slate-800 dark:text-slate-200">Your Workspace Brand</div>
+                  <div className="flex items-center gap-1 text-[8px] text-slate-450 font-semibold uppercase tracking-wider mt-0.5">
+                    <span>Sponsored</span>
+                    <span>•</span>
+                    <Globe className="w-2.5 h-2.5" />
+                  </div>
+                </div>
+              </div>
+              <MoreHorizontal className="w-3.5 h-3.5 text-slate-400" />
+            </div>
+            
+            <div className="space-y-1.5 text-[11px] text-slate-655 dark:text-slate-400 leading-relaxed font-medium">
+              <p className="font-bold text-slate-900 dark:text-slate-200 text-xs">Preview Hook Headline Mockup</p>
+              <p>Generated captions content will render dynamically here mapped to your specific platform guidelines...</p>
+              <span className="text-indigo-600 dark:text-indigo-400 block font-bold">#mockup #workspace #branding</span>
+            </div>
+
+            <div className="aspect-[1.91/1] w-full bg-white dark:bg-slate-900 border border-slate-150/50 dark:border-slate-800/80 rounded-lg flex items-center justify-center text-[9px] text-slate-350 font-bold uppercase tracking-widest italic shadow-sm">
+              Mock Media Canvas
+            </div>
+          </div>
+          
+          <div className="bg-slate-50 dark:bg-slate-900 border border-slate-150/80 dark:border-slate-800/80 rounded-xl p-3.5 text-[10px] text-slate-500 font-medium space-y-1">
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Output Expectations</span>
+            <p>• Estimated volume: {formData.postCount} drafts</p>
+            <p>• Formats: Multi-format caption blocks + hashtags</p>
+            <p>• Synchronization destination: Pipeline Board</p>
+          </div>
+        </div>
+
+        {/* Business focused AI Operational Status HUD */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-3.5 shadow-sm text-left">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <CheckCircle2 className="w-4 h-4 text-indigo-600" />
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">AI Operational Status</h3>
+          </div>
+          
+          <div className="space-y-2.5">
+            {stages.map((stage, idx) => {
+              const isCompleted = loadingStage > idx || (successCount !== null);
+              const isActive = loading && loadingStage === idx;
+              return (
+                <div key={idx} className={cn("flex items-start gap-2.5 transition-opacity", !isCompleted && !isActive ? "opacity-40" : "opacity-100")}>
+                  <div className="flex h-3.5 w-3.5 items-center justify-center shrink-0 mt-0.5 rounded-full border border-slate-200 bg-white dark:bg-slate-800 text-[10px]">
+                    {isCompleted ? (
+                      <Check className="w-2.5 h-2.5 text-emerald-600" />
+                    ) : isActive ? (
+                      <div className="h-1.5 w-1.5 animate-ping rounded-full bg-indigo-500" />
+                    ) : (
+                      <span className="text-slate-350 text-[8px]">•</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className={cn("text-[11px] font-bold block", isActive ? "text-indigo-600" : isCompleted ? "text-slate-700 dark:text-slate-300" : "text-slate-400")}>
+                      {stage.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
     </div>
   )
-
 }
