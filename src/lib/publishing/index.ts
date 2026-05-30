@@ -6,9 +6,10 @@ class PlaceholderAdapter implements PublishingAdapter {
     constructor(provider: PublishingProvider) {
         this.provider = provider;
     }
-    async sendPost(_input: PublishInput, _apiKey: string): Promise<PublishResult> {
+    async function sendPost(_input: PublishInput, _apiKey: string): Promise<PublishResult> {
         return { success: false, error: `Provider ${this.provider} not implemented yet.` };
     }
+
 }
 
 const adapters: Record<PublishingProvider, PublishingAdapter> = {
