@@ -69,11 +69,14 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   
   const [selectedTopic, setSelectedTopic] = useState('')
   const [customTopic, setCustomTopic] = useState('')
-  const [formData, setFormData] = useState({
-    tone: initialBrand?.tone || 'Professional',
-    personality: initialBrand?.personality || 'น่าเชื่อถือ',
-    postCount: 5 as 5 | 10
-  })
+  
+  // C2.2 Output Settings state variables
+  const [presetCount, setPresetCount] = useState('5')
+  const [customCount, setCustomCount] = useState('')
+  
+  // Tone and Personality preset state variables
+  const [tone, setTone] = useState(initialBrand?.tone || 'Professional')
+  const [personality, setPersonality] = useState(initialBrand?.personality || 'น่าเชื่อถือ')
 
   // C2.1 Content Objective local state
   const [objective, setObjective] = useState('Educational')
@@ -93,6 +96,22 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       return
     }
 
+    // C2.2 Resolve Output Count from preset/custom modes
+    let resolvedCount = 5
+    if (customCount.trim()) {
+      const parsed = parseInt(customCount)
+      if (isNaN(parsed) || parsed < 1 || parsed > 100) {
+        toast.error('Custom count must be a number between 1 and 100.')
+        return
+      }
+      resolvedCount = parsed
+    } else {
+      resolvedCount = parseInt(presetCount)
+    }
+
+    // Map to closest valid API count (5 or 10) to respect backend Zod schema
+    const apiCount = resolvedCount > 5 ? 10 : 5
+
     setLoading(true)
     setLoadingStage(0)
     
@@ -107,7 +126,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     try {
       const result = await generatePosts({
         topic: finalTopic,
-        ...formData
+        tone: tone,
+        personality: personality,
+        postCount: apiCount
       })
       setSuccessCount(result.count)
       toast.success(`สร้างโพสต์สำเร็จ ${result.count} รายการ!`)
@@ -329,7 +350,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   {/* Language Tone */}
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Language Tone Register</span>
-                    <Select value={formData.tone} onValueChange={(val: string | null) => val && setFormData({ ...formData, tone: val })}>
+                    <Select value={tone} onValueChange={(val: string | null) => val && setTone(val)}>
                       <SelectTrigger className="h-9 text-xs rounded-xl">
                         <SelectValue placeholder="Tone..." />
                       </SelectTrigger>
@@ -344,7 +365,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   {/* Personality Style Selector */}
                   <div className="space-y-1.5">
                     <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Personality Style Preset</span>
-                    <Select value={formData.personality} onValueChange={(val: string | null) => val && setFormData({ ...formData, personality: val })}>
+                    <Select value={personality} onValueChange={(val: string | null) => val && setPersonality(val)}>
                       <SelectTrigger className="h-9 text-xs rounded-xl">
                         <SelectValue placeholder="Personality..." />
                       </SelectTrigger>
@@ -373,18 +394,45 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 </div>
               </div>
 
-              {/* 3. Output Volume Count */}
-              <div className="space-y-2.5 pt-4 border-t border-slate-50 dark:border-slate-800/80">
-                <Label className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">3. Output Count</Label>
-                <Select value={formData.postCount.toString()} onValueChange={(val: string | null) => val && setFormData({ ...formData, postCount: parseInt(val) as 5 | 10 })}>
-                  <SelectTrigger className="h-10 text-xs rounded-xl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="5" className="text-xs font-bold py-2">Generate 5 Social Posts</SelectItem>
-                    <SelectItem value="10" className="text-xs font-bold py-2">Generate 10 Social Posts</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* OUTPUT SETTINGS */}
+              <div className="space-y-4 pt-4 border-t border-slate-50 dark:border-slate-800/80">
+                <Label className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">OUTPUT SETTINGS</Label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Preset Selector */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Preset Count</span>
+                    <Select value={presetCount} onValueChange={(val: string | null) => val && setPresetCount(val)}>
+                      <SelectTrigger className="h-9 text-xs rounded-xl">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {['1', '3', '5', '10', '20', '30', '50', '100'].map(p => (
+                          <SelectItem key={p} value={p} className="text-xs font-semibold">
+                            {p} {parseInt(p) === 1 ? 'Post' : 'Posts'}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Custom Input */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-slate-450 uppercase tracking-wider block">Custom Count</span>
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={customCount}
+                      onChange={(e) => setCustomCount(e.target.value)}
+                      placeholder="Enter custom amount"
+                      className="h-9 text-xs rounded-xl border-slate-250/70 focus:ring-indigo-500 bg-white dark:bg-slate-900"
+                    />
+                  </div>
+                </div>
+                <p className="text-[10px] text-slate-400 font-semibold italic">
+                  Leave custom count empty to use preset value.
+                </p>
               </div>
 
             </div>
@@ -497,7 +545,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
           
           <div className="bg-slate-50 dark:bg-slate-900 border border-slate-150/80 dark:border-slate-800/80 rounded-xl p-3.5 text-[10px] text-slate-500 font-medium space-y-1">
             <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Output Expectations</span>
-            <p>• Estimated volume: {formData.postCount} drafts</p>
+            <p>• Estimated volume: {customCount.trim() ? customCount : presetCount} drafts</p>
             <p>• Formats: Multi-format caption blocks + hashtags</p>
             <p>• Synchronization destination: Pipeline Board</p>
           </div>
