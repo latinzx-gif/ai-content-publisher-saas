@@ -10,8 +10,10 @@ import { approveAllDrafts } from '@/actions/drafts'
 import { sendApprovedPostsToBuffer } from '@/actions/publish'
 import { toast } from 'sonner'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { CheckCheck, Send } from 'lucide-react'
+import { CheckCheck, Send, Library } from 'lucide-react'
 import { Post } from '@/types'
+import { EmptyState } from '@/components/ui/empty-state'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface DraftsListProps {
   initialPosts: Post[]
@@ -26,45 +28,50 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
   async function handleApproveAll() {
     try {
       const result = await approveAllDrafts()
-      toast.success(`Successfully approved ${result.count} posts`)
+      toast.success(`อนุมัติโพสต์ทั้งหมด ${result.count} รายการเรียบร้อยแล้ว`)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to approve all'
+      const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอนุมัติทั้งหมด'
       toast.error(message)
     }
   }
 
   async function handlePublishAll() {
     if (!hasBufferKey) {
-      toast.error('Please connect Buffer in Settings first.')
+      toast.error('กรุณาเชื่อมต่อ Buffer ในหน้า Settings ก่อน')
       return
     }
     setPublishing(true)
     try {
       const result = await sendApprovedPostsToBuffer()
-      toast.success(`Sent to Buffer: ${result.successCount} success, ${result.failCount} failed.`)
+      toast.success(`ส่งไปยัง Buffer สำเร็จ: ${result.successCount} รายการ, ล้มเหลว ${result.failCount} รายการ`)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to publish all'
+      const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการส่งทั้งหมด'
       toast.error(message)
     } finally {
       setPublishing(false)
     }
   }
 
-  const PostGrid = ({ posts }: { posts: Post[] }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-      {posts.map((post) => (
-        <DraftCard 
-          key={post.id} 
-          post={post} 
-          onPreview={(p: Post) => setPreviewPost(p)} 
-          onEdit={(p: Post) => setEditPost(p)} 
-          hasBufferKey={hasBufferKey}
-        />
-      ))}
+  const PostGrid = ({ posts, type }: { posts: Post[], type: string }) => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
+        {posts.map((post) => (
+          <DraftCard 
+            key={post.id} 
+            post={post} 
+            onPreview={(p: Post) => setPreviewPost(p)} 
+            onEdit={(p: Post) => setEditPost(p)} 
+            hasBufferKey={hasBufferKey}
+          />
+        ))}
+      </div>
       {posts.length === 0 && (
-        <div className="col-span-full py-20 text-center border-2 border-dashed rounded-lg">
-          <p className="text-muted-foreground">No posts found in this category.</p>
-        </div>
+        <EmptyState 
+          icon={Library}
+          title={`ยังไม่มีโพสต์ในหมวด ${type}`}
+          description="คุณสามารถเริ่มสร้างคอนเทนต์ใหม่ด้วย AI ได้ทันที เพื่อนำมาเก็บไว้ในคลังเนื้อหาของคุณ"
+          action={{ label: "สร้างคอนเทนต์ใหม่", href: "/generate" }}
+        />
       )}
     </div>
   )
@@ -74,28 +81,30 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
   const rejectedPosts = initialPosts.filter(p => p.status === 'rejected')
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tight">Content Drafts</h1>
-        <div className="flex gap-2">
+    <div className="space-y-8">
+      <PageHeader 
+        title="คลังเนื้อหา" 
+        subtitle="จัดการ แก้ไข และอนุมัติโพสต์ที่ AI สร้างขึ้นก่อนส่งไปยังโซเชียลมีเดีย"
+      >
+        <div className="flex gap-3">
             {draftPosts.length > 0 && (
             <AlertDialog>
                 <AlertDialogTrigger>
-                <Button variant="outline">
-                    <CheckCheck className="w-4 h-4 mr-2" /> Approve All Drafts
+                <Button variant="outline" className="rounded-xl border-gray-200 shadow-sm font-bold">
+                    <CheckCheck className="w-4 h-4 mr-2" /> อนุมัติร่างทั้งหมด
                 </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-2xl">
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogTitle>ยืนยันการอนุมัติทั้งหมด?</AlertDialogTitle>
                     <AlertDialogDescription>
-                    This will approve all {draftPosts.length} draft posts currently in the list.
+                    ระบบจะทำการอนุมัติโพสต์ที่เป็น &quot;ร่าง&quot; ทั้งหมด {draftPosts.length} รายการ เพื่อเตรียมพร้อมสำหรับการเผยแพร่
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleApproveAll} className="bg-green-600 hover:bg-green-700">
-                    Yes, Approve All
+                    <AlertDialogCancel className="rounded-xl">ยกเลิก</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleApproveAll} className="bg-green-600 hover:bg-green-700 rounded-xl">
+                    ยืนยันการอนุมัติ
                     </AlertDialogAction>
                 </AlertDialogFooter>
                 </AlertDialogContent>
@@ -105,48 +114,50 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
             {approvedPosts.length > 0 && (
             <AlertDialog>
                 <AlertDialogTrigger>
-                <Button className="bg-blue-600 hover:bg-blue-700" disabled={publishing || !hasBufferKey}>
-                    <Send className="w-4 h-4 mr-2" /> {publishing ? 'Sending...' : 'Publish All Approved'}
+                <Button className="bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-100 rounded-xl font-bold" disabled={publishing || !hasBufferKey}>
+                    <Send className="w-4 h-4 mr-2" /> {publishing ? 'กำลังส่ง...' : 'เผยแพร่ที่อนุมัติแล้ว'}
                 </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-2xl">
                 <AlertDialogHeader>
-                    <AlertDialogTitle>Publish All Approved Posts?</AlertDialogTitle>
+                    <AlertDialogTitle>ยืนยันการส่งไปยัง Buffer?</AlertDialogTitle>
                     <AlertDialogDescription>
-                    This will send all {approvedPosts.length} approved posts to your Buffer queue.
+                    โพสต์ที่ได้รับ &quot;อนุมัติ&quot; ทั้งหมด {approvedPosts.length} รายการ จะถูกส่งเข้าไปในคิวของ Buffer ทันที
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handlePublishAll} className="bg-blue-600 hover:bg-blue-700">
-                    Yes, Publish All
+                    <AlertDialogCancel className="rounded-xl">ยกเลิก</AlertDialogCancel>
+                    <AlertDialogAction onClick={handlePublishAll} className="bg-blue-600 hover:bg-blue-700 rounded-xl">
+                    ยืนยันการส่ง
                     </AlertDialogAction>
                 </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
             )}
         </div>
-      </div>
+      </PageHeader>
 
       <Tabs defaultValue="all" className="w-full">
-        <TabsList>
-          <TabsTrigger value="all">All ({initialPosts.length})</TabsTrigger>
-          <TabsTrigger value="draft">Draft ({draftPosts.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approvedPosts.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected ({rejectedPosts.length})</TabsTrigger>
+        <TabsList className="bg-white border p-1 rounded-2xl h-14 shadow-sm mb-6">
+          <TabsTrigger value="all" className="rounded-xl px-8 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">ทั้งหมด ({initialPosts.length})</TabsTrigger>
+          <TabsTrigger value="draft" className="rounded-xl px-8 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">ร่าง ({draftPosts.length})</TabsTrigger>
+          <TabsTrigger value="approved" className="rounded-xl px-8 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">อนุมัติแล้ว ({approvedPosts.length})</TabsTrigger>
+          <TabsTrigger value="rejected" className="rounded-xl px-8 font-bold data-[state=active]:bg-blue-50 data-[state=active]:text-blue-700">ปฏิเสธ ({rejectedPosts.length})</TabsTrigger>
         </TabsList>
-        <TabsContent value="all">
-          <PostGrid posts={initialPosts} />
-        </TabsContent>
-        <TabsContent value="draft">
-          <PostGrid posts={draftPosts} />
-        </TabsContent>
-        <TabsContent value="approved">
-          <PostGrid posts={approvedPosts} />
-        </TabsContent>
-        <TabsContent value="rejected">
-          <PostGrid posts={rejectedPosts} />
-        </TabsContent>
+        <div className="mt-8">
+            <TabsContent value="all" className="m-0 focus-visible:outline-none">
+            <PostGrid posts={initialPosts} type="ทั้งหมด" />
+            </TabsContent>
+            <TabsContent value="draft" className="m-0 focus-visible:outline-none">
+            <PostGrid posts={draftPosts} type="ร่าง" />
+            </TabsContent>
+            <TabsContent value="approved" className="m-0 focus-visible:outline-none">
+            <PostGrid posts={approvedPosts} type="อนุมัติแล้ว" />
+            </TabsContent>
+            <TabsContent value="rejected" className="m-0 focus-visible:outline-none">
+            <PostGrid posts={rejectedPosts} type="ปฏิเสธ" />
+            </TabsContent>
+        </div>
       </Tabs>
 
       <PreviewModal 

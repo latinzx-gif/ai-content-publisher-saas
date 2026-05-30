@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { GenerateForm } from '@/components/generate/generate-form'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default async function GeneratePage() {
   const supabase = await createClient()
@@ -23,12 +24,14 @@ export default async function GeneratePage() {
     .single()
 
   return (
-    <div className="container mx-auto py-10 max-w-2xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">Generate Content</h1>
-        <p className="text-muted-foreground">Transform your topics into high-quality social media posts.</p>
+    <div className="space-y-6">
+      <PageHeader 
+        title="สร้างคอนเทนต์" 
+        subtitle="เปลี่ยนหัวข้อของคุณให้เป็นโพสต์โซเชียลมีเดียคุณภาพสูงด้วยพลังของ AI"
+      />
+      <div className="max-w-3xl mx-auto">
+        <GenerateForm initialBrand={brand} hasOpenAIKey={!!integration} />
       </div>
-      <GenerateForm initialBrand={brand} hasOpenAIKey={!!integration} />
     </div>
   )
 }

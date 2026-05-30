@@ -16,7 +16,7 @@ export default async function DraftsPage() {
     .single()
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="space-y-6 pb-20">
       <DraftsList initialPosts={posts} hasBufferKey={!!bufferInt} />
     </div>
   )

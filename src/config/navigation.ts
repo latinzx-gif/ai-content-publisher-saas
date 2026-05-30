@@ -1,4 +1,4 @@
-import { PenTool, FileText, User, Settings, type LucideIcon } from 'lucide-react';
+import { Sparkles, Library, Fingerprint, Settings, type LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   title: string;
@@ -9,22 +9,22 @@ export interface NavItem {
 export const navigationConfig = {
   sidebarNav: [
     {
-      title: 'Generate',
+      title: 'สร้างคอนเทนต์',
       href: '/generate',
-      icon: PenTool,
+      icon: Sparkles,
     },
     {
-      title: 'Drafts',
+      title: 'คลังเนื้อหา',
       href: '/drafts',
-      icon: FileText,
+      icon: Library,
     },
     {
-      title: 'Brand Profile',
+      title: 'ตัวตนแบรนด์',
       href: '/profile',
-      icon: User,
+      icon: Fingerprint,
     },
     {
-      title: 'Settings',
+      title: 'การตั้งค่า',
       href: '/settings',
       icon: Settings,
     },
