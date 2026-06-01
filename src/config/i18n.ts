@@ -210,7 +210,32 @@ export const translations = {
 
     // Alerts and Errors
     'error.apiMissing': 'กุญแจ API หายไป! เชื่อมต่อ OpenAI ในหน้าการเชื่อมต่อก่อนใช้ฟังก์ชัน AI',
-    'error.validation': 'ข้อมูลป้อนเข้าไม่ถูกต้องกรุณาตรวจสอบ'
+    'error.validation': 'ข้อมูลป้อนเข้าไม่ถูกต้องกรุณาตรวจสอบ',
+
+    // Asset Composer Page
+    'composer.title': 'เครื่องมือสร้างคอลลาจภาพ',
+    'composer.subtitle': 'ปรับแต่งการแสดงผลภาพ จำนวนรูปภาพ เลย์เอาต์ และการจัดวางข้อความแบบสองภาษา',
+    'composer.goal.label': '1. เป้าหมายของภาพคอนเทนต์ (Asset Goal)',
+    'composer.goal.custom': 'ระบุเป้าหมายเอง',
+    'composer.goal.placeholder': 'ระบุเป้าหมายของคอนเทนต์...',
+    'composer.mode.label': '2. รูปแบบการแสดงภาพ (Image Mode)',
+    'composer.count.label': '3. จำนวนรูปภาพ (Image Count)',
+    'composer.layout.label': '4. เลย์เอาต์การจัดวาง (Layout Presets)',
+    'composer.ratio.label': '5. สัดส่วนภาพ (Aspect Ratio)',
+    'composer.lang.label': '6. ภาษาข้อความในภาพ (Text Language in Image)',
+    'composer.density.label': '7. ความหนาแน่นข้อความ (Text Density)',
+    'composer.preset.label': '8. สไตล์การจัดวางสีและฟอนต์ (Visual Style Preset)',
+    'composer.ref.label': '9. ไฟล์อ้างอิงแนบประกอบ (ถ้ามี)',
+    'composer.ref.placeholder': 'ลากและวางไฟล์ตรงนี้ หรือคลิกเพื่ออัปโหลด',
+    'composer.ref.btn': '+ เพิ่มรูปภาพอ้างอิง',
+    'composer.action.generate': 'สร้างผลงานภาพ',
+    'composer.preview.title': 'พรีวิวตัวอย่าง — เลย์เอาต์ {preset} ({count} รูปภาพ)',
+    'composer.summary.title': 'สรุปข้อมูลการตั้งค่า',
+    'composer.rules.title': 'กฎการจัดวางข้อความ',
+    'composer.tips.title': 'คำแนะนำและเคล็ดลับ',
+    'composer.tips.desc': 'ใช้การจัดเรียงความหนาแน่นข้อความที่ชัดเจนและลดความซับซ้อนของรูปเพื่อการแสดงผลที่มีประสิทธิภาพ',
+    'composer.tips.link': 'เรียนรู้เพิ่มเติม →',
+    'composer.success': 'สร้างภาพกราฟิกเรียบร้อยแล้ว!'
   },
   en: {
     // Navigation
@@ -421,6 +446,31 @@ export const translations = {
 
     // Alerts and Errors
     'error.apiMissing': 'API key missing. Connect credentials in Settings to enable generation.',
-    'error.validation': 'Invalid input parameters. Please check values.'
+    'error.validation': 'Invalid input parameters. Please check values.',
+
+    // Asset Composer Page
+    'composer.title': 'Asset Composer',
+    'composer.subtitle': 'Configure visual output, image count, collage layout, and bilingual text placement.',
+    'composer.goal.label': '1. Asset Goal',
+    'composer.goal.custom': 'Other / Custom Goal',
+    'composer.goal.placeholder': 'Enter custom goal...',
+    'composer.mode.label': '2. Image Mode',
+    'composer.count.label': '3. Image Count',
+    'composer.layout.label': '4. Layout Presets',
+    'composer.ratio.label': '5. Aspect Ratio',
+    'composer.lang.label': '6. Text Language in Image',
+    'composer.density.label': '7. Text Density',
+    'composer.preset.label': '8. Visual Style Preset',
+    'composer.ref.label': '9. Reference Assets (optional)',
+    'composer.ref.placeholder': 'Drag & drop files here or click to upload',
+    'composer.ref.btn': '+ Add Asset',
+    'composer.action.generate': 'Generate Visuals',
+    'composer.preview.title': 'Preview — {preset} Layout ({count} Images)',
+    'composer.summary.title': 'Output Summary',
+    'composer.rules.title': 'Media Rules',
+    'composer.tips.title': 'Tips',
+    'composer.tips.desc': 'Use a clear visual hierarchy and minimal text for stronger performance.',
+    'composer.tips.link': 'Learn more →',
+    'composer.success': 'Visuals generated successfully!'
   }
 };
