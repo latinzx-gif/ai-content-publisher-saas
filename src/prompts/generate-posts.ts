@@ -11,8 +11,13 @@ export function getGeneratePostsPrompt(
   topic: string,
   tone: string,
   personality: string,
-  count: number
+  count: number,
+  knowledgeContext?: string
 ) {
+  const contextSection = knowledgeContext 
+    ? `\nAdditional Knowledge/Context (Use this information to inform the content): \n${knowledgeContext}\n` 
+    : '';
+
   return `You are an expert social media content creator. Your task is to generate ${count} social media posts in Thai language for the following brand and topic.
 
 Brand Context:
@@ -21,7 +26,7 @@ Brand Context:
 - Target Audience: ${brand.target_audience}
 - Default Tone: ${brand.tone}
 - Default Personality: ${brand.personality}
-
+${contextSection}
 Current Task:
 - Topic: ${topic}
 - Requested Tone: ${tone}

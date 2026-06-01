@@ -1,15 +1,16 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
-import { LogOut, User as UserIcon } from 'lucide-react';
 import { navigationConfig } from '@/config/navigation';
+import { useLanguage } from '@/components/providers/language-provider';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
 
 export function Navbar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
+  const { t } = useLanguage();
 
   // Find active nav item across sections
   let currentNav;
@@ -26,41 +27,33 @@ export function Navbar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
     router.push('/auth/login');
   }
 
-  const pageTitle = currentNav?.title || 'Dashboard';
-  const pageSubtitle = currentNav?.subtitle || 'Welcome back. Here is your content operation center.';
+  const pageTitle = currentNav ? currentNav.title : 'Dashboard';
 
   return (
-    <header className="h-14 border-b border-slate-100 bg-[#FAFBFB]/85 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-8 select-none">
-      <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-slate-400 font-semibold">Workspace</span>
-        <span className="text-slate-300 font-normal">/</span>
-        <span className="text-slate-800 font-bold">{pageTitle}</span>
-        <span className="hidden lg:inline-block text-slate-300 font-normal mx-2">|</span>
-        <span className="hidden lg:inline-block text-[10px] text-slate-400 font-medium">{pageSubtitle}</span>
+    <header className="h-14 border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/85 dark:bg-slate-950/85 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-8 select-none">
+      <div className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-[#7C756C]">
+        <span className="hover:text-[#1E1D1B] transition-colors">Workspace</span>
+        <span>/</span>
+        <span className="hover:text-[#1E1D1B] transition-colors">Content Operations</span>
+        <span>/</span>
+        <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-semibold">{pageTitle}</span>
       </div>
       
-      <div className="flex items-center gap-4">
-        {isSingleOwner ? (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200/60 gap-1.5">
-            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-            Owner Mode
-          </span>
-        ) : (
-          <>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-indigo-50 text-indigo-650 border border-indigo-100 shadow-sm">
-              <UserIcon className="h-3.5 w-3.5" />
-            </div>
-            <Button 
-              variant="outline" 
-              size="xs" 
-              onClick={handleSignOut}
-              className="rounded-lg gap-1.5 text-slate-600 border-slate-200 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-semibold text-xs h-7 px-2.5"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Button>
-          </>
-        )}
+      <div className="flex items-center gap-6">
+        {/* Language switcher segmented control */}
+        <LanguageSwitcher />
+
+        <div className="flex items-center gap-4">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1E1D1B] dark:bg-[#EBE7E0] text-white dark:text-[#1E1D1B] font-bold text-[10px] tracking-wider select-none shadow-sm">
+            OS
+          </div>
+          <button 
+            onClick={handleSignOut}
+            className="text-[10px] tracking-widest text-[#7C756C] hover:text-[#1E1D1B] dark:hover:text-[#EBE7E0] font-bold transition-colors uppercase cursor-pointer"
+          >
+            Sign Out
+          </button>
+        </div>
       </div>
     </header>
   );

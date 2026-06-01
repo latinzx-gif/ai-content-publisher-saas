@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { DESIGN_SYSTEM } from "@/config/design-system"
 
 interface PageHeaderProps {
   title: string
@@ -10,12 +11,12 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle, children, className }: PageHeaderProps) {
   return (
     <div className={cn("flex items-center justify-between gap-4 pb-8", className)}>
-      <div className="grid gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl">
+      <div className="grid gap-1.5">
+        <h1 className={cn(DESIGN_SYSTEM.typography.heading, "text-2xl md:text-3xl")}>
           {title}
         </h1>
         {subtitle && (
-          <p className="text-lg text-muted-foreground">
+          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
             {subtitle}
           </p>
         )}
@@ -28,3 +29,4 @@ export function PageHeader({ title, subtitle, children, className }: PageHeaderP
     </div>
   )
 }
+

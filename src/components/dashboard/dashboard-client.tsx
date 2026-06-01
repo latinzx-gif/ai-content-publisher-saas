@@ -3,26 +3,22 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  Send,
-  Fingerprint,
-  Link2,
-  Plus,
-  Sparkles,
-  Cpu,
-  Layers,
-  Check,
-  X,
-  FileEdit,
-  Volume2,
-  Users
+  Plus, 
+  Settings, 
+  Check, 
+  MoreHorizontal,
+  ChevronRight,
+  Shield,
+  Heart,
+  Globe,
+  MessageSquare,
+  ThumbsUp,
+  Share2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { generatePosts } from '@/actions/generate';
-import { approvePost, rejectPost } from '@/actions/drafts';
-import { sendPostToBuffer } from '@/actions/publish';
-import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Post } from '@/types';
+import { useLanguage } from '@/components/providers/language-provider';
 
 interface DashboardClientProps {
   userEmail: string;
@@ -48,465 +44,365 @@ interface DashboardClientProps {
 
 export function DashboardClient({ 
   userEmail, 
-  stats: initialStats, 
+  stats, 
   brandData,
-  posts: initialPosts
+  posts
 }: DashboardClientProps) {
-  // Live state for interactive updates
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
-  const [stats, setStats] = useState(initialStats);
+  const { currentLanguage } = useLanguage();
   
-  // Scratchpad state
-  const [scratchpadText, setScratchpadText] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generationStage, setGenerationStage] = useState(0);
+  // Smart Input Pattern State
+  const [audiencePreset, setAudiencePreset] = useState('General Business');
+  const [isPreset, setIsPreset] = useState(true);
+  const [customAudience, setCustomAudience] = useState('');
 
-  const stages = [
-    { label: 'Ingesting Context', desc: 'Analyzing brand profile parameters and scratchpad prompt' },
-    { label: 'Synthesizing Drafts', desc: 'Drafting multi-format social posts via GPT-4o context engines' },
-    { label: 'Structuring Deliverables', desc: 'Formatting hooks, captions, and hashtags' },
-    { label: 'Committed to OS Pipeline', desc: 'Committing post records to active workspace database' }
+  // Sample static upcoming agenda dates (from Calendar)
+  const upcomingQueue = [
+    { date: 'MAY 20', title: 'Tax Insight: Q2 Planning' },
+    { date: 'MAY 22', title: 'Labor Law Update' },
+    { date: 'MAY 23', title: 'Compliance Checklist' }
   ];
 
-  // Inline Actions
-  async function handleApprove(postId: string) {
-    // Optimistic UI update
-    const previousPosts = [...posts];
-    setPosts(posts.map(p => p.id === postId ? { ...p, status: 'approved' } : p));
-    setStats(prev => ({
-      ...prev,
-      draft: Math.max(0, prev.draft - 1),
-      approved: prev.approved + 1
-    }));
-    
-    try {
-      await approvePost(postId);
-      toast.success('Post approved in pipeline.');
-    } catch {
-      setPosts(previousPosts);
-      setStats(initialStats);
-      toast.error('Failed to approve post.');
+  // Rich mock campaigns data with preview images for SaaS presentation
+  const mockCampaigns = [
+    {
+      id: 'mock-1',
+      title: 'Q2 Tax Advisory Series',
+      topic: 'ชุดความรู้ภาษีสำหรับธุรกิจ Q2',
+      languages: ['TH', 'EN'],
+      statusLabel: 'In Review',
+      badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+      milestone: 'Legal Review',
+      owner: 'NK',
+      image: '/media_1.jpg'
+    },
+    {
+      id: 'mock-2',
+      title: 'Labor Law Updates',
+      topic: 'อัปเดตใหม่กฎหมายแรงงาน 2025',
+      languages: ['TH', 'EN'],
+      statusLabel: 'Drafting',
+      badgeColor: 'bg-blue-100 text-blue-850 dark:bg-blue-900/30 dark:text-blue-300',
+      milestone: 'Content Draft',
+      owner: 'PP',
+      image: '/media_2.jpg'
+    },
+    {
+      id: 'mock-3',
+      title: 'PDPA Compliance Hub',
+      topic: 'แนวปฏิบัติการคุ้มครองข้อมูลส่วนบุคคล',
+      languages: ['TH', 'EN'],
+      statusLabel: 'Scheduled',
+      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+      milestone: 'Publish Queue',
+      owner: 'OS',
+      image: '/media_3.jpg'
+    },
+    {
+      id: 'mock-4',
+      title: 'Corporate Restructuring FAQ',
+      topic: 'คู่มือการควบรวมและปรับโครงสร้างธุรกิจ',
+      languages: ['TH', 'EN'],
+      statusLabel: 'Published',
+      badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
+      milestone: 'Done',
+      owner: 'JS',
+      image: '/media_4.jpg'
     }
-  }
-
-  async function handleReject(postId: string) {
-    const previousPosts = [...posts];
-    setPosts(posts.map(p => p.id === postId ? { ...p, status: 'rejected' } : p));
-    setStats(prev => ({
-      ...prev,
-      draft: Math.max(0, prev.draft - 1)
-    }));
-
-    try {
-      await rejectPost(postId);
-      toast.success('Post rejected from active list.');
-    } catch {
-      setPosts(previousPosts);
-      setStats(initialStats);
-      toast.error('Failed to reject post.');
-    }
-  }
-
-  async function handlePublish(postId: string) {
-    if (!stats.hasBuffer) {
-      toast.error('Connect your Buffer account in settings first.');
-      return;
-    }
-
-    toast.loading('Dispatching post to Buffer queue...', { id: postId });
-    try {
-      const result = await sendPostToBuffer(postId);
-      setPosts(posts.map(p => p.id === postId ? { ...p, status: 'published' } : p));
-      setStats(prev => ({
-        ...prev,
-        approved: Math.max(0, prev.approved - 1),
-        published: prev.published + 1
-      }));
-      toast.success('Dispatched to Buffer queue!', { id: postId });
-      if (result.externalUrl) {
-        window.open(result.externalUrl, '_blank');
-      }
-    } catch {
-      toast.error('Failed to dispatch to Buffer.', { id: postId });
-    }
-  }
-
-  // Handle scratchpad synthesis
-  async function handleSynthesize() {
-    if (!scratchpadText.trim()) {
-      toast.error('Please type a content idea first.');
-      return;
-    }
-    if (!stats.hasOpenAI) {
-      toast.error('Please link your OpenAI API key in settings.');
-      return;
-    }
-    if (!stats.hasBrand) {
-      toast.error('Please configure your Brand Profile first.');
-      return;
-    }
-
-    setIsGenerating(true);
-    setGenerationStage(0);
-
-    const intervalId = setInterval(() => {
-      setGenerationStage(prev => (prev < 3 ? prev + 1 : prev));
-    }, 2000);
-
-    try {
-      await generatePosts({
-        topic: scratchpadText,
-        tone: brandData?.tone || 'Professional',
-        personality: brandData?.personality || 'น่าเชื่อถือ',
-        postCount: 5
-      });
-      
-      toast.success(`Success! Generated 5 fresh drafts.`);
-      setScratchpadText('');
-      
-      // Reload posts from DB or simple reload window since server actions update next cache
-      window.location.reload();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error generating content';
-      toast.error(message);
-    } finally {
-      clearInterval(intervalId);
-      setIsGenerating(false);
-    }
-  }
-
-  // Columns for Linear-style Board
-  const draftPosts = posts.filter(p => p.status === 'draft');
-  const approvedPosts = posts.filter(p => p.status === 'approved');
-  const publishedPosts = posts.filter(p => p.status === 'published' || p.status === 'failed');
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 md:px-8 md:py-8 space-y-8 pb-16 animate-in fade-in duration-500">
-      
-      {/* 1. Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
-        <div>
-          <span className="text-[9px] font-black uppercase text-indigo-650 dark:text-indigo-400 tracking-[0.25em]">Content OS</span>
-          <h1 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-150 tracking-tight font-heading">
-            Workspace Command Deck
-          </h1>
-          <p className="text-slate-450 dark:text-slate-500 text-xs mt-1">
-            Operating dashboard for <span className="font-bold text-slate-700 dark:text-slate-300">{userEmail}</span>.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/generate" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[10px] font-bold h-8 border-slate-200 bg-white hover:bg-slate-50")}>
-            <Plus className="w-3.5 h-3.5 mr-1" />
-            AI Composer
-          </Link>
-          <Link href="/settings" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[10px] font-bold h-8 border-slate-200 bg-white hover:bg-slate-50")}>
-            <Link2 className="w-3.5 h-3.5 mr-1" />
-            Channels
-          </Link>
-        </div>
-      </div>
-
-      {/* 2. Notion-Style Scratchpad & Brand GUID HUD */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    <div className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
+      <div className="w-full space-y-6">
         
-        {/* Notion-style interactive scratchpad */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-50 dark:bg-indigo-950 text-indigo-650 dark:text-indigo-400">
-                <FileEdit className="w-3 h-3" />
-              </span>
-              <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Notion-Style Scratchpad</h3>
-            </div>
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-              Live Synthesis Deck
-            </span>
+        {/* Header Section */}
+        <div className="flex justify-between items-start">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
+              Content Operations
+            </h1>
+            <p className="text-xs text-[#7C756C] dark:text-slate-400">
+              Oversee bilingual content, review flow, and publishing from one workspace.
+            </p>
           </div>
+        </div>
 
-          {isGenerating ? (
-            <div className="py-8 text-center space-y-6">
-              <div className="relative inline-block">
-                <div className="h-10 w-10 animate-spin rounded-full border-3 border-slate-100 dark:border-slate-800 border-t-indigo-600" />
-                <Sparkles className="w-4.5 h-4.5 text-indigo-600 animate-pulse absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-              </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">OS AI Composer active...</h4>
-                <p className="text-slate-400 dark:text-slate-500 text-xs max-w-sm mx-auto">
-                  Transforming scratchpad idea into multiple channel distribution drafts.
-                </p>
-              </div>
+        {/* Timeline Milestones Progression */}
+        <div className="grid grid-cols-5 border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+          {[
+            { label: 'Briefs', count: 7, sub: 'Open' },
+            { label: 'Drafts', count: 12, sub: 'In progress' },
+            { label: 'Review', count: stats.draft || 5, sub: 'In review' },
+            { label: 'Scheduled', count: stats.approved || 8, sub: 'Upcoming' },
+            { label: 'Published', count: stats.published || 46, sub: 'This month' }
+          ].map((item, idx) => (
+            <div 
+              key={idx} 
+              className={cn(
+                "p-5 text-center relative flex flex-col items-center justify-center space-y-1.5",
+                idx !== 4 && "border-r border-[#E6DFD5] dark:border-slate-800"
+              )}
+            >
+              <span className="text-[10px] uppercase tracking-wider text-[#7C756C] dark:text-slate-400 font-bold">{item.label}</span>
+              <span className="text-2xl font-serif font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">{item.count}</span>
+              <span className="text-[10px] text-[#7C756C] dark:text-slate-500 font-medium">{item.sub}</span>
+              
+              {idx < 4 && (
+                <div className="absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-slate-900 border-t border-r border-[#E6DFD5] dark:border-slate-800 w-5 h-5 rotate-45 hidden md:block" />
+              )}
+            </div>
+          ))}
+        </div>
 
-              {/* Progress logger terminal widget */}
-              <div className="max-w-md mx-auto text-left bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-[10px] space-y-2 shadow-inner">
-                {stages.map((stage, idx) => {
-                  const isCompleted = generationStage > idx;
-                  const isActive = generationStage === idx;
-                  return (
-                    <div key={idx} className={cn("flex items-start gap-2 transition-opacity", !isCompleted && !isActive ? "opacity-30" : "opacity-100")}>
-                      <span className={cn("font-bold", isCompleted ? "text-emerald-500" : isActive ? "text-indigo-400" : "text-slate-700")}>
-                        {isCompleted ? '✓' : isActive ? '▶' : '•'}
-                      </span>
-                      <div>
-                        <span className={cn("font-bold", isActive ? "text-indigo-400" : "text-slate-350")}>{stage.label}</span>
-                        {isActive && <span className="block text-slate-500 mt-0.5">{stage.desc}</span>}
-                      </div>
-                    </div>
-                  );
-                })}
+        {/* Dashboard Columns (2/3 and 1/3 layout) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          
+          {/* Main Console (2/3 Column) */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Campaign Snapshot */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+              <div className="p-5 border-b border-[#E6DFD5] dark:border-slate-800 flex justify-between items-center">
+                <h3 className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
+                  Campaign Snapshot
+                </h3>
+                <Link href="/drafts" className="text-[10px] font-bold text-[#967F5C] hover:underline flex items-center gap-1">
+                  View all <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/50 dark:bg-slate-900 text-[#7C756C] font-bold">
+                      <th className="p-4 font-semibold uppercase tracking-wider">Campaign</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider text-center">Language</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider">Status</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider">Next Milestone</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider text-center">Owner</th>
+                      <th className="p-4 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E6DFD5]/50 dark:divide-slate-800">
+                    {mockCampaigns.map((campaign) => (
+                      <tr key={campaign.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="p-4 font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-12 h-10 rounded-lg bg-cover bg-center border border-[#E6DFD5] dark:border-slate-800 shrink-0" 
+                              style={{ backgroundImage: `url(${campaign.image})` }}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-bold line-clamp-1 text-xs">{campaign.title}</p>
+                              <p className="text-[10px] text-[#7C756C] mt-0.5 line-clamp-1">{campaign.topic}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <div className="flex justify-center gap-1 text-[9px] font-bold">
+                            <span className="px-1.5 py-0.5 bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 rounded text-[#7C756C]">TH</span>
+                            <span className="px-1.5 py-0.5 bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 rounded text-[#7C756C]">EN</span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1.5", campaign.badgeColor)}>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                            {campaign.statusLabel}
+                          </span>
+                        </td>
+                        <td className="p-4 font-semibold text-[#7C756C]">{campaign.milestone}</td>
+                        <td className="p-4 text-center">
+                          <div className="w-6 h-6 rounded-full bg-[#EBE6DF] dark:bg-slate-800 text-[#1E1D1B] dark:text-[#EBE7E0] flex items-center justify-center font-bold text-[10px] mx-auto">
+                            {campaign.owner}
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <MoreHorizontal className="w-4 h-4 text-[#7C756C] cursor-pointer hover:text-[#1E1D1B]" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <textarea
-                value={scratchpadText}
-                onChange={(e) => setScratchpadText(e.target.value)}
-                placeholder="💡 Jot down a content concept, brief brief, or direct legal tip to synthesis (e.g. '3 tips on Labor Law severance calculations' or 'PDPA consent updates for service business website')..."
-                className="w-full min-h-[120px] bg-transparent text-sm text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none resize-none font-medium leading-relaxed"
-              />
-              
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                <span className="text-[10px] text-slate-400 font-medium">
-                  Press compile to generate 5 social drafts formatted automatically.
-                </span>
+
+            {/* Smart Input Pattern Section */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-6 space-y-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left">
+              <div className="flex items-start gap-2.5">
+                <div className="w-7 h-7 bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 rounded-lg flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-[#967F5C]" />
+                </div>
+                <div>
+                  <h4 className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
+                    Smart Input Pattern
+                  </h4>
+                  <p className="text-[10px] text-[#7C756C] dark:text-slate-400 mt-0.5">
+                    Every selectable field follows the system rule: Preset, Other, Custom.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-end">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">Example: Audience</span>
+                  <select 
+                    value={audiencePreset}
+                    onChange={(e) => setAudiencePreset(e.target.value)}
+                    disabled={!isPreset}
+                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none"
+                  >
+                    <option>General Business</option>
+                    <option>Legal Professionals</option>
+                    <option>SME Owners</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2 h-10 flex items-center gap-2 border border-[#E6DFD5] dark:border-slate-700 rounded-lg px-3 bg-[#FAF8F5] dark:bg-slate-900">
+                  <input 
+                    type="checkbox" 
+                    id="customToggle" 
+                    checked={!isPreset} 
+                    onChange={(e) => setIsPreset(!e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-[#E6DFD5]"
+                  />
+                  <label htmlFor="customToggle" className="text-xs font-bold text-[#7C756C] uppercase tracking-wider cursor-pointer">
+                    Other / Custom
+                  </label>
+                </div>
+
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">Enter Custom Audience...</span>
+                  <input 
+                    type="text" 
+                    placeholder="Describe custom target..."
+                    value={customAudience}
+                    onChange={(e) => setCustomAudience(e.target.value)}
+                    disabled={isPreset}
+                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
                 <Button 
-                  onClick={handleSynthesize}
-                  className="bg-indigo-600 hover:bg-indigo-755 text-white font-black text-xs rounded-xl h-9 px-4 gap-1.5 active:scale-[0.98] transition-all"
-                  disabled={!scratchpadText.trim()}
+                  onClick={() => {}}
+                  className="bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Synthesize Drafts
+                  Apply Pattern <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Brand Guideline HUD sidebar */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl p-5 space-y-4 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-50 dark:bg-purple-950 text-purple-650 dark:text-purple-400">
-              <Fingerprint className="w-3 h-3" />
-            </span>
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Brand Context HUD</h3>
           </div>
 
-          {brandData ? (
-            <div className="space-y-3.5 text-xs text-left">
-              <div>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Brand & Business</span>
-                <p className="font-bold text-slate-850 dark:text-slate-250 truncate">{brandData.name} • <span className="font-medium text-slate-500">{brandData.business_type}</span></p>
-              </div>
-              <div>
-                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Audience Persona</span>
-                <p className="font-medium text-slate-650 dark:text-slate-400 line-clamp-1 leading-normal">
-                  <Users className="w-3 h-3 inline mr-1 text-slate-400" />
-                  {brandData.target_audience}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-50 dark:border-slate-800">
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Active Tone</span>
-                  <p className="font-bold text-indigo-650 dark:text-indigo-400 flex items-center gap-1">
-                    <Volume2 className="w-3 h-3" />
-                    {brandData.tone}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Voice Style</span>
-                  <p className="font-bold text-indigo-650 dark:text-indigo-400 flex items-center gap-1">
-                    <Cpu className="w-3 h-3" />
-                    {brandData.personality}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-xs text-slate-400 font-medium mb-3">No active brand profile linked.</p>
-              <Link href="/profile" className={cn(buttonVariants({ size: 'xs', variant: 'outline' }), "rounded-lg text-[9px] font-black uppercase tracking-widest text-indigo-600")}>
-                Configure HUD Guidelines
-              </Link>
-            </div>
-          )}
-        </div>
-
-      </div>
-
-      {/* 3. Linear-Style Kanban Content Pipeline */}
-      <div className="space-y-4 text-left">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-50 dark:bg-emerald-950 text-emerald-650 dark:text-emerald-400">
-              <Layers className="w-3 h-3" />
-            </span>
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Active Workflow Board</h3>
-          </div>
-          <span className="text-[10px] text-slate-400 font-medium">
-            Drag posts status or approve inline
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-          
-          {/* Column 1: Drafts needing review */}
-          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
-            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
-              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-amber-450 animate-pulse" />
-                In Review Drafts
-              </span>
-              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
-                {draftPosts.length}
-              </span>
-            </div>
+          {/* Right Intelligence Rail (1/3 Column) */}
+          <div className="space-y-8 text-left">
             
-            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-              {draftPosts.map(post => {
-                const meta = post.metadata || {};
-                return (
-                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3.5 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-sm space-y-3 hover:border-slate-300 dark:hover:border-slate-750 transition-all group">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[9px] bg-indigo-50 dark:bg-indigo-950 text-indigo-650 dark:text-indigo-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">
-                        {meta.platform || 'General'}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </span>
+            {/* Brand Context */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Brand Context</span>
+              <div className="flex items-center gap-3.5 pt-1">
+                <div className="w-10 h-10 rounded-full bg-[#F3EFEA] dark:bg-slate-800 flex items-center justify-center font-serif text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
+                  OS
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
+                    {brandData?.name || "Your Workspace Brand"}
+                  </h4>
+                  <p className="text-[10px] text-[#7C756C] mt-0.5 truncate uppercase tracking-wider">
+                    {brandData?.personality || "Legal. Trusted. Precise."}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* System Rules */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">System Rules</span>
+              </div>
+              
+              <div className="space-y-3 pt-1 text-xs">
+                {[
+                  { label: 'Bilingual output enabled', sub: 'TH / EN' },
+                  { label: 'Hashtag support enabled', sub: 'On' },
+                  { label: 'Approved sources only', sub: 'Enforced' }
+                ].map((rule, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1">
+                    <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-medium">{rule.label}</span>
+                    <span className="text-[#7C756C] font-bold text-[10px] uppercase tracking-wider">{rule.sub}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
+                <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">
+                  Manage rules →
+                </Link>
+              </div>
+            </div>
+
+            {/* Channel Health */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Channel Health</span>
+                <span className="text-[10px] font-bold text-[#967F5C] hover:underline">View</span>
+              </div>
+              
+              <div className="space-y-4 pt-1">
+                {[
+                  { name: 'Website', percentage: 88 },
+                  { name: 'LinkedIn', percentage: 76 },
+                  { name: 'YouTube', percentage: 62 }
+                ].map((chan, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">
+                      <span>{chan.name}</span>
+                      <span>{chan.percentage}%</span>
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug line-clamp-1">
-                        {meta.title || post.content.split('\n')[0] || 'Untitled Draft'}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
-                        {meta.caption || post.content}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-end gap-1.5 pt-2.5 border-t border-slate-50 dark:border-slate-800/80">
-                      <button 
-                        onClick={() => handleReject(post.id)}
-                        className="p-1.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-lg hover:bg-rose-100 transition-colors"
-                        title="Reject Draft"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => handleApprove(post.id)}
-                        className="p-1.5 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400 rounded-lg hover:bg-emerald-100 transition-colors flex items-center gap-1 text-[10px] font-bold px-2.5"
-                        title="Approve Draft"
-                      >
-                        <Check className="w-3.5 h-3.5" /> Approve
-                      </button>
+                    <div className="w-full bg-[#F3EFEA] dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                      <div className="bg-[#1E1D1B] dark:bg-[#EBE7E0] h-full" style={{ width: `${chan.percentage}%` }} />
                     </div>
                   </div>
-                );
-              })}
-              {draftPosts.length === 0 && (
-                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                  No pending drafts.
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Column 2: Approved / Scheduled queue */}
-          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
-            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
-              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                Approved & Ready
-              </span>
-              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
-                {approvedPosts.length}
-              </span>
+                ))}
+              </div>
+              
+              <p className="text-[10px] text-[#7C756C] italic pt-1">
+                Health score is updated daily.
+              </p>
             </div>
 
-            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-              {approvedPosts.map(post => {
-                const meta = post.metadata || {};
-                return (
-                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3.5 border border-slate-200/60 dark:border-slate-800 rounded-xl shadow-sm space-y-3 hover:border-slate-300 dark:hover:border-slate-750 transition-all group">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[9px] bg-emerald-50 dark:bg-emerald-950 text-emerald-650 dark:text-emerald-400 font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">
-                        {meta.platform || 'General'}
-                      </span>
-                      <span className="text-[9px] text-slate-400 font-medium">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </span>
+            {/* Upcoming Queue */}
+            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+              <div className="flex justify-between items-center">
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Upcoming Queue</span>
+                <Link href="/calendar" className="text-[10px] font-bold text-[#967F5C] hover:underline">View</Link>
+              </div>
+
+              <div className="space-y-3 pt-1">
+                {upcomingQueue.map((item, idx) => (
+                  <div key={idx} className="flex gap-4 items-center">
+                    <div className="text-[10px] font-bold text-[#7C756C] w-12 tracking-wide shrink-0">
+                      {item.date}
                     </div>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-snug line-clamp-1">
-                        {meta.title || post.content.split('\n')[0] || 'Untitled Draft'}
-                      </h4>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-3">
-                        {meta.caption || post.content}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-end gap-1.5 pt-2.5 border-t border-slate-50 dark:border-slate-800/80">
-                      <button 
-                        onClick={() => handlePublish(post.id)}
-                        className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-1.5 text-[10px] font-black shadow-sm"
-                        title="Send to Buffer"
-                      >
-                        <Send className="w-3 h-3" /> Dispatch to Buffer
-                      </button>
+                    <div className="text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
+                      {item.title}
                     </div>
                   </div>
-                );
-              })}
-              {approvedPosts.length === 0 && (
-                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                  No approved drafts ready.
-                </div>
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
 
-          {/* Column 3: Published and activity timeline */}
-          <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-4 space-y-3 min-h-[400px]">
-            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800/60 mb-2">
-              <span className="text-xs font-bold text-slate-750 dark:text-slate-250 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-400" />
-                Pushed Live / Log
-              </span>
-              <span className="text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold px-2 py-0.5 rounded-full">
-                {publishedPosts.length}
-              </span>
+              <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
+                <Link href="/calendar" className="text-[10px] font-bold text-[#967F5C] hover:underline">
+                  See full calendar →
+                </Link>
+              </div>
             </div>
 
-            <div className="space-y-2.5 max-h-[500px] overflow-y-auto pr-1">
-              {publishedPosts.map(post => {
-                const meta = post.metadata || {};
-                return (
-                  <div key={post.id} className="bg-white dark:bg-slate-900 p-3 border border-slate-200/50 dark:border-slate-805 rounded-xl shadow-xs space-y-2 opacity-80 hover:opacity-100 transition-opacity">
-                    <div className="flex justify-between items-center text-[9px]">
-                      <span className={cn(
-                        "font-bold px-1.5 py-0.5 rounded uppercase tracking-wide",
-                        post.status === 'published' ? "bg-slate-100 text-slate-600" : "bg-red-50 text-red-650"
-                      )}>
-                        {post.status}
-                      </span>
-                      <span className="text-slate-400 font-medium">
-                        {new Date(post.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h4 className="text-[11px] font-bold text-slate-700 dark:text-slate-350 truncate">
-                      {meta.title || post.content.split('\n')[0] || 'Untitled Post'}
-                    </h4>
-                  </div>
-                );
-              })}
-
-              {publishedPosts.length === 0 && (
-                <div className="py-12 text-center text-slate-400 dark:text-slate-600 text-xs font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                  No published history.
-                </div>
-              )}
-            </div>
           </div>
 
         </div>
+
       </div>
-      
     </div>
   );
 }

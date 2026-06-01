@@ -1,0 +1,32 @@
+[    2516ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_react-dom_a9203108._.js:14537
+[   74427ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[   74931ms] [LOG] [Fast Refresh] done in 604ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  262318ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  265515ms] [LOG] [Fast Refresh] done in 2810ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  330718ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  332370ms] [LOG] [Fast Refresh] done in 1685ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  332912ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  333008ms] [LOG] [Fast Refresh] done in 196ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  333132ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  333635ms] [LOG] [Fast Refresh] done in 605ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  334436ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  334584ms] [LOG] [Fast Refresh] done in 248ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  335294ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  335360ms] [LOG] [Fast Refresh] done in 166ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  335462ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  335468ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  336250ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  336278ms] [LOG] [Fast Refresh] done in 129ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  337896ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  337919ms] [LOG] [Fast Refresh] done in 124ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  338226ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/?_rsc=toKDdR6jcBRtKA6o:0
+[  338569ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  338728ms] [LOG] [Fast Refresh] done in 260ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  339228ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  339377ms] [LOG] [Fast Refresh] done in 251ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  340448ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  340574ms] [LOG] [Fast Refresh] done in 228ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  341483ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  341485ms] [LOG] [Fast Refresh] done in 103ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  341508ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/:0
+[  342118ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/favicon.ico:0

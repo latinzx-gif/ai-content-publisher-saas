@@ -1,0 +1,61 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - text: พื้นที่ทำงาน
+        - heading "ศูนย์ควบคุมการดำเนินงานคอนเทนต์" [level=1] [ref=e5]
+        - paragraph [ref=e6]: พื้นที่ทำงานของคุณเชื่อมต่อแล้วสำหรับ owner@example.com คุณมี 0 แบบร่างกำลังรอตรวจ, 0 โพสต์ที่อนุมัติแล้ว และ 0 โพสต์ที่เผยแพร่สำเร็จ
+      - generic [ref=e7]:
+        - link "สตูดิโอสร้างคอนเทนต์" [ref=e8] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - text: สตูดิโอสร้างคอนเทนต์
+        - link "ช่องทางเผยแพร่และ API" [ref=e9] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - text: ช่องทางเผยแพร่และ API
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - generic [ref=e12]:
+          - generic [ref=e13]:
+            - img [ref=e15]
+            - heading "พื้นที่จดบันทึกแบบด่วน" [level=3] [ref=e19]
+          - generic [ref=e20]: แปลงแนวคิดและข้อมูลดิบให้เป็นแบบร่างด้วย AI ในคลิกเดียว
+        - generic [ref=e21]:
+          - textbox "💡 พิมพ์ไอเดียสั้นๆ หรือหัวข้อกฎหมายที่ต้องการให้ AI ช่วยร่างที่นี่ เช่น \"กฎหมายการลาคลอด 2026\" หรือ \"การจัดทำนโยบาย PDPA สำหรับ SME\"..." [ref=e22]
+          - generic [ref=e23]:
+            - generic [ref=e24]: กดปุ่มด้านขวาเพื่อร่างโพสต์ 5 โพสต์โดยอัตโนมัติตามหลักเกณฑ์ของแบรนด์
+            - button "สร้างคอนเทนต์ด้วย AI" [disabled]:
+              - img
+              - text: สร้างคอนเทนต์ด้วย AI
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - img [ref=e28]
+          - heading "ข้อมูลตัวตนแบรนด์ (HUD)" [level=3] [ref=e37]
+        - generic [ref=e38]:
+          - paragraph [ref=e39]: ยังไม่ได้กำหนดตัวตนแบรนด์
+          - link "ตั้งค่า HUD →" [ref=e40] [cursor=pointer]:
+            - /url: /profile
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - img [ref=e45]
+          - heading "ตารางการทำงานโพสต์" [level=3] [ref=e49]
+        - generic [ref=e50]: ลากหรืออนุมัติสถานะโพสต์ได้ทันที
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - generic [ref=e54]: รอการรีวิว
+            - generic [ref=e56]: "0"
+          - generic [ref=e58]: ไม่มีข้อมูลในคอลัมน์นี้
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61]: อนุมัติ & พร้อมเผยแพร่
+            - generic [ref=e63]: "0"
+          - generic [ref=e65]: ไม่มีข้อมูลในคอลัมน์นี้
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: เผยแพร่แล้ว / ประวัติ
+            - generic [ref=e70]: "0"
+          - generic [ref=e72]: ไม่มีข้อมูลในคอลัมน์นี้
+  - alert [ref=e73]

@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { saveBrandProfile } from '@/actions/settings'
 import { toast } from 'sonner'
 import { Fingerprint, Save, Info } from 'lucide-react'
+import { useLanguage } from '@/components/providers/language-provider'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface BrandProfileFormProps {
   initialData?: {
@@ -41,6 +43,7 @@ const PERSONALITY_OPTIONS = [
 
 export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
   const router = useRouter()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
@@ -55,10 +58,10 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
     setLoading(true)
     try {
       await saveBrandProfile(formData)
-      toast.success('บันทึกข้อมูลแบรนด์เรียบร้อยแล้ว')
+      toast.success(t('profile.form.success'))
       router.refresh()
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการบันทึก'
+      const message = error instanceof Error ? error.message : t('profile.form.error')
       toast.error(message)
     } finally {
       setLoading(false)
@@ -66,16 +69,20 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 text-blue-800 animate-in fade-in duration-500">
-        <div className="bg-blue-100 p-2 rounded-xl shrink-0">
-          <Info className="w-5 h-5 text-blue-600" />
-        </div>
+    <div className="space-y-6">
+      <PageHeader 
+        title={t('profile.title')} 
+        subtitle={t('profile.subtitle')}
+      />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 flex items-start gap-4 text-blue-800 animate-in fade-in duration-500">
+          <div className="bg-blue-100 p-2 rounded-xl shrink-0">
+            <Info className="w-5 h-5 text-blue-600" />
+          </div>
         <div className="space-y-1">
-            <h4 className="font-bold text-sm">ทำไมข้อมูลแบรนด์ถึงสำคัญ?</h4>
+            <h4 className="font-bold text-sm">{t('profile.info.title')}</h4>
             <p className="text-sm leading-relaxed opacity-90">
-                ข้อมูลเหล่านี้จะถูกนำไปใช้เป็นบริบทหลักให้ AI เข้าใจตัวตนของธุรกิจคุณ 
-                ทำให้คอนเทนต์ที่สร้างขึ้นมามี &quot;น้ำเสียง&quot; และ &quot;บุคลิก&quot; ที่ตรงกับแบรนด์ของคุณมากที่สุด
+                {t('profile.info.desc')}
             </p>
         </div>
       </div>
@@ -86,32 +93,32 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
             <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center text-gray-600">
                 <Fingerprint className="w-6 h-6" />
             </div>
-            <CardTitle className="text-xl font-bold">ข้อมูลตัวตนแบรนด์</CardTitle>
+            <CardTitle className="text-xl font-bold">{t('profile.card.title')}</CardTitle>
           </div>
           <CardDescription className="text-sm">
-            ระบุรายละเอียดธุรกิจของคุณเพื่อให้ AI ปรับแต่งเนื้อหาให้เหมาะสม
+            {t('profile.card.desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
-              <Label htmlFor="name" className="text-sm font-bold text-gray-700">ชื่อธุรกิจ / ชื่อแบรนด์</Label>
+              <Label htmlFor="name" className="text-sm font-bold text-gray-700">{t('profile.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="เช่น ABC Legal Advisory"
+                placeholder={t('profile.form.namePlaceholder')}
                 className="h-11 rounded-xl border-gray-200 focus:ring-blue-500"
                 required
               />
             </div>
             <div className="space-y-3">
-              <Label htmlFor="business_type" className="text-sm font-bold text-gray-700">ประเภทธุรกิจ</Label>
+              <Label htmlFor="business_type" className="text-sm font-bold text-gray-700">{t('profile.form.businessType')}</Label>
               <Input
                 id="business_type"
                 value={formData.business_type}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, business_type: e.target.value })}
-                placeholder="เช่น สำนักงานกฎหมาย, ที่ปรึกษาธุรกิจ"
+                placeholder={t('profile.form.businessTypePlaceholder')}
                 className="h-11 rounded-xl border-gray-200 focus:ring-blue-500"
                 required
               />
@@ -119,12 +126,12 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
           </div>
 
           <div className="space-y-3">
-            <Label htmlFor="target_audience" className="text-sm font-bold text-gray-700">กลุ่มเป้าหมายหลัก</Label>
+            <Label htmlFor="target_audience" className="text-sm font-bold text-gray-700">{t('profile.form.targetAudience')}</Label>
             <Input
               id="target_audience"
               value={formData.target_audience}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, target_audience: e.target.value })}
-              placeholder="เช่น เจ้าของธุรกิจ SME, คนที่กำลังจะซื้อบ้าน"
+              placeholder={t('profile.form.targetAudiencePlaceholder')}
               className="h-11 rounded-xl border-gray-200 focus:ring-blue-500"
               required
             />
@@ -132,7 +139,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             <div className="space-y-3">
-              <Label htmlFor="tone" className="text-sm font-bold text-gray-700">โทนภาษาหลัก</Label>
+              <Label htmlFor="tone" className="text-sm font-bold text-gray-700">{t('profile.form.tone')}</Label>
               <Select 
                 value={formData.tone} 
                 onValueChange={(val: string | null) => {
@@ -140,7 +147,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
                 }}
               >
                 <SelectTrigger id="tone" className="h-11 rounded-xl border-gray-200">
-                  <SelectValue placeholder="เลือกโทนภาษา..." />
+                  <SelectValue placeholder={t('profile.form.tonePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {TONE_OPTIONS.map(opt => (
@@ -150,7 +157,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
               </Select>
             </div>
             <div className="space-y-3">
-              <Label htmlFor="personality" className="text-sm font-bold text-gray-700">บุคลิกภาพของแบรนด์</Label>
+              <Label htmlFor="personality" className="text-sm font-bold text-gray-700">{t('profile.form.personality')}</Label>
               <Select 
                 value={formData.personality} 
                 onValueChange={(val: string | null) => {
@@ -158,7 +165,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
                 }}
               >
                 <SelectTrigger id="personality" className="h-11 rounded-xl border-gray-200">
-                  <SelectValue placeholder="เลือกบุคลิกภาพ..." />
+                  <SelectValue placeholder={t('profile.form.personalityPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {PERSONALITY_OPTIONS.map(opt => (
@@ -178,16 +185,17 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
             {loading ? (
                 <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                กำลังบันทึก...
+                {t('profile.form.saving')}
                 </>
             ) : (
                 <>
-                <Save className="mr-2 h-4 w-4" /> บันทึกการเปลี่ยนแปลง
+                <Save className="mr-2 h-4 w-4" /> {t('profile.form.saveBtn')}
                 </>
             )}
           </Button>
         </CardFooter>
       </Card>
     </form>
-  )
+  </div>
+)
 }

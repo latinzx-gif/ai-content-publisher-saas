@@ -69,5 +69,14 @@ export const DESIGN_SYSTEM = {
     primary: "bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl h-11 px-6 shadow-lg shadow-indigo-100 dark:shadow-none active:scale-[0.98] transition-all duration-200",
     secondary: "bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 font-bold rounded-2xl h-11 px-6 active:scale-[0.98] transition-all duration-200",
     outline: "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200 font-bold rounded-2xl h-11 px-6 active:scale-[0.98] transition-all duration-200",
+  },
+  
+  // 5. Input Forms
+  inputs: "h-10 text-xs rounded-xl border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-all outline-none",
+  
+  // 6. Tables styling
+  tables: {
+    header: "bg-slate-50/50 dark:bg-slate-800/30 text-[10px] uppercase font-black tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800",
+    row: "hover:bg-slate-50/30 dark:hover:bg-slate-800/20 border-b border-slate-100 dark:border-slate-850 transition-colors",
   }
 }

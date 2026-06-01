@@ -24,6 +24,11 @@ export const OpenAIResponseSchema = z.object({
 
 export type GeneratedPost = z.infer<typeof GeneratedPostSchema>
 
+type OpenAIErrorLike = {
+  status?: number
+  code?: string
+}
+
 export async function callOpenAI(apiKey: string, prompt: string) {
   const openai = new OpenAI({ apiKey })
 
@@ -44,10 +49,15 @@ export async function callOpenAI(apiKey: string, prompt: string) {
     const parsed = JSON.parse(content)
     return OpenAIResponseSchema.parse(parsed)
   } catch (error) {
-    console.error('OpenAI API Error:', error)
+    const openAIError = error as OpenAIErrorLike
+    if (openAIError.status === 401 || openAIError.code === 'invalid_api_key') {
+      throw new Error('OpenAI API key is invalid. Update it in Settings and try again.')
+    }
+
     if (error instanceof z.ZodError) {
       throw new Error('AI output format is invalid')
     }
+    console.error('OpenAI API Error:', error)
     throw error
   }
 }

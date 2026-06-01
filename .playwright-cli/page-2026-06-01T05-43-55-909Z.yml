@@ -1,0 +1,132 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: Production Workspace
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e12]:
+          - heading "พื้นที่ทำงาน" [level=4] [ref=e13]
+          - generic [ref=e14]:
+            - link "Operations Dashboard" [ref=e15] [cursor=pointer]:
+              - /url: /
+              - img
+              - generic [ref=e16]: Operations Dashboard
+            - link "Editor Canvas" [ref=e17] [cursor=pointer]:
+              - /url: /generate
+              - img
+              - generic [ref=e18]: Editor Canvas
+            - link "Review Board" [ref=e19] [cursor=pointer]:
+              - /url: /drafts
+              - img
+              - generic [ref=e20]: Review Board
+            - link "Calendar & Publishing" [ref=e21] [cursor=pointer]:
+              - /url: /calendar
+              - img
+              - generic [ref=e22]: Calendar & Publishing
+            - link "Asset Composer" [ref=e23] [cursor=pointer]:
+              - /url: /asset-composer
+              - img
+              - generic [ref=e24]: Asset Composer
+        - generic [ref=e25]:
+          - heading "ตั้งค่าระบบ" [level=4] [ref=e26]
+          - generic [ref=e27]:
+            - link "Brand & Voice" [ref=e28] [cursor=pointer]:
+              - /url: /profile
+              - img
+              - generic [ref=e29]: Brand & Voice
+            - link "Integrations" [ref=e30] [cursor=pointer]:
+              - /url: /settings
+              - img
+              - generic [ref=e31]: Integrations
+            - link "Settings" [ref=e32] [cursor=pointer]:
+              - /url: /settings
+              - img
+              - generic [ref=e33]: Settings
+      - generic [ref=e34]:
+        - generic [ref=e37]: Content Pipeline Live
+        - generic [ref=e38]: All systems operational
+    - generic [ref=e39]:
+      - banner [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Workspace
+          - generic [ref=e43]: /
+          - generic [ref=e44]: Content Operations
+          - generic [ref=e45]: /
+          - generic [ref=e46]: Brand & Voice
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - button "TH" [ref=e49] [cursor=pointer]
+            - generic [ref=e50]: /
+            - button "EN" [ref=e51] [cursor=pointer]
+          - generic [ref=e52]:
+            - generic [ref=e53]: OS
+            - button "Sign Out" [ref=e54] [cursor=pointer]
+      - main [ref=e55]:
+        - generic [ref=e58]:
+          - generic [ref=e60]:
+            - heading "ตัวตนแบรนด์น้ำเสียง" [level=1] [ref=e61]
+            - paragraph [ref=e62]: กำหนดแนวทางเสียงและกลุ่มผู้รับสารแบรนด์ของคุณ
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - img [ref=e66]
+              - generic [ref=e68]:
+                - heading "ทำไมข้อมูลแบรนด์ถึงสำคัญ?" [level=4] [ref=e69]
+                - paragraph [ref=e70]: ข้อมูลเหล่านี้จะถูกนำไปใช้เป็นบริบทหลักให้ AI เข้าใจตัวตนของธุรกิจคุณ ทำให้คอนเทนต์ที่สร้างขึ้นมามี "น้ำเสียง" และ "บุคลิก" ที่ตรงกับแบรนด์ของคุณมากที่สุด
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - img [ref=e75]
+                  - generic [ref=e84]: ข้อมูลตัวตนแบรนด์
+                - generic [ref=e85]: ระบุรายละเอียดธุรกิจของคุณเพื่อให้ AI ปรับแต่งเนื้อหาให้เหมาะสม
+              - generic [ref=e86]:
+                - generic [ref=e87]:
+                  - generic [ref=e88]:
+                    - generic [ref=e89]: ชื่อธุรกิจ / ชื่อแบรนด์
+                    - textbox "ชื่อธุรกิจ / ชื่อแบรนด์" [ref=e90]:
+                      - /placeholder: เช่น ABC Legal Advisory
+                      - text: Smoke Legal Advisory
+                  - generic [ref=e91]:
+                    - generic [ref=e92]: ประเภทธุรกิจ
+                    - textbox "ประเภทธุรกิจ" [ref=e93]:
+                      - /placeholder: เช่น สำนักงานกฎหมาย, ที่ปรึกษาธุรกิจ
+                      - text: Legal Advisory Firm
+                - generic [ref=e94]:
+                  - generic [ref=e95]: กลุ่มเป้าหมายหลัก
+                  - textbox "กลุ่มเป้าหมายหลัก" [ref=e96]:
+                    - /placeholder: เช่น เจ้าของธุรกิจ SME, คนที่กำลังจะซื้อบ้าน
+                    - text: Thai SME business owners
+                - generic [ref=e97]:
+                  - generic [ref=e98]:
+                    - generic [ref=e99]: โทนภาษาหลัก
+                    - combobox "โทนภาษาหลัก" [expanded] [ref=e100]:
+                      - generic [ref=e101]: เลือกโทนภาษา...
+                      - img: ▼
+                    - listbox [ref=e123]:
+                      - option "Professional (เป็นทางการ)" [ref=e124]:
+                        - generic [ref=e125]: Professional (เป็นทางการ)
+                      - option "Friendly (เป็นกันเอง)" [ref=e126]:
+                        - generic [ref=e127]: Friendly (เป็นกันเอง)
+                      - option "Educational (ให้ความรู้)" [ref=e128]:
+                        - generic [ref=e129]: Educational (ให้ความรู้)
+                      - option "Expert (ผู้เชี่ยวชาญ)" [ref=e130]:
+                        - generic [ref=e131]: Expert (ผู้เชี่ยวชาญ)
+                      - option "Corporate (องค์กร)" [ref=e132]:
+                        - generic [ref=e133]: Corporate (องค์กร)
+                      - option "Simple (เรียบง่าย)" [ref=e134]:
+                        - generic [ref=e135]: Simple (เรียบง่าย)
+                    - textbox [ref=e102]
+                  - generic [ref=e103]:
+                    - generic [ref=e104]: บุคลิกภาพของแบรนด์
+                    - combobox "บุคลิกภาพของแบรนด์" [ref=e105]:
+                      - generic [ref=e106]: เลือกบุคลิกภาพ...
+                      - img: ▼
+                    - textbox [ref=e107]
+              - button "บันทึกการเปลี่ยนแปลง" [ref=e109]:
+                - img
+                - text: บันทึกการเปลี่ยนแปลง
+  - button "Open Next.js Dev Tools" [ref=e115] [cursor=pointer]:
+    - img [ref=e116]
+  - alert [ref=e119]

@@ -1,0 +1,38 @@
+[    4334ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[    4334ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[    4583ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_react-dom_a9203108._.js:14537
+[    5463ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[    5907ms] [LOG] [Fast Refresh] done in 545ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[   68985ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[   68985ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[   91937ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[   91937ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  157285ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  157285ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  157852ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  157852ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  158018ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  158018ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  275251ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  277439ms] [LOG] [Fast Refresh] done in 2022ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  277925ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  279092ms] [LOG] [Fast Refresh] done in 1268ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  279194ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  279293ms] [LOG] [Fast Refresh] done in 200ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  280636ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/settings?_rsc=1YnBIm7l4gLlYzKO:0
+[  281620ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  308418ms] [LOG] [Fast Refresh] done in 4217ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  308521ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  309011ms] [LOG] [Fast Refresh] done in 592ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[  309834ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  312948ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_react-dom_a9203108._.js:14537
+[  314235ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  314235ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  337980ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  337980ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  358444ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  358444ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) @ http://localhost:3000/settings:0
+[  359275ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  359275ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  359468ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0
+[  359468ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/settings:0

@@ -1,15 +1,37 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import { LanguageProvider } from "@/components/providers/language-provider";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const outfit = Outfit({
-  variable: "--font-heading",
-  subsets: ["latin"],
+const ekkamaiVibe = localFont({
+  src: [
+    {
+      path: "../../public/fonts/EkkamaiVibe/EkkamaiVibe-thin.ttf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/EkkamaiVibe/EkkamaiVibe-light.ttf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/EkkamaiVibe/EkkamaiVibe-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/EkkamaiVibe/EkkamaiVibe-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/EkkamaiVibe/EkkamaiVibe-Heavy.ttf",
+      weight: "900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-ekkamai",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +45,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={ekkamaiVibe.variable}>
       <body
-        className={`${inter.variable} ${outfit.variable} antialiased`}
+        className="antialiased"
       >
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );

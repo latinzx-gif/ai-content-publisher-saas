@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: Production Workspace
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e12]:
+          - heading "พื้นที่ทำงาน" [level=4] [ref=e13]
+          - generic [ref=e14]:
+            - link "Operations Dashboard" [ref=e15] [cursor=pointer]:
+              - /url: /
+              - img
+              - generic [ref=e16]: Operations Dashboard
+            - link "Editor Canvas" [ref=e17] [cursor=pointer]:
+              - /url: /generate
+              - img
+              - generic [ref=e18]: Editor Canvas
+            - link "Review Board" [ref=e19] [cursor=pointer]:
+              - /url: /drafts
+              - img
+              - generic [ref=e20]: Review Board
+            - link "Calendar & Publishing" [ref=e21] [cursor=pointer]:
+              - /url: /calendar
+              - img
+              - generic [ref=e22]: Calendar & Publishing
+            - link "Asset Composer" [ref=e23] [cursor=pointer]:
+              - /url: /asset-composer
+              - img
+              - generic [ref=e24]: Asset Composer
+        - generic [ref=e25]:
+          - heading "ตั้งค่าระบบ" [level=4] [ref=e26]
+          - generic [ref=e27]:
+            - link "Brand & Voice" [ref=e28] [cursor=pointer]:
+              - /url: /profile
+              - img
+              - generic [ref=e29]: Brand & Voice
+            - link "Integrations" [ref=e30] [cursor=pointer]:
+              - /url: /settings
+              - img
+              - generic [ref=e31]: Integrations
+            - link "Settings" [ref=e32] [cursor=pointer]:
+              - /url: /settings
+              - img
+              - generic [ref=e33]: Settings
+      - generic [ref=e34]:
+        - generic [ref=e37]: Content Pipeline Live
+        - generic [ref=e38]: All systems operational
+    - generic [ref=e39]:
+      - banner [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]: Workspace
+          - generic [ref=e43]: /
+          - generic [ref=e44]: Content Operations
+          - generic [ref=e45]: /
+          - generic [ref=e46]: Integrations
+        - generic [ref=e47]:
+          - generic [ref=e48]:
+            - button "TH" [ref=e49] [cursor=pointer]
+            - generic [ref=e50]: /
+            - button "EN" [ref=e51] [cursor=pointer]
+          - generic [ref=e52]:
+            - generic [ref=e53]: OS
+            - button "Sign Out" [ref=e54] [cursor=pointer]
+      - main [ref=e55]:
+        - generic [ref=e58]:
+          - generic [ref=e60]:
+            - heading "ช่องทางการเผยแพร่" [level=1] [ref=e61]
+            - paragraph [ref=e62]: ตั้งค่ากุญแจ API และสิทธิ์บัญชีโซเชียลมีเดีย
+          - generic [ref=e63]:
+            - generic [ref=e221]:
+              - generic [ref=e222]:
+                - generic [ref=e223]:
+                  - generic [ref=e224]:
+                    - img [ref=e226]
+                    - generic [ref=e229]: OpenAI Integration
+                  - generic [ref=e230]:
+                    - img [ref=e231]
+                    - text: เชื่อมต่อแล้ว
+                - generic [ref=e234]: ใช้สำหรับประมวลผลและสร้างเนื้อหาด้วยปัญญาประดิษฐ์ (GPT-4o)
+              - generic [ref=e236]:
+                - generic [ref=e237]: OpenAI API Key
+                - generic [ref=e238]:
+                  - textbox "OpenAI API Key" [ref=e239]:
+                    - /placeholder: ••••••••••••••••••••••••••••••••
+                  - generic [ref=e240]:
+                    - button [ref=e241]:
+                      - img [ref=e242]
+                    - img [ref=e245]
+                - paragraph [ref=e248]:
+                  - img [ref=e249]
+                  - text: "อัปเดตล่าสุด: 1/6/2569 15:26:59"
+              - generic [ref=e251]:
+                - button "ทดสอบการเชื่อมต่อ" [ref=e252]
+                - button "บันทึกข้อมูล" [disabled]
+            - generic [ref=e253]:
+              - generic [ref=e254]:
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - img [ref=e258]
+                    - generic [ref=e261]: Buffer Integration
+                  - generic [ref=e262]:
+                    - img [ref=e263]
+                    - text: ยังไม่ได้เชื่อมต่อ
+                - generic [ref=e265]: ใช้สำหรับส่งโพสต์ที่อนุมัติแล้วไปยังระบบคิวของ Buffer เพื่อเผยแพร่
+              - generic [ref=e267]:
+                - generic [ref=e268]: Buffer Access Token
+                - generic [ref=e269]:
+                  - textbox "Buffer Access Token" [ref=e270]:
+                    - /placeholder: กรอก Buffer Access Token...
+                    - text: buffer-smoke-mock-token
+                  - button [ref=e272]:
+                    - img [ref=e273]
+              - generic [ref=e276]:
+                - button "ทดสอบการเชื่อมต่อ" [disabled]
+                - button "บันทึกข้อมูล" [ref=e277]
+  - button "Open Next.js Dev Tools" [ref=e117] [cursor=pointer]:
+    - img [ref=e118]
+  - alert [ref=e121]

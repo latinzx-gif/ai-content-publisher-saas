@@ -6,13 +6,61 @@ import { callOpenAI } from '@/lib/openai'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireOwner, getDbClient } from '@/lib/owner-context'
+import OpenAI from 'openai'
 
 const GeneratePostsSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
   tone: z.string().min(1, 'Tone is required'),
   personality: z.string().min(1, 'Personality is required'),
-  postCount: z.union([z.literal(5), z.literal(10)])
+  postCount: z.union([z.literal(5), z.literal(10)]),
+  urls: z.array(z.string().url()).max(5).optional(),
+  manualContext: z.string().max(10000).optional()
 })
+
+function cleanHtml(html: string): string {
+  // Strip script and style blocks completely
+  let text = html.replace(/<(script|style)\b[^>]*>([\s\S]*?)<\/\1>/gi, '');
+  // Strip all other HTML tags
+  text = text.replace(/<[^>]*>?/gm, ' ');
+  // Replace multiple spaces/newlines with single space
+  text = text.replace(/\s+/g, ' ').trim();
+  return text;
+}
+
+async function fetchUrlContent(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      next: { revalidate: 3600 }
+    });
+    if (!res.ok) return `[Failed to load URL: status ${res.status}]`;
+    const html = await res.text();
+    const cleaned = cleanHtml(html);
+    return cleaned.slice(0, 4000); // truncate to prevent huge token usage
+  } catch (err) {
+    console.error(`Error scraping ${url}:`, err);
+    return `[Failed to load URL: ${err instanceof Error ? err.message : 'unreachable'}]`;
+  }
+}
+
+async function summarizeSources(apiKey: string, rawTexts: string[]): Promise<string> {
+  const combined = rawTexts.join('\n\n--- SOURCE BUNDLE ---\n\n');
+  const openai = new OpenAI({ apiKey });
+  const response = await openai.chat.completions.create({
+    model: 'gpt-4o',
+    messages: [
+      { 
+        role: 'system', 
+        content: 'You are an AI research assistant. Summarize the following sources into a concise summary in Thai, focusing on legal compliance, key facts, and essential details that can be used to write informative social media posts.' 
+      },
+      { role: 'user', content: combined.slice(0, 20000) }
+    ],
+    temperature: 0.3
+  });
+  return response.choices[0].message.content || '';
+}
 
 export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) {
   const validated = GeneratePostsSchema.parse(input)
@@ -27,7 +75,7 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
     .single()
 
   if (brandError || !brand) {
-    throw new Error('Please configure your Brand Profile first.')
+    return { success: false, error: 'Please configure your Brand Profile first.' }
   }
 
   // 2. Get OpenAI Integration
@@ -39,13 +87,31 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
     .single()
 
   if (integrationError || !integration) {
-    throw new Error('Please configure your OpenAI API Key in Settings first.')
+    return { success: false, error: 'Please configure your OpenAI API Key in Settings first.' }
   }
 
   // 3. Decrypt Key
   const apiKey = decrypt(integration.encrypted_value)
 
-  // 4. Construct Prompt
+  // 4. Scrape & Summarize Knowledge Sources
+  const fetchedContents: string[] = []
+  if (validated.urls && validated.urls.length > 0) {
+    for (const url of validated.urls) {
+      const content = await fetchUrlContent(url)
+      fetchedContents.push(`URL: ${url}\nContent: ${content}`)
+    }
+  }
+
+  if (validated.manualContext && validated.manualContext.trim()) {
+    fetchedContents.push(`Manual Context:\n${validated.manualContext}`)
+  }
+
+  let summarizedContext = ''
+  if (fetchedContents.length > 0) {
+    summarizedContext = await summarizeSources(apiKey, fetchedContents)
+  }
+
+  // 5. Construct Prompt
   const prompt = getGeneratePostsPrompt(
     {
       name: brand.name,
@@ -57,11 +123,19 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
     validated.topic,
     validated.tone,
     validated.personality,
-    validated.postCount
+    validated.postCount,
+    summarizedContext || undefined
   )
 
-  // 5. Call OpenAI
-  const result = await callOpenAI(apiKey, prompt)
+  // 6. Call OpenAI
+  const result = await callOpenAI(apiKey, prompt).catch(error => {
+    const message = error instanceof Error ? error.message : 'Failed to generate content'
+    return { error: message }
+  })
+
+  if ('error' in result) {
+    return { success: false, error: result.error }
+  }
 
   // 6. Create Workflow Log
   const { data: log, error: logError } = await supabase
@@ -108,5 +182,5 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
     .eq('id', log.id)
 
   revalidatePath('/drafts')
-  return { success: true, count: result.posts.length }
+  return { success: true, count: result.posts.length, posts: result.posts }
 }

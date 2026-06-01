@@ -24,11 +24,15 @@ export default async function GeneratePage() {
     .single()
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 md:px-8 md:py-10 space-y-6">
-      <PageHeader 
-        title="Editor Canvas" 
-        subtitle="Draft premium social media posts aligned with your brand guidelines."
-      />
+    <div className="flex-1 bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
+      <div className="space-y-1 text-left pb-3 border-b border-[#E6DFD5] dark:border-slate-800">
+        <h2 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
+          Editor Canvas
+        </h2>
+        <p className="text-xs text-[#7C756C] dark:text-slate-400">
+          Draft premium social media posts aligned with your brand guidelines.
+        </p>
+      </div>
       <div className="w-full">
         <GenerateForm initialBrand={brand} hasOpenAIKey={!!integration} />
       </div>

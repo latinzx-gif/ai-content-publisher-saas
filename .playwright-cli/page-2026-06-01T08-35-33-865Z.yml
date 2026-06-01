@@ -1,0 +1,312 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: Production Workspace
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e13]:
+          - link "Operations Dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - img
+            - generic [ref=e15]: Operations Dashboard
+          - link "Editor Canvas" [ref=e16] [cursor=pointer]:
+            - /url: /generate
+            - img
+            - generic [ref=e17]: Editor Canvas
+          - link "Review Board" [ref=e18] [cursor=pointer]:
+            - /url: /drafts
+            - img
+            - generic [ref=e19]: Review Board
+          - link "Calendar & Publishing" [ref=e20] [cursor=pointer]:
+            - /url: /calendar
+            - img
+            - generic [ref=e21]: Calendar & Publishing
+          - link "Asset Composer" [ref=e22] [cursor=pointer]:
+            - /url: /asset-composer
+            - img
+            - generic [ref=e23]: Asset Composer
+        - generic [ref=e26]:
+          - link "Brand & Voice" [ref=e27] [cursor=pointer]:
+            - /url: /profile
+            - img
+            - generic [ref=e28]: Brand & Voice
+          - link "Integrations" [ref=e29] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e30]: Integrations
+          - link "Settings" [ref=e31] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e32]: Settings
+      - generic [ref=e33]:
+        - generic [ref=e36]: Content Pipeline Live
+        - generic [ref=e37]: All systems operational
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Workspace
+          - generic [ref=e42]: /
+          - generic [ref=e43]: Content Operations
+          - generic [ref=e44]: /
+          - generic [ref=e45]: Editor Canvas
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - button "TH" [ref=e48] [cursor=pointer]
+            - generic [ref=e49]: /
+            - button "EN" [ref=e50] [cursor=pointer]
+          - generic [ref=e51]:
+            - generic [ref=e52]: OS
+            - button "Sign Out" [ref=e53] [cursor=pointer]
+      - main [ref=e54]:
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - heading "Editor Canvas" [level=2] [ref=e58]
+            - paragraph [ref=e59]: Draft premium social media posts aligned with your brand guidelines.
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]:
+                - generic [ref=e64]:
+                  - generic [ref=e65]:
+                    - img [ref=e66]
+                    - heading "Brand Context" [level=3] [ref=e69]
+                  - link "View →" [ref=e70] [cursor=pointer]:
+                    - /url: /profile
+                - generic [ref=e71]:
+                  - generic [ref=e72]:
+                    - generic [ref=e73]: OS
+                    - generic [ref=e74]:
+                      - paragraph [ref=e75]: Smoke Legal Advisory
+                      - paragraph [ref=e76]: Legal Advisory Firm
+                  - paragraph [ref=e78]: "Voice: Professional • Formal • Clear"
+              - generic [ref=e79]:
+                - generic [ref=e80]:
+                  - generic [ref=e81]:
+                    - img [ref=e82]
+                    - heading "Content Templates" [level=3] [ref=e85]
+                  - generic [ref=e86] [cursor=pointer]: View all →
+                - generic [ref=e87]:
+                  - button "Labor Law Advice Educational tip breakdown" [ref=e88]:
+                    - img [ref=e89]
+                    - generic [ref=e92]:
+                      - paragraph [ref=e93]: Labor Law Advice
+                      - paragraph [ref=e94]: Educational tip breakdown
+                  - button "PDPA Compliance Checklist Step-by-step audit checklist" [ref=e95]:
+                    - img [ref=e96]
+                    - generic [ref=e99]:
+                      - paragraph [ref=e100]: PDPA Compliance Checklist
+                      - paragraph [ref=e101]: Step-by-step audit checklist
+                  - button "Service Business Q&A Client interview mock" [ref=e102]:
+                    - img [ref=e103]
+                    - generic [ref=e106]:
+                      - paragraph [ref=e107]: Service Business Q&A
+                      - paragraph [ref=e108]: Client interview mock
+                  - generic [ref=e109]: Browse all templates →
+              - generic [ref=e110]:
+                - generic [ref=e111]:
+                  - generic [ref=e112]:
+                    - img [ref=e113]
+                    - heading "Active Content Angles" [level=3] [ref=e116]
+                  - generic [ref=e117] [cursor=pointer]: Manage →
+                - generic [ref=e118]:
+                  - generic [ref=e119]: Educate & Convert
+                  - generic [ref=e120]: Myth Busting
+                  - generic [ref=e121]: Compliance Alert
+                  - generic [ref=e122]: Interactive Q&A
+                - generic [ref=e123]:
+                  - generic [ref=e124]: Suggested Angle
+                  - generic [ref=e126]:
+                    - img [ref=e127]
+                    - generic [ref=e129]:
+                      - paragraph [ref=e130]: Q2 Compliance Series
+                      - paragraph [ref=e131]: Increase awareness and trust
+                      - button "Use this angle →" [ref=e132] [cursor=pointer]
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - generic [ref=e136]:
+                  - img [ref=e137]
+                  - generic [ref=e138]: Command Composer
+                - paragraph [ref=e139]: Define what to create. Our AI will handle the structure, tone, and bilingual output.
+              - generic [ref=e140]:
+                - generic [ref=e141]:
+                  - generic [ref=e142]: 1. Content Topic
+                  - textbox "Enter your content topic or key message..." [ref=e143]
+                - generic [ref=e144]:
+                  - generic [ref=e145]: 2. Languages
+                  - generic [ref=e146]:
+                    - generic [ref=e147]:
+                      - generic [ref=e148]:
+                        - text: Primary
+                        - combobox [ref=e149]:
+                          - generic [ref=e150]: Thai
+                          - img: ▼
+                        - textbox [ref=e151]: Thai
+                      - generic [ref=e152]:
+                        - text: Secondary
+                        - combobox [ref=e153]:
+                          - generic [ref=e154]: English
+                          - img: ▼
+                        - textbox [ref=e155]: English
+                    - generic [ref=e156]:
+                      - generic [ref=e157]: Generate both versions
+                      - generic [ref=e158]:
+                        - button [ref=e159] [cursor=pointer]
+                        - img [ref=e161]
+                - generic [ref=e163]:
+                  - generic [ref=e164]: 3. Output Mode
+                  - generic [ref=e165]:
+                    - generic [ref=e166]:
+                      - combobox [ref=e167]:
+                        - generic [ref=e168]: Main post + secondary in comment
+                        - img: ▼
+                      - textbox [ref=e169]: Main post + secondary in comment
+                    - button "Other" [ref=e171] [cursor=pointer]
+                    - textbox "Describe custom output mode..." [ref=e173]
+                - generic [ref=e174]:
+                  - generic [ref=e175]: 4. Platform
+                  - generic [ref=e176]:
+                    - button "LinkedIn" [ref=e177] [cursor=pointer]:
+                      - img [ref=e178]
+                      - text: LinkedIn
+                    - button "Facebook" [ref=e180] [cursor=pointer]:
+                      - img [ref=e181]
+                      - text: Facebook
+                    - button "Website" [ref=e183] [cursor=pointer]:
+                      - img [ref=e184]
+                      - text: Website
+                    - button "Instagram" [ref=e187] [cursor=pointer]:
+                      - img [ref=e188]
+                      - text: Instagram
+                    - button "+ Other" [ref=e191] [cursor=pointer]:
+                      - img [ref=e192]
+                      - text: + Other
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - generic [ref=e195]: 5. Audience
+                    - generic [ref=e196]:
+                      - generic [ref=e197]:
+                        - generic [ref=e198]:
+                          - combobox [ref=e199]:
+                            - generic [ref=e200]: Thai SME business owners
+                            - img: ▼
+                          - textbox [ref=e201]: Thai SME business owners
+                        - button "Other" [ref=e202] [cursor=pointer]
+                      - textbox "Describe custom audience..." [ref=e203]
+                  - generic [ref=e204]:
+                    - generic [ref=e205]: 6. Tone
+                    - generic [ref=e206]:
+                      - generic [ref=e207]:
+                        - generic [ref=e208]:
+                          - combobox [ref=e209]:
+                            - generic [ref=e210]: Professional
+                            - img: ▼
+                          - textbox [ref=e211]: Professional
+                        - button "Other" [ref=e212] [cursor=pointer]
+                      - textbox "Describe custom tone..." [ref=e213]
+                - generic [ref=e214]:
+                  - generic [ref=e215]:
+                    - generic [ref=e216]: 7. Content Goal
+                    - generic [ref=e217]:
+                      - generic:
+                        - combobox [ref=e218]:
+                          - generic [ref=e219]: Educate
+                          - img: ▼
+                        - textbox [ref=e220]: Educate
+                      - button "Other" [ref=e221] [cursor=pointer]
+                      - textbox "Describe custom goal..." [ref=e222]
+                  - generic [ref=e223]:
+                    - generic [ref=e224]: 8. Content Format
+                    - generic [ref=e225]:
+                      - generic:
+                        - combobox [ref=e226]:
+                          - generic [ref=e227]: Educational Post
+                          - img: ▼
+                        - textbox [ref=e228]: Educational Post
+                      - button "Other" [ref=e229] [cursor=pointer]
+                      - textbox "Describe custom format..." [ref=e230]
+                - generic [ref=e231]:
+                  - generic [ref=e232]: 9. Hashtags
+                  - generic [ref=e233]:
+                    - generic [ref=e234]:
+                      - text: "#compliance"
+                      - button "×" [ref=e235] [cursor=pointer]
+                    - generic [ref=e236]:
+                      - text: "#lawupdate"
+                      - button "×" [ref=e237] [cursor=pointer]
+                    - generic [ref=e238]:
+                      - text: "#legalinsights"
+                      - button "×" [ref=e239] [cursor=pointer]
+                    - textbox "Add hashtag..." [ref=e240]
+                - generic [ref=e241]:
+                  - generic [ref=e242]: 10. Knowledge Source
+                  - generic [ref=e243]:
+                    - textbox "https://example.com/article" [ref=e244]
+                    - button "+ ADD URL" [ref=e245] [cursor=pointer]
+                - generic [ref=e246]:
+                  - generic [ref=e247]: 11. Notes / Constraints (Optional)
+                  - textbox "Add any specific notes, constraints, or key points to include..." [ref=e248]
+              - button "Generate Content" [ref=e250] [cursor=pointer]:
+                - img
+                - text: Generate Content
+            - generic [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - img [ref=e254]
+                  - heading "Content Performance Score" [level=3] [ref=e258]
+                - generic [ref=e259]:
+                  - generic [ref=e261]:
+                    - generic [ref=e262]: Hook Strength
+                    - generic [ref=e263]: 8.6/10
+                  - generic [ref=e267]:
+                    - generic [ref=e268]: Readability Meter
+                    - generic [ref=e269]: 9.0/10
+                  - generic [ref=e273]:
+                    - generic [ref=e274]: Engagement Potential
+                    - generic [ref=e275]: 7.4/10
+                  - generic [ref=e279]:
+                    - generic [ref=e280]: CTA Strength
+                    - generic [ref=e281]: 8.2/10
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - generic [ref=e286]:
+                    - img [ref=e287]
+                    - heading "Platform Preview Feed" [level=3] [ref=e290]
+                  - generic [ref=e291]:
+                    - img [ref=e292] [cursor=pointer]
+                    - img [ref=e294] [cursor=pointer]
+                - generic [ref=e296]:
+                  - generic [ref=e297]:
+                    - generic [ref=e298]:
+                      - generic [ref=e299]: OS
+                      - generic [ref=e300]:
+                        - heading "Your Workspace Brand" [level=5] [ref=e301]
+                        - generic [ref=e302]:
+                          - generic [ref=e303]: 2m
+                          - generic [ref=e304]: •
+                          - img [ref=e305]
+                    - img [ref=e308] [cursor=pointer]
+                  - generic [ref=e312]:
+                    - paragraph [ref=e313]: กฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA) ไม่ใช่แค่ข้อบังคับ แต่คือความไว้วางใจที่ลูกค้ามีให้กับองค์กรของคุณ การปฏิบัติตามอย่างถูกต้อง คือการสร้างมาตรฐานที่ดี และลดความเสี่ยงในระยะยาว
+                    - paragraph [ref=e314]: PDPA is more than a regulation—it's the trust your customers place in your organization. Proper compliance builds a sustainable standard and reduces long-term risk.
+                    - paragraph [ref=e315]: "#compliance #lawupdate #legalinsights"
+                  - generic [ref=e317]:
+                    - text: Preview shows bilingual output with hashtags.
+                    - text: Actual formatting may vary by platform.
+                  - generic [ref=e318]:
+                    - button "Like" [ref=e319] [cursor=pointer]:
+                      - img [ref=e320]
+                      - text: Like
+                    - button "Comment" [ref=e322] [cursor=pointer]:
+                      - img [ref=e323]
+                      - text: Comment
+                    - button "Share" [ref=e325] [cursor=pointer]:
+                      - img [ref=e326]
+                      - text: Share
+                    - button "Send" [ref=e332] [cursor=pointer]:
+                      - img [ref=e333]
+                      - text: Send
+  - button "Open Next.js Dev Tools" [ref=e341] [cursor=pointer]:
+    - img [ref=e342]
+  - alert [ref=e345]

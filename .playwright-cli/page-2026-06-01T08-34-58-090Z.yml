@@ -1,0 +1,111 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Content OS Studio
+        - generic [ref=e8]: Production Workspace
+      - img [ref=e9]
+    - navigation [ref=e11]:
+      - generic [ref=e13]:
+        - link "Operations Dashboard" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img
+          - generic [ref=e15]: Operations Dashboard
+        - link "Editor Canvas" [ref=e16] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - generic [ref=e17]: Editor Canvas
+        - link "Review Board" [ref=e18] [cursor=pointer]:
+          - /url: /drafts
+          - img
+          - generic [ref=e19]: Review Board
+        - link "Calendar & Publishing" [ref=e20] [cursor=pointer]:
+          - /url: /calendar
+          - img
+          - generic [ref=e21]: Calendar & Publishing
+        - link "Asset Composer" [ref=e22] [cursor=pointer]:
+          - /url: /asset-composer
+          - img
+          - generic [ref=e23]: Asset Composer
+      - generic [ref=e26]:
+        - link "Brand & Voice" [ref=e27] [cursor=pointer]:
+          - /url: /profile
+          - img
+          - generic [ref=e28]: Brand & Voice
+        - link "Integrations" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e30]: Integrations
+        - link "Settings" [ref=e31] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e32]: Settings
+    - generic [ref=e33]:
+      - generic [ref=e36]: Content Pipeline Live
+      - generic [ref=e37]: All systems operational
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: Workspace
+        - generic [ref=e42]: /
+        - generic [ref=e43]: Content Operations
+        - generic [ref=e44]: /
+        - generic [ref=e45]: Brand & Voice
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - button "TH" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]: /
+          - button "EN" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: OS
+          - button "Sign Out" [ref=e53] [cursor=pointer]
+    - main [ref=e54]:
+      - generic [ref=e57]:
+        - generic [ref=e59]:
+          - heading "ตัวตนแบรนด์น้ำเสียง" [level=1] [ref=e60]
+          - paragraph [ref=e61]: กำหนดแนวทางเสียงและกลุ่มผู้รับสารแบรนด์ของคุณ
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - img [ref=e65]
+            - generic [ref=e67]:
+              - heading "ทำไมข้อมูลแบรนด์ถึงสำคัญ?" [level=4] [ref=e68]
+              - paragraph [ref=e69]: ข้อมูลเหล่านี้จะถูกนำไปใช้เป็นบริบทหลักให้ AI เข้าใจตัวตนของธุรกิจคุณ ทำให้คอนเทนต์ที่สร้างขึ้นมามี "น้ำเสียง" และ "บุคลิก" ที่ตรงกับแบรนด์ของคุณมากที่สุด
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - img [ref=e74]
+                - generic [ref=e83]: ข้อมูลตัวตนแบรนด์
+              - generic [ref=e84]: ระบุรายละเอียดธุรกิจของคุณเพื่อให้ AI ปรับแต่งเนื้อหาให้เหมาะสม
+            - generic [ref=e85]:
+              - generic [ref=e86]:
+                - generic [ref=e87]:
+                  - generic [ref=e88]: ชื่อธุรกิจ / ชื่อแบรนด์
+                  - textbox "ชื่อธุรกิจ / ชื่อแบรนด์" [ref=e89]:
+                    - /placeholder: เช่น ABC Legal Advisory
+                    - text: Smoke Legal Advisory
+                - generic [ref=e90]:
+                  - generic [ref=e91]: ประเภทธุรกิจ
+                  - textbox "ประเภทธุรกิจ" [ref=e92]:
+                    - /placeholder: เช่น สำนักงานกฎหมาย, ที่ปรึกษาธุรกิจ
+                    - text: Legal Advisory Firm
+              - generic [ref=e93]:
+                - generic [ref=e94]: กลุ่มเป้าหมายหลัก
+                - textbox "กลุ่มเป้าหมายหลัก" [ref=e95]:
+                  - /placeholder: เช่น เจ้าของธุรกิจ SME, คนที่กำลังจะซื้อบ้าน
+                  - text: Thai SME business owners
+              - generic [ref=e96]:
+                - generic [ref=e97]:
+                  - generic [ref=e98]: โทนภาษาหลัก
+                  - combobox "โทนภาษาหลัก" [ref=e99]:
+                    - generic [ref=e100]: Professional
+                    - img: ▼
+                  - textbox [ref=e101]: Professional
+                - generic [ref=e102]:
+                  - generic [ref=e103]: บุคลิกภาพของแบรนด์
+                  - combobox "บุคลิกภาพของแบรนด์" [ref=e104]:
+                    - generic [ref=e105]: น่าเชื่อถือ
+                    - img: ▼
+                  - textbox [ref=e106]: น่าเชื่อถือ
+            - button "บันทึกการเปลี่ยนแปลง" [ref=e108]:
+              - img
+              - text: บันทึกการเปลี่ยนแปลง

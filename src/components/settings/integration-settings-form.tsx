@@ -9,6 +9,8 @@ import { saveIntegrationSecret, testOpenAIConnection, testBufferConnection } fro
 import { toast } from 'sonner'
 import { KeyRound, ShieldCheck, Activity, Link2, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useLanguage } from '@/components/providers/language-provider'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface IntegrationSettingsFormProps {
   openaiStatus?: string | null
@@ -16,6 +18,7 @@ interface IntegrationSettingsFormProps {
 }
 
 export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: IntegrationSettingsFormProps) {
+  const { t, currentLanguage } = useLanguage()
   const [loading, setLoading] = useState<string | null>(null)
   const [testing, setTesting] = useState<string | null>(null)
   const [showKey, setShowKey] = useState({
@@ -28,15 +31,15 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
   })
 
   async function handleSave(provider: 'openai' | 'buffer') {
-    if (!keys[provider]) return toast.error('กรุณาระบุ API Key หรือ Access Token')
+    if (!keys[provider]) return toast.error(t('settings.error.emptyKey'))
     
     setLoading(provider)
     try {
       await saveIntegrationSecret(provider, keys[provider])
-      toast.success(`บันทึก ${provider.toUpperCase()} เรียบร้อยแล้ว`)
+      toast.success(t('settings.success.save', { provider: provider.toUpperCase() }))
       setKeys({ ...keys, [provider]: '' })
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการบันทึก'
+      const message = error instanceof Error ? error.message : t('settings.error.save')
       toast.error(message)
     } finally {
       setLoading(null)
@@ -56,7 +59,7 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
         toast.error(result.message)
       }
     } catch {
-      toast.error('การทดสอบเชื่อมต่อล้มเหลว')
+      toast.error(t('settings.error.test'))
     } finally {
       setTesting(null)
     }
@@ -94,12 +97,12 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
             {status ? (
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-full border border-green-100 uppercase tracking-tighter">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    เชื่อมต่อแล้ว
+                    {t('settings.connected')}
                 </div>
             ) : (
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100 uppercase tracking-tighter">
                     <AlertCircle className="w-3.5 h-3.5" />
-                    ยังไม่ได้เชื่อมต่อ
+                    {t('settings.disconnected')}
                 </div>
             )}
         </div>
@@ -137,7 +140,7 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
           {status && (
             <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
               <Activity className="w-3 h-3" />
-              อัปเดตล่าสุด: {new Date(status).toLocaleString('th-TH')}
+              {t('settings.updatedAt', { time: new Date(status).toLocaleString(currentLanguage === 'th' ? 'th-TH' : 'en-US') })}
             </p>
           )}
         </div>
@@ -152,9 +155,9 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
           {testing === provider ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                กำลังทดสอบ...
+                {t('settings.testing')}
               </>
-          ) : 'ทดสอบการเชื่อมต่อ'}
+          ) : t('settings.testConnection')}
         </Button>
         <Button 
           onClick={() => handleSave(provider)} 
@@ -164,35 +167,41 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
           {loading === provider ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                กำลังบันทึก...
+                {t('settings.saving')}
               </>
-          ) : 'บันทึกข้อมูล'}
+          ) : t('settings.saveBtn')}
         </Button>
       </CardFooter>
     </Card>
   )
 
   return (
-    <div className="grid grid-cols-1 gap-10">
-      <IntegrationCard 
-        provider="openai"
-        title="OpenAI Integration"
-        description="ใช้สำหรับประมวลผลและสร้างเนื้อหาด้วยปัญญาประดิษฐ์ (GPT-4o)"
-        status={openaiStatus}
-        value={keys.openai}
-        placeholder="sk-..."
-        onValueChange={(val) => setKeys({ ...keys, openai: val })}
+    <div className="space-y-6">
+      <PageHeader 
+        title={t('settings.title')} 
+        subtitle={t('settings.subtitle')}
       />
+      <div className="grid grid-cols-1 gap-10">
+        <IntegrationCard 
+          provider="openai"
+          title="OpenAI Integration"
+          description={t('settings.openai.desc')}
+          status={openaiStatus}
+          value={keys.openai}
+          placeholder="sk-..."
+          onValueChange={(val) => setKeys({ ...keys, openai: val })}
+        />
 
-      <IntegrationCard 
-        provider="buffer"
-        title="Buffer Integration"
-        description="ใช้สำหรับส่งโพสต์ที่อนุมัติแล้วไปยังระบบคิวของ Buffer เพื่อเผยแพร่"
-        status={bufferStatus}
-        value={keys.buffer}
-        placeholder="กรอก Buffer Access Token..."
-        onValueChange={(val) => setKeys({ ...keys, buffer: val })}
-      />
+        <IntegrationCard 
+          provider="buffer"
+          title="Buffer Integration"
+          description={t('settings.buffer.desc')}
+          status={bufferStatus}
+          value={keys.buffer}
+          placeholder={t('settings.buffer.placeholder')}
+          onValueChange={(val) => setKeys({ ...keys, buffer: val })}
+        />
+      </div>
     </div>
   )
 }

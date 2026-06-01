@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: Production Workspace
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e13]:
+          - link "Operations Dashboard" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - img
+            - generic [ref=e15]: Operations Dashboard
+          - link "Editor Canvas" [ref=e16] [cursor=pointer]:
+            - /url: /generate
+            - img
+            - generic [ref=e17]: Editor Canvas
+          - link "Review Board" [ref=e18] [cursor=pointer]:
+            - /url: /drafts
+            - img
+            - generic [ref=e19]: Review Board
+          - link "Calendar & Publishing" [ref=e20] [cursor=pointer]:
+            - /url: /calendar
+            - img
+            - generic [ref=e21]: Calendar & Publishing
+          - link "Asset Composer" [ref=e22] [cursor=pointer]:
+            - /url: /asset-composer
+            - img
+            - generic [ref=e23]: Asset Composer
+        - generic [ref=e26]:
+          - link "Brand & Voice" [ref=e27] [cursor=pointer]:
+            - /url: /profile
+            - img
+            - generic [ref=e28]: Brand & Voice
+          - link "Integrations" [ref=e29] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e30]: Integrations
+          - link "Settings" [ref=e31] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e32]: Settings
+      - generic [ref=e33]:
+        - generic [ref=e36]: Content Pipeline Live
+        - generic [ref=e37]: All systems operational
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Workspace
+          - generic [ref=e42]: /
+          - generic [ref=e43]: Content Operations
+          - generic [ref=e44]: /
+          - generic [ref=e45]: Integrations
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - button "TH" [ref=e48] [cursor=pointer]
+            - generic [ref=e49]: /
+            - button "EN" [ref=e50] [cursor=pointer]
+          - generic [ref=e51]:
+            - generic [ref=e52]: OS
+            - button "Sign Out" [ref=e53] [cursor=pointer]
+      - main [ref=e54]:
+        - generic [ref=e57]:
+          - generic [ref=e59]:
+            - heading "ช่องทางการเผยแพร่" [level=1] [ref=e60]
+            - paragraph [ref=e61]: ตั้งค่ากุญแจ API และสิทธิ์บัญชีโซเชียลมีเดีย
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - generic [ref=e66]:
+                    - img [ref=e68]
+                    - generic [ref=e71]: OpenAI Integration
+                  - generic [ref=e72]:
+                    - img [ref=e73]
+                    - text: เชื่อมต่อแล้ว
+                - generic [ref=e76]: ใช้สำหรับประมวลผลและสร้างเนื้อหาด้วยปัญญาประดิษฐ์ (GPT-4o)
+              - generic [ref=e78]:
+                - generic [ref=e79]: OpenAI API Key
+                - generic [ref=e80]:
+                  - textbox "OpenAI API Key" [ref=e81]:
+                    - /placeholder: ••••••••••••••••••••••••••••••••
+                  - generic [ref=e82]:
+                    - button [ref=e83]:
+                      - img [ref=e84]
+                    - img [ref=e87]
+                - paragraph [ref=e90]:
+                  - img [ref=e91]
+                  - text: "อัปเดตล่าสุด: 1/6/2569 15:26:59"
+              - generic [ref=e93]:
+                - button "ทดสอบการเชื่อมต่อ" [ref=e94]
+                - button "บันทึกข้อมูล" [disabled]
+            - generic [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]:
+                  - generic [ref=e98]:
+                    - img [ref=e100]
+                    - generic [ref=e103]: Buffer Integration
+                  - generic [ref=e104]:
+                    - img [ref=e105]
+                    - text: เชื่อมต่อแล้ว
+                - generic [ref=e108]: ใช้สำหรับส่งโพสต์ที่อนุมัติแล้วไปยังระบบคิวของ Buffer เพื่อเผยแพร่
+              - generic [ref=e110]:
+                - generic [ref=e111]: Buffer Access Token
+                - generic [ref=e112]:
+                  - textbox "Buffer Access Token" [ref=e113]:
+                    - /placeholder: ••••••••••••••••••••••••••••••••
+                  - generic [ref=e114]:
+                    - button [ref=e115]:
+                      - img [ref=e116]
+                    - img [ref=e119]
+                - paragraph [ref=e122]:
+                  - img [ref=e123]
+                  - text: "อัปเดตล่าสุด: 1/6/2569 15:30:20"
+              - generic [ref=e125]:
+                - button "ทดสอบการเชื่อมต่อ" [ref=e126]
+                - button "บันทึกข้อมูล" [disabled]
+  - button "Open Next.js Dev Tools" [ref=e132] [cursor=pointer]:
+    - img [ref=e133]
+  - alert [ref=e136]

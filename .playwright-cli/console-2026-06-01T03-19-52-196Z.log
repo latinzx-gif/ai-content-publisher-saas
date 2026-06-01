@@ -1,0 +1,15 @@
+[    4250ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_react-dom_a9203108._.js:14537
+[   24720ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[   25542ms] [LOG] [Fast Refresh] done in 922ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[   25777ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[   25783ms] [LOG] [Fast Refresh] done in 107ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
+[   25984ms] Error: Could not find the table 'public.brands' in the schema cache
+    at getBrandProfile (about://React/Server/file:///Users/jakarinosk/Desktop/AI%20Content%20Legal%20System/.next/server/chunks/ssr/%5Broot-of-the-server%5D__e626f386._.js?42:112:51)
+    at  ProfilePage (about://React/Server/file:///Users/jakarinosk/Desktop/AI%20Content%20Legal%20System/.next/server/chunks/ssr/%5Broot-of-the-server%5D__e626f386._.js?43:321:21)
+    at resolveErrorDev (http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_ea6a4ac9._.js:4306:48)
+    at processFullStringRow (http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_ea6a4ac9._.js:4554:29)
+    at processFullBinaryRow (http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_ea6a4ac9._.js:4513:9)
+    at processBinaryChunk (http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_ea6a4ac9._.js:4622:98)
+    at progress (http://localhost:3000/_next/static/chunks/9e407_next_dist_compiled_ea6a4ac9._.js:4790:25)
+[  144947ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5956
+[  146633ms] [LOG] [Fast Refresh] done in 1787ms @ http://localhost:3000/_next/static/chunks/9e407_next_dist_client_7790f89c._.js:5816
