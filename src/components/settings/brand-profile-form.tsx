@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { saveBrandProfile } from '@/actions/settings'
 import { toast } from 'sonner'
-import { Fingerprint, Save, Info } from 'lucide-react'
+import { Fingerprint, Save, Info, Image as ImageIcon, Upload, X } from 'lucide-react'
 import { useLanguage } from '@/components/providers/language-provider'
 import { PageHeader } from '@/components/ui/page-header'
 
@@ -20,7 +21,21 @@ interface BrandProfileFormProps {
     target_audience: string
     tone: string
     personality: string
+    brand_description?: string | null
+    brand_instructions?: string | null
+    content_rules?: string | null
+    image_rules?: string | null
+    reference_images?: ReferenceImage[] | null
   } | null
+}
+
+interface ReferenceImage {
+  id: string
+  name: string
+  type: 'image/jpeg' | 'image/png' | 'image/webp'
+  size: number
+  dataUrl: string
+  uploadedAt: string
 }
 
 const TONE_OPTIONS = [
@@ -51,7 +66,70 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
     target_audience: initialData?.target_audience || '',
     tone: initialData?.tone || '',
     personality: initialData?.personality || '',
+    brand_description: initialData?.brand_description || '',
+    brand_instructions: initialData?.brand_instructions || '',
+    content_rules: initialData?.content_rules || '',
+    image_rules: initialData?.image_rules || '',
+    reference_images: initialData?.reference_images || [],
   })
+
+  function handleReferenceUpload(files: FileList | null) {
+    if (!files?.length) return
+
+    const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const remainingSlots = 5 - formData.reference_images.length
+    const selectedFiles = Array.from(files).slice(0, remainingSlots)
+
+    if (remainingSlots <= 0) {
+      toast.error('Reference images are limited to 5 files.')
+      return
+    }
+
+    if (files.length > remainingSlots) {
+      toast.error(`Only ${remainingSlots} more reference image${remainingSlots === 1 ? '' : 's'} can be added.`)
+    }
+
+    selectedFiles.forEach((file) => {
+      if (!acceptedTypes.includes(file.type)) {
+        toast.error(`${file.name} must be JPG, PNG, or WEBP.`)
+        return
+      }
+
+      if (file.size > 2_500_000) {
+        toast.error(`${file.name} is too large. Maximum size is 2.5 MB.`)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = () => {
+        const dataUrl = typeof reader.result === 'string' ? reader.result : ''
+        if (!dataUrl) return
+
+        setFormData((current) => ({
+          ...current,
+          reference_images: [
+            ...current.reference_images,
+            {
+              id: `${Date.now()}-${file.name}`,
+              name: file.name,
+              type: file.type as ReferenceImage['type'],
+              size: file.size,
+              dataUrl,
+              uploadedAt: new Date().toISOString(),
+            },
+          ].slice(0, 5),
+        }))
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  function removeReferenceImage(id: string) {
+    setFormData((current) => ({
+      ...current,
+      reference_images: current.reference_images.filter((image) => image.id !== id),
+    }))
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -173,6 +251,125 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-gray-100 space-y-6">
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-gray-900">Brand Memory</h3>
+              <p className="text-xs text-gray-500">
+                Stored guidance used by AI generation so repeated brand instructions do not need to be re-entered.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="brand_description" className="text-sm font-bold text-gray-700">Brand Description</Label>
+              <textarea
+                id="brand_description"
+                value={formData.brand_description}
+                onChange={(e) => setFormData({ ...formData, brand_description: e.target.value })}
+                placeholder="Describe what the brand does, positioning, products, services, and differentiators."
+                rows={3}
+                className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="brand_instructions" className="text-sm font-bold text-gray-700">Brand Instructions</Label>
+              <textarea
+                id="brand_instructions"
+                value={formData.brand_instructions}
+                onChange={(e) => setFormData({ ...formData, brand_instructions: e.target.value })}
+                placeholder="Add standing instructions such as preferred message framing, CTA style, and brand voice details."
+                rows={3}
+                className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label htmlFor="content_rules" className="text-sm font-bold text-gray-700">Content Rules</Label>
+                <textarea
+                  id="content_rules"
+                  value={formData.content_rules}
+                  onChange={(e) => setFormData({ ...formData, content_rules: e.target.value })}
+                  placeholder="Rules, disclaimers, required wording, prohibited claims, or compliance constraints."
+                  rows={5}
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="image_rules" className="text-sm font-bold text-gray-700">Image Rules</Label>
+                <textarea
+                  id="image_rules"
+                  value={formData.image_rules}
+                  onChange={(e) => setFormData({ ...formData, image_rules: e.target.value })}
+                  placeholder="Visual style guidance, brand colors, image do/don't rules, and reference usage notes."
+                  rows={5}
+                  className="w-full rounded-xl border border-gray-200 bg-white p-3 text-sm leading-relaxed outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <Label className="text-sm font-bold text-gray-700">Reference Images</Label>
+                  <p className="text-xs text-gray-500 mt-1">Upload up to 5 JPG, PNG, or WEBP references for future image workflows.</p>
+                </div>
+                <Label
+                  htmlFor="reference_images"
+                  className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-gray-200 px-4 text-xs font-bold text-gray-700 hover:bg-gray-50"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload
+                </Label>
+                <input
+                  id="reference_images"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    handleReferenceUpload(e.target.files)
+                    e.currentTarget.value = ''
+                  }}
+                />
+              </div>
+
+              {formData.reference_images.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {formData.reference_images.map((image) => (
+                    <div key={image.id} className="group relative overflow-hidden rounded-xl border border-gray-200 bg-gray-50">
+                      <Image
+                        src={image.dataUrl}
+                        alt={image.name}
+                        width={160}
+                        height={160}
+                        unoptimized
+                        className="aspect-square w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeReferenceImage(image.id)}
+                        className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-sm hover:text-red-600"
+                        aria-label={`Remove ${image.name}`}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                      <div className="absolute inset-x-0 bottom-0 bg-white/90 px-2 py-1">
+                        <p className="truncate text-[10px] font-semibold text-gray-700">{image.name}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+                  <ImageIcon className="h-5 w-5 text-gray-400" />
+                  No reference images uploaded.
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

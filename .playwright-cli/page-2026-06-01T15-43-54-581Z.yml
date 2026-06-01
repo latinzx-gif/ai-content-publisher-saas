@@ -1,0 +1,291 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Content OS Studio
+        - generic [ref=e8]: พื้นที่ทำงานจำลอง
+      - img [ref=e9]
+    - navigation [ref=e11]:
+      - generic [ref=e13]:
+        - link "ศูนย์ควบคุมการดำเนินงาน" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img
+          - generic [ref=e15]: ศูนย์ควบคุมการดำเนินงาน
+        - link "สตูดิโอสร้างคอนเทนต์" [ref=e16] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - generic [ref=e17]: สตูดิโอสร้างคอนเทนต์
+        - link "บอร์ดตรวจสอบโพสต์" [ref=e18] [cursor=pointer]:
+          - /url: /drafts
+          - img
+          - generic [ref=e19]: บอร์ดตรวจสอบโพสต์
+        - link "ปฏิทินและการเผยแพร่" [ref=e20] [cursor=pointer]:
+          - /url: /calendar
+          - img
+          - generic [ref=e21]: ปฏิทินและการเผยแพร่
+        - link "เครื่องมือสร้างคอลลาจภาพ" [ref=e22] [cursor=pointer]:
+          - /url: /asset-composer
+          - img
+          - generic [ref=e23]: เครื่องมือสร้างคอลลาจภาพ
+      - generic [ref=e26]:
+        - link "น้ำเสียงและตัวตนแบรนด์" [ref=e27] [cursor=pointer]:
+          - /url: /profile
+          - img
+          - generic [ref=e28]: น้ำเสียงและตัวตนแบรนด์
+        - link "ช่องทางเผยแพร่และ API" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e30]: ช่องทางเผยแพร่และ API
+        - link "ตั้งค่าทั่วไป" [ref=e31] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e32]: ตั้งค่าทั่วไป
+    - generic [ref=e33]:
+      - generic [ref=e36]: ระบบท่อส่งคอนเทนต์เชื่อมต่อแล้ว
+      - generic [ref=e37]: ระบบการทำงานปกติทุกส่วน
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: พื้นที่ทำงาน
+        - generic [ref=e42]: /
+        - generic [ref=e43]: ควบคุมการดำเนินงาน
+        - generic [ref=e44]: /
+        - generic [ref=e45]: สตูดิโอสร้างคอนเทนต์
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - button "TH" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]: /
+          - button "EN" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: OS
+          - button "ออกจากระบบ" [ref=e53] [cursor=pointer]
+    - main [ref=e54]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - heading "Editor Canvas" [level=2] [ref=e58]
+          - paragraph [ref=e59]: Draft premium social media posts aligned with your brand guidelines.
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - img [ref=e66]
+                  - heading "ข้อมูลตัวตนแบรนด์ (HUD)" [level=3] [ref=e69]
+                - link "ดูทั้งหมด →" [ref=e70] [cursor=pointer]:
+                  - /url: /profile
+              - generic [ref=e71]:
+                - generic [ref=e72]:
+                  - generic [ref=e73]: OS
+                  - generic [ref=e74]:
+                    - paragraph [ref=e75]: Smoke Legal Advisory
+                    - paragraph [ref=e76]: Legal Advisory Firm
+                - paragraph [ref=e78]: "น้ำเสียง: มืออาชีพ • ทางการ • ชัดเจน"
+            - generic [ref=e79]:
+              - generic [ref=e80]:
+                - generic [ref=e81]:
+                  - img [ref=e82]
+                  - heading "เทมเพลตเนื้อหา" [level=3] [ref=e85]
+                - generic [ref=e86] [cursor=pointer]: ดูทั้งหมด →
+              - generic [ref=e87]:
+                - button "แนะนำกฎหมายแรงงาน สรุปหัวข้อย่อยและสาระสำคัญ" [ref=e88]:
+                  - img [ref=e89]
+                  - generic [ref=e92]:
+                    - paragraph [ref=e93]: แนะนำกฎหมายแรงงาน
+                    - paragraph [ref=e94]: สรุปหัวข้อย่อยและสาระสำคัญ
+                - button "เช็คลิสต์ความถูกต้อง PDPA ขั้นตอนการตรวจสอบระบบจัดเก็บข้อมูล" [ref=e95]:
+                  - img [ref=e96]
+                  - generic [ref=e99]:
+                    - paragraph [ref=e100]: เช็คลิสต์ความถูกต้อง PDPA
+                    - paragraph [ref=e101]: ขั้นตอนการตรวจสอบระบบจัดเก็บข้อมูล
+                - button "ถามตอบกฎหมายธุรกิจบริการ จำลองบทสัมภาษณ์ลูกค้าและคำแนะนำ" [ref=e102]:
+                  - img [ref=e103]
+                  - generic [ref=e106]:
+                    - paragraph [ref=e107]: ถามตอบกฎหมายธุรกิจบริการ
+                    - paragraph [ref=e108]: จำลองบทสัมภาษณ์ลูกค้าและคำแนะนำ
+                - generic [ref=e109]: เรียกดูเทมเพลตทั้งหมด →
+            - generic [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]:
+                  - img [ref=e113]
+                  - heading "มุมมองนำเสนอคอนเทนต์" [level=3] [ref=e116]
+                - generic [ref=e117] [cursor=pointer]: จัดการ →
+              - generic [ref=e118]:
+                - generic [ref=e119]: ให้ความรู้และดึงดูด
+                - generic [ref=e120]: แก้ไขความเข้าใจผิด
+                - generic [ref=e121]: แจ้งเตือนข้อควรระวัง
+                - generic [ref=e122]: ถามตอบกระตุ้นการมีส่วนร่วม
+              - generic [ref=e123]:
+                - generic [ref=e124]: มุมมองที่ระบบแนะนำ
+                - generic [ref=e126]:
+                  - img [ref=e127]
+                  - generic [ref=e129]:
+                    - paragraph [ref=e130]: ชุดคู่มือข้อกำหนดความสอดคล้อง Q2
+                    - paragraph [ref=e131]: สร้างการรับรู้และความไว้วางใจ
+                    - button "ใช้อินพุตของมุมนี้ →" [ref=e132] [cursor=pointer]
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]:
+                - img [ref=e137]
+                - generic [ref=e138]: เครื่องมือเขียนคำสั่งสร้างโพสต์
+              - paragraph [ref=e139]: ปรับแต่งข้อมูลเชิงลึกเป็นรูปแบบโพสต์โซเชียลมีเดียสองภาษา
+            - generic [ref=e140]:
+              - generic [ref=e141]:
+                - generic [ref=e142]: 1. หัวข้อหรือแนวคิดหลักของเนื้อหา (Core Topic)
+                - textbox "ระบุหัวข้อคอนเทนต์หรือข้อความหลัก..." [ref=e143]
+              - generic [ref=e144]:
+                - generic [ref=e145]: 2. การตั้งค่าภาษา (Language Configuration)
+                - generic [ref=e146]:
+                  - button "ภาษาไทย" [ref=e147] [cursor=pointer]
+                  - button "ภาษาอังกฤษ" [ref=e148] [cursor=pointer]
+                  - button "ภาษาจีน" [ref=e149] [cursor=pointer]
+                  - button "ภาษาญี่ปุ่น" [ref=e150] [cursor=pointer]
+                - paragraph [ref=e151]: AI จะสร้างคอนเทนต์ทั้งหมดในภาษาที่เลือกเท่านั้น
+              - generic [ref=e152]:
+                - generic [ref=e153]: 3. รูปแบบเนื้อหาคอลัมน์ (Output Mode)
+                - generic [ref=e154]:
+                  - generic [ref=e155]:
+                    - combobox [ref=e156]:
+                      - generic [ref=e157]: Main post + secondary in comment
+                      - img: ▼
+                    - textbox [ref=e158]: Main post + secondary in comment
+                  - button "อื่นๆ" [ref=e160] [cursor=pointer]
+                  - textbox "อธิบายรูปแบบการจัดโครงสร้างผลลัพธ์..." [ref=e162]
+              - generic [ref=e163]:
+                - generic [ref=e164]: 4. เลือกแพลตฟอร์มปลายทาง (Platforms)
+                - generic [ref=e165]:
+                  - button "LinkedIn" [ref=e166] [cursor=pointer]:
+                    - img [ref=e167]
+                    - text: LinkedIn
+                  - button "Facebook" [ref=e169] [cursor=pointer]:
+                    - img [ref=e170]
+                    - text: Facebook
+                  - button "Website" [ref=e172] [cursor=pointer]:
+                    - img [ref=e173]
+                    - text: Website
+                  - button "Instagram" [ref=e176] [cursor=pointer]:
+                    - img [ref=e177]
+                    - text: Instagram
+                  - button "+ อื่นๆ" [ref=e180] [cursor=pointer]:
+                    - img [ref=e181]
+                    - text: + อื่นๆ
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - generic [ref=e184]: 5. กลุ่มเป้าหมายผู้รับสาร (Target Audience)
+                  - generic [ref=e185]:
+                    - generic [ref=e186]:
+                      - generic [ref=e187]:
+                        - combobox [ref=e188]:
+                          - generic [ref=e189]: Thai SME business owners
+                          - img: ▼
+                        - textbox [ref=e190]: Thai SME business owners
+                      - button "อื่นๆ" [ref=e191] [cursor=pointer]
+                    - textbox "อธิบายกลุ่มเป้าหมายเพิ่มเติม..." [ref=e192]
+                - generic [ref=e193]:
+                  - generic [ref=e194]: 6. โทนภาษาและน้ำเสียง (Language Tone Register)
+                  - generic [ref=e195]:
+                    - generic [ref=e196]:
+                      - generic [ref=e197]:
+                        - combobox [ref=e198]:
+                          - generic [ref=e199]: Professional
+                          - img: ▼
+                        - textbox [ref=e200]: Professional
+                      - button "อื่นๆ" [ref=e201] [cursor=pointer]
+                    - textbox "อธิบายโทนภาษาเพิ่มเติม..." [ref=e202]
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - generic [ref=e205]: 7. เป้าหมายของคอนเทนต์ (Content Goal)
+                  - generic [ref=e206]:
+                    - generic [ref=e207]:
+                      - combobox [ref=e208]:
+                        - generic [ref=e209]: Educate
+                        - img: ▼
+                      - textbox [ref=e210]: Educate
+                    - button "อื่นๆ" [ref=e211] [cursor=pointer]
+                    - textbox "อธิบายเป้าหมายเพิ่มเติม..." [ref=e212]
+                - generic [ref=e213]:
+                  - generic [ref=e214]: 8. รูปแบบความยาวโพสต์ (Content Format)
+                  - generic [ref=e215]:
+                    - generic [ref=e216]:
+                      - combobox [ref=e217]:
+                        - generic [ref=e218]: Educational Post
+                        - img: ▼
+                      - textbox [ref=e219]: Educational Post
+                    - button "อื่นๆ" [ref=e220] [cursor=pointer]
+                    - textbox "อธิบายรูปแบบเพิ่มเติม..." [ref=e221]
+              - generic [ref=e222]:
+                - generic [ref=e223]:
+                  - generic [ref=e224]:
+                    - generic [ref=e225]: 9. แฮชแท็กหลัก (Hashtags Manager)
+                    - combobox [ref=e226]:
+                      - generic [ref=e227]: "5"
+                      - img: ▼
+                    - textbox [ref=e228]: "5"
+                  - paragraph [ref=e229]: แฮชแท็กที่ใส่เองจะเป็นตัวเลือกเสริม ไม่บังคับใช้
+                - textbox "เพิ่มแฮชแท็ก..." [ref=e231]
+              - generic [ref=e232]:
+                - generic [ref=e233]: 10. แหล่งข้อมูลเว็บไซต์ (Knowledge URL)
+                - generic [ref=e234]:
+                  - textbox "https://example.com/article" [ref=e235]
+                  - button "+ เพิ่มลิงก์" [ref=e236] [cursor=pointer]
+              - generic [ref=e237]:
+                - generic [ref=e238]: 11. ข้อจำกัดเพิ่มเติม / โน้ตสั่งการ AI (Context Constraints)
+                - textbox "ระบุแนวทาง ข้อห้าม หรือประเด็นสำคัญที่ต้องมี..." [ref=e239]
+            - button "✨ สร้างผลงานคอนเทนต์" [ref=e241] [cursor=pointer]:
+              - img
+              - text: ✨ สร้างผลงานคอนเทนต์
+          - generic [ref=e242]:
+            - generic [ref=e243]:
+              - generic [ref=e244]:
+                - img [ref=e245]
+                - heading "การประเมินประสิทธิภาพคอนเทนต์" [level=3] [ref=e249]
+              - generic [ref=e250]:
+                - generic [ref=e252]:
+                  - generic [ref=e253]: ความดึงดูดของ Hook
+                  - generic [ref=e254]: 8.6/10
+                - generic [ref=e258]:
+                  - generic [ref=e259]: ความง่ายในการอ่าน
+                  - generic [ref=e260]: 9.0/10
+                - generic [ref=e264]:
+                  - generic [ref=e265]: โอกาสการมีส่วนร่วม
+                  - generic [ref=e266]: 7.4/10
+                - generic [ref=e270]:
+                  - generic [ref=e271]: ความชัดเจนของ CTA
+                  - generic [ref=e272]: 8.2/10
+            - generic [ref=e275]:
+              - generic [ref=e276]:
+                - generic [ref=e277]:
+                  - img [ref=e278]
+                  - heading "ตัวอย่างฟีดจำลอง (Platform Preview Feed)" [level=3] [ref=e281]
+                - generic [ref=e282]:
+                  - img [ref=e283] [cursor=pointer]
+                  - img [ref=e285] [cursor=pointer]
+              - generic [ref=e287]:
+                - generic [ref=e288]:
+                  - generic [ref=e289]:
+                    - generic [ref=e290]: OS
+                    - generic [ref=e291]:
+                      - heading "Smoke Legal Advisory" [level=5] [ref=e292]
+                      - generic [ref=e293]:
+                        - generic [ref=e294]: 2m
+                        - generic [ref=e295]: •
+                        - img [ref=e296]
+                  - img [ref=e299] [cursor=pointer]
+                - generic [ref=e303]:
+                  - paragraph [ref=e304]: กฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA) ไม่ใช่แค่ข้อบังคับ แต่คือความไว้วางใจที่ลูกค้ามีให้กับองค์กรของคุณ การปฏิบัติตามอย่างถูกต้อง คือการสร้างมาตรฐานที่ดี และลดความเสี่ยงในระยะยาว
+                  - paragraph [ref=e305]: AI will generate up to 5 hashtags
+                - generic [ref=e307]:
+                  - text: ส่วนพรีวิวแสดงตัวอย่างภาษาและแฮชแท็กที่เลือก
+                  - text: การจัดวางรูปแบบจริงอาจแตกต่างตามแพลตฟอร์ม
+                - generic [ref=e308]:
+                  - button "ถูกใจ" [ref=e309] [cursor=pointer]:
+                    - img [ref=e310]
+                    - text: ถูกใจ
+                  - button "แสดงความเห็น" [ref=e312] [cursor=pointer]:
+                    - img [ref=e313]
+                    - text: แสดงความเห็น
+                  - button "แชร์" [ref=e315] [cursor=pointer]:
+                    - img [ref=e316]
+                    - text: แชร์
+                  - button "ส่ง" [ref=e322] [cursor=pointer]:
+                    - img [ref=e323]
+                    - text: ส่ง

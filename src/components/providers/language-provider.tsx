@@ -21,6 +21,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dataset.language = lang;
+  }, [lang]);
+
   const changeLanguage = (newLang: Language) => {
     setLang(newLang);
     localStorage.setItem('app-language', newLang);

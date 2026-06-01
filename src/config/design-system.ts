@@ -31,9 +31,9 @@ export const DESIGN_SYSTEM = {
 
   // 2. Typography Rules
   typography: {
-    heading: "font-heading font-black tracking-tight text-slate-900 dark:text-slate-50",
-    body: "font-sans font-medium text-slate-700 dark:text-slate-300",
-    meta: "font-sans text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase",
+    heading: "font-heading font-bold tracking-tight text-slate-900 dark:text-slate-50",
+    body: "font-body font-medium text-slate-700 dark:text-slate-300",
+    meta: "font-body text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-wider uppercase",
   },
 
   // 3. Spacing, Layouts & Card Styles

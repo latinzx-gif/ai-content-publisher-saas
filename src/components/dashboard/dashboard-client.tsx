@@ -88,13 +88,13 @@ export function DashboardClient({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
+    <div className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-4 md:p-6 lg:p-8 flex flex-col space-y-6">
       <div className="w-full space-y-6">
         
         {/* Header Section */}
         <div className="flex justify-between items-start">
           <div className="space-y-1 text-left">
-            <h1 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
+            <h1 className="text-3xl font-heading font-semibold tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
               {t('deck.title')}
             </h1>
             <p className="text-xs text-[#7C756C] dark:text-slate-400">
@@ -104,7 +104,7 @@ export function DashboardClient({
         </div>
 
         {/* Timeline Milestones Progression */}
-        <div className="grid grid-cols-5 border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
           {[
             { label: t('deck.milestones.briefs'), count: stats.generated, sub: 'Generated' },
             { label: t('deck.milestones.drafts'), count: stats.draft, sub: t('deck.milestones.inProgress') },
@@ -115,12 +115,12 @@ export function DashboardClient({
             <div 
               key={idx} 
               className={cn(
-                "p-5 text-center relative flex flex-col items-center justify-center space-y-1.5",
+                "p-4 lg:p-5 text-center relative flex flex-col items-center justify-center space-y-1.5 min-w-0",
                 idx !== 4 && "border-r border-[#E6DFD5] dark:border-slate-800"
               )}
             >
               <span className="text-[10px] uppercase tracking-wider text-[#7C756C] dark:text-slate-400 font-bold">{item.label}</span>
-              <span className="text-2xl font-serif font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">{item.count}</span>
+              <span className="text-2xl font-heading font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">{item.count}</span>
               <span className="text-[10px] text-[#7C756C] dark:text-slate-500 font-medium">{item.sub}</span>
               
               {idx < 4 && (

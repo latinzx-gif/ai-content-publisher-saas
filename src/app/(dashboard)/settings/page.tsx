@@ -8,11 +8,13 @@ export default async function SettingsPage() {
   const buffer = integrations.find(i => i.provider === 'buffer')
 
   return (
-    <div className="max-w-3xl mx-auto pb-20">
-      <IntegrationSettingsForm 
-          openaiStatus={openai?.updated_at} 
-          bufferStatus={buffer?.updated_at} 
-      />
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-slate-950 p-4 md:p-6 lg:p-8">
+      <div className="max-w-3xl mx-auto pb-20">
+        <IntegrationSettingsForm 
+            openaiStatus={openai?.updated_at} 
+            bufferStatus={buffer?.updated_at} 
+        />
+      </div>
     </div>
   )
 }

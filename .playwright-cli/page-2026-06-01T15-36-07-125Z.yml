@@ -1,0 +1,151 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: พื้นที่ทำงานจำลอง
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e13]:
+          - link "ศูนย์ควบคุมการดำเนินงาน" [ref=e14] [cursor=pointer]:
+            - /url: /
+            - img
+            - generic [ref=e15]: ศูนย์ควบคุมการดำเนินงาน
+          - link "สตูดิโอสร้างคอนเทนต์" [ref=e16] [cursor=pointer]:
+            - /url: /generate
+            - img
+            - generic [ref=e17]: สตูดิโอสร้างคอนเทนต์
+          - link "บอร์ดตรวจสอบโพสต์" [ref=e18] [cursor=pointer]:
+            - /url: /drafts
+            - img
+            - generic [ref=e19]: บอร์ดตรวจสอบโพสต์
+          - link "ปฏิทินและการเผยแพร่" [ref=e20] [cursor=pointer]:
+            - /url: /calendar
+            - img
+            - generic [ref=e21]: ปฏิทินและการเผยแพร่
+          - link "เครื่องมือสร้างคอลลาจภาพ" [ref=e22] [cursor=pointer]:
+            - /url: /asset-composer
+            - img
+            - generic [ref=e23]: เครื่องมือสร้างคอลลาจภาพ
+        - generic [ref=e26]:
+          - link "น้ำเสียงและตัวตนแบรนด์" [ref=e27] [cursor=pointer]:
+            - /url: /profile
+            - img
+            - generic [ref=e28]: น้ำเสียงและตัวตนแบรนด์
+          - link "ช่องทางเผยแพร่และ API" [ref=e29] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e30]: ช่องทางเผยแพร่และ API
+          - link "ตั้งค่าทั่วไป" [ref=e31] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e32]: ตั้งค่าทั่วไป
+      - generic [ref=e33]:
+        - generic [ref=e36]: ระบบท่อส่งคอนเทนต์เชื่อมต่อแล้ว
+        - generic [ref=e37]: ระบบการทำงานปกติทุกส่วน
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: พื้นที่ทำงาน
+          - generic [ref=e42]: /
+          - generic [ref=e43]: ควบคุมการดำเนินงาน
+          - generic [ref=e44]: /
+          - generic [ref=e45]: น้ำเสียงและตัวตนแบรนด์
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - button "TH" [ref=e48] [cursor=pointer]
+            - generic [ref=e49]: /
+            - button "EN" [ref=e50] [cursor=pointer]
+          - generic [ref=e51]:
+            - generic [ref=e52]: OS
+            - button "ออกจากระบบ" [ref=e53] [cursor=pointer]
+      - main [ref=e54]:
+        - generic [ref=e58]:
+          - generic [ref=e60]:
+            - heading "ตัวตนแบรนด์น้ำเสียง" [level=1] [ref=e61]
+            - paragraph [ref=e62]: กำหนดแนวทางเสียงและกลุ่มผู้รับสารแบรนด์ของคุณ
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - img [ref=e66]
+              - generic [ref=e68]:
+                - heading "ทำไมข้อมูลแบรนด์ถึงสำคัญ?" [level=4] [ref=e69]
+                - paragraph [ref=e70]: ข้อมูลเหล่านี้จะถูกนำไปใช้เป็นบริบทหลักให้ AI เข้าใจตัวตนของธุรกิจคุณ ทำให้คอนเทนต์ที่สร้างขึ้นมามี "น้ำเสียง" และ "บุคลิก" ที่ตรงกับแบรนด์ของคุณมากที่สุด
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - img [ref=e75]
+                  - generic [ref=e84]: ข้อมูลตัวตนแบรนด์
+                - generic [ref=e85]: ระบุรายละเอียดธุรกิจของคุณเพื่อให้ AI ปรับแต่งเนื้อหาให้เหมาะสม
+              - generic [ref=e86]:
+                - generic [ref=e87]:
+                  - generic [ref=e88]:
+                    - generic [ref=e89]: ชื่อธุรกิจ / ชื่อแบรนด์
+                    - textbox "ชื่อธุรกิจ / ชื่อแบรนด์" [ref=e90]:
+                      - /placeholder: เช่น ABC Legal Advisory
+                      - text: Smoke Legal Advisory
+                  - generic [ref=e91]:
+                    - generic [ref=e92]: ประเภทธุรกิจ
+                    - textbox "ประเภทธุรกิจ" [ref=e93]:
+                      - /placeholder: เช่น สำนักงานกฎหมาย, ที่ปรึกษาธุรกิจ
+                      - text: Legal Advisory Firm
+                - generic [ref=e94]:
+                  - generic [ref=e95]: กลุ่มเป้าหมายหลัก
+                  - textbox "กลุ่มเป้าหมายหลัก" [ref=e96]:
+                    - /placeholder: เช่น เจ้าของธุรกิจ SME, คนที่กำลังจะซื้อบ้าน
+                    - text: Thai SME business owners
+                - generic [ref=e97]:
+                  - generic [ref=e98]:
+                    - generic [ref=e99]: โทนภาษาหลัก
+                    - combobox "โทนภาษาหลัก" [ref=e100]:
+                      - generic [ref=e101]: Professional
+                      - img: ▼
+                    - textbox [ref=e102]: Professional
+                  - generic [ref=e103]:
+                    - generic [ref=e104]: บุคลิกภาพของแบรนด์
+                    - combobox "บุคลิกภาพของแบรนด์" [ref=e105]:
+                      - generic [ref=e106]: น่าเชื่อถือ
+                      - img: ▼
+                    - textbox [ref=e107]: น่าเชื่อถือ
+                - generic [ref=e108]:
+                  - generic [ref=e109]:
+                    - heading "Brand Memory" [level=3] [ref=e110]
+                    - paragraph [ref=e111]: Stored guidance used by AI generation so repeated brand instructions do not need to be re-entered.
+                  - generic [ref=e112]:
+                    - generic [ref=e113]: Brand Description
+                    - textbox "Brand Description" [ref=e114]:
+                      - /placeholder: Describe what the brand does, positioning, products, services, and differentiators.
+                      - text: "Verification brand memory: Legal advisory brand for Thai SME owners, focused on practical compliance and trustworthy guidance."
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: Brand Instructions
+                    - textbox "Brand Instructions" [ref=e117]:
+                      - /placeholder: Add standing instructions such as preferred message framing, CTA style, and brand voice details.
+                      - text: Use concise, client-friendly explanations. Avoid fear-based claims. Always include a practical next step.
+                  - generic [ref=e118]:
+                    - generic [ref=e119]:
+                      - generic [ref=e120]: Content Rules
+                      - textbox "Content Rules" [ref=e121]:
+                        - /placeholder: Rules, disclaimers, required wording, prohibited claims, or compliance constraints.
+                        - text: No legal guarantees. Include disclaimer that content is general information, not legal advice.
+                    - generic [ref=e122]:
+                      - generic [ref=e123]: Image Rules
+                      - textbox "Image Rules" [ref=e124]:
+                        - /placeholder: Visual style guidance, brand colors, image do/don't rules, and reference usage notes.
+                        - text: Visuals should look clean, professional, document-led, and suitable for legal/compliance education.
+                  - generic [ref=e125]:
+                    - generic [ref=e126]:
+                      - generic [ref=e127]:
+                        - generic [ref=e128]: Reference Images
+                        - paragraph [ref=e129]: Upload up to 5 JPG, PNG, or WEBP references for future image workflows.
+                      - generic [ref=e130] [cursor=pointer]:
+                        - img [ref=e131]
+                        - text: Upload
+                    - generic [ref=e134]:
+                      - img [ref=e135]
+                      - text: No reference images uploaded.
+              - button "บันทึกการเปลี่ยนแปลง" [ref=e140]:
+                - img
+                - text: บันทึกการเปลี่ยนแปลง
+  - button "Open Next.js Dev Tools" [ref=e146] [cursor=pointer]:
+    - img [ref=e147]
+  - alert [ref=e150]

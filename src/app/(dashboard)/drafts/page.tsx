@@ -16,7 +16,7 @@ export default async function DraftsPage() {
     .single()
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-20 min-w-0 overflow-x-hidden">
       <DraftsList initialPosts={posts} hasBufferKey={!!bufferInt} />
     </div>
   )

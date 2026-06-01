@@ -1,7 +1,7 @@
 'use server'
 
 import { decrypt } from '@/lib/encryption'
-import { getGeneratePostsPrompt } from '@/prompts/generate-posts'
+import { getGeneratePostsPrompt, type ContentLanguage, type HashtagCount } from '@/prompts/generate-posts'
 import { callOpenAI } from '@/lib/openai'
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
@@ -14,8 +14,37 @@ const GeneratePostsSchema = z.object({
   personality: z.string().min(1, 'Personality is required'),
   postCount: z.union([z.literal(5), z.literal(10)]),
   urls: z.array(z.string().url()).max(5).optional(),
-  manualContext: z.string().max(10000).optional()
+  manualContext: z.string().max(10000).optional(),
+  language: z.enum(['TH', 'EN', 'CN', 'JP']).default('TH'),
+  hashtagCount: z.union([z.literal(0), z.literal(5), z.literal(10), z.literal(15)]).default(5),
+  manualHashtags: z.array(z.string().max(60)).max(15).optional()
 })
+
+const SUMMARY_LANGUAGE_LABELS: Record<ContentLanguage, string> = {
+  TH: 'Thai',
+  EN: 'English',
+  CN: 'Chinese',
+  JP: 'Japanese',
+}
+
+function normalizeHashtags(hashtags: string, maxCount: HashtagCount): string {
+  if (maxCount === 0) return ''
+
+  const seen = new Set<string>()
+  const tags = hashtags
+    .split(/\s+/)
+    .map(tag => tag.trim())
+    .filter(Boolean)
+    .map(tag => tag.startsWith('#') ? tag : `#${tag}`)
+    .filter(tag => {
+      const key = tag.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+
+  return tags.slice(0, maxCount).join(' ')
+}
 
 function cleanHtml(html: string): string {
   // Strip script and style blocks completely
@@ -45,7 +74,7 @@ async function fetchUrlContent(url: string): Promise<string> {
   }
 }
 
-async function summarizeSources(apiKey: string, rawTexts: string[]): Promise<string> {
+async function summarizeSources(apiKey: string, rawTexts: string[], language: ContentLanguage): Promise<string> {
   const combined = rawTexts.join('\n\n--- SOURCE BUNDLE ---\n\n');
   const openai = new OpenAI({ apiKey });
   const response = await openai.chat.completions.create({
@@ -53,7 +82,7 @@ async function summarizeSources(apiKey: string, rawTexts: string[]): Promise<str
     messages: [
       { 
         role: 'system', 
-        content: 'You are an AI research assistant. Summarize the following sources into a concise summary in Thai, focusing on legal compliance, key facts, and essential details that can be used to write informative social media posts.' 
+        content: `You are an AI research assistant. Summarize the following sources into a concise summary in ${SUMMARY_LANGUAGE_LABELS[language]}, focusing on legal compliance, key facts, and essential details that can be used to write informative social media posts.`
       },
       { role: 'user', content: combined.slice(0, 20000) }
     ],
@@ -108,7 +137,7 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
 
   let summarizedContext = ''
   if (fetchedContents.length > 0) {
-    summarizedContext = await summarizeSources(apiKey, fetchedContents)
+    summarizedContext = await summarizeSources(apiKey, fetchedContents, validated.language)
   }
 
   // 5. Construct Prompt
@@ -118,13 +147,22 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
       business_type: brand.business_type,
       target_audience: brand.target_audience,
       tone: brand.tone,
-      personality: brand.personality
+      personality: brand.personality,
+      brand_description: brand.brand_description,
+      brand_instructions: brand.brand_instructions,
+      content_rules: brand.content_rules,
+      image_rules: brand.image_rules
     },
     validated.topic,
     validated.tone,
     validated.personality,
     validated.postCount,
-    summarizedContext || undefined
+    {
+      language: validated.language,
+      hashtagCount: validated.hashtagCount as HashtagCount,
+      manualHashtags: validated.manualHashtags,
+      knowledgeContext: summarizedContext || undefined
+    }
   )
 
   // 6. Call OpenAI
@@ -136,6 +174,11 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
   if ('error' in result) {
     return { success: false, error: result.error }
   }
+
+  const normalizedPosts = result.posts.map(post => ({
+    ...post,
+    hashtags: normalizeHashtags(post.hashtags, validated.hashtagCount as HashtagCount)
+  }))
 
   // 6. Create Workflow Log
   const { data: log, error: logError } = await supabase
@@ -152,7 +195,7 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
   if (logError) throw new Error('Failed to create workflow log')
 
   // 7. Save Posts as Drafts
-  const postsToInsert = result.posts.map(post => ({
+  const postsToInsert = normalizedPosts.map(post => ({
     user_id: user.id,
     workflow_id: log.id,
     content: `${post.title}\n\n${post.caption}\n\n${post.hashtags}`,
@@ -165,7 +208,10 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
         platform: post.platform,
         title: post.title,
         caption: post.caption,
-        hashtags: post.hashtags
+        hashtags: post.hashtags,
+        language: validated.language,
+        hashtag_count: validated.hashtagCount,
+        manual_hashtags: validated.manualHashtags || []
     }
   }))
 
@@ -182,5 +228,5 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
     .eq('id', log.id)
 
   revalidatePath('/drafts')
-  return { success: true, count: result.posts.length, posts: result.posts }
+  return { success: true, count: normalizedPosts.length, posts: normalizedPosts }
 }

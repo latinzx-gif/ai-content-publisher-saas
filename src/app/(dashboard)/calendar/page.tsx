@@ -169,7 +169,7 @@ export default function CalendarPage() {
       
       {/* Title Header */}
       <div className="space-y-1 text-left pb-3 border-b border-[#E6DFD5] dark:border-slate-800">
-        <h2 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
+        <h2 className="text-3xl font-heading font-semibold tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
           {t('calendar.title')}
         </h2>
         <p className="text-xs text-[#7C756C] dark:text-slate-400">

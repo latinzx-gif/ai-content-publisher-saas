@@ -4,6 +4,31 @@ export interface BrandProfile {
   target_audience: string
   tone: string
   personality: string
+  brand_description?: string | null
+  brand_instructions?: string | null
+  content_rules?: string | null
+  image_rules?: string | null
+}
+
+export type ContentLanguage = 'TH' | 'EN' | 'CN' | 'JP'
+export type HashtagCount = 0 | 5 | 10 | 15
+
+interface GeneratePromptOptions {
+  language: ContentLanguage
+  hashtagCount: HashtagCount
+  manualHashtags?: string[]
+  knowledgeContext?: string
+}
+
+const LANGUAGE_LABELS: Record<ContentLanguage, string> = {
+  TH: 'Thai',
+  EN: 'English',
+  CN: 'Chinese',
+  JP: 'Japanese',
+}
+
+function compact(value?: string | null, maxLength = 1200) {
+  return value?.trim().replace(/\s+/g, ' ').slice(0, maxLength) || ''
 }
 
 export function getGeneratePostsPrompt(
@@ -12,13 +37,33 @@ export function getGeneratePostsPrompt(
   tone: string,
   personality: string,
   count: number,
-  knowledgeContext?: string
+  options: GeneratePromptOptions
 ) {
-  const contextSection = knowledgeContext 
-    ? `\nAdditional Knowledge/Context (Use this information to inform the content): \n${knowledgeContext}\n` 
-    : '';
+  const outputLanguage = LANGUAGE_LABELS[options.language]
+  const contextSection = options.knowledgeContext
+    ? `\nKnowledge Sources and Manual Context:\n${options.knowledgeContext}\n`
+    : ''
 
-  return `You are an expert social media content creator. Your task is to generate ${count} social media posts in Thai language for the following brand and topic.
+  const memoryLines = [
+    ['Brand Description', compact(brand.brand_description)],
+    ['Brand Instructions', compact(brand.brand_instructions)],
+    ['Content Rules', compact(brand.content_rules)],
+    ['Image Rules', compact(brand.image_rules)],
+  ]
+    .filter(([, value]) => value)
+    .map(([label, value]) => `- ${label}: ${value}`)
+    .join('\n')
+
+  const memorySection = memoryLines
+    ? `\nBrand Memory:\n${memoryLines}\n`
+    : ''
+
+  const manualTags = options.manualHashtags?.map(tag => tag.replace(/^#/, '').trim()).filter(Boolean) || []
+  const hashtagInstruction = options.hashtagCount === 0
+    ? 'Set hashtags to an empty string. Do not generate hashtags.'
+    : `Generate up to ${options.hashtagCount} relevant hashtags. Include these manual hashtags if relevant, but do not exceed ${options.hashtagCount} total: ${manualTags.map(tag => `#${tag}`).join(' ') || 'none'}.`
+
+  return `You are an expert social media content creator. Generate ${count} social media posts for the following brand and topic.
 
 Brand Context:
 - Name: ${brand.name}
@@ -26,16 +71,20 @@ Brand Context:
 - Target Audience: ${brand.target_audience}
 - Default Tone: ${brand.tone}
 - Default Personality: ${brand.personality}
+${memorySection}
 ${contextSection}
 Current Task:
 - Topic: ${topic}
 - Requested Tone: ${tone}
 - Requested Personality: ${personality}
+- Selected Language: ${outputLanguage}
 
 Requirements:
-1. Language: Thai (Professional, engaging, and localized).
+1. Language: Write the title, caption, and hashtags entirely in ${outputLanguage}. Do not mix languages unless a brand rule explicitly requires a proper noun.
 2. Format: Strictly JSON output.
-3. Content Angle Mix: Ensure a diverse mix of the following angles:
+3. Brand Memory: Follow Brand Description, Brand Instructions, Content Rules, Image Rules, Knowledge Sources, and Current Topic. Image Rules are guidance only; do not generate image prompts or image assets.
+4. Hashtags: ${hashtagInstruction}
+5. Content Angle Mix: Ensure a diverse mix of the following angles:
    - Educational
    - FAQ
    - Checklist
@@ -44,7 +93,7 @@ Requirements:
    - Case Study
    - Common Mistake
    - Action Plan
-4. Platform: Facebook (but adaptable).
+6. Platform: Facebook (but adaptable).
 
 JSON Structure:
 {

@@ -16,7 +16,7 @@ export function PageHeader({ title, subtitle, children, className }: PageHeaderP
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="font-body text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
             {subtitle}
           </p>
         )}
@@ -29,4 +29,3 @@ export function PageHeader({ title, subtitle, children, className }: PageHeaderP
     </div>
   )
 }
-

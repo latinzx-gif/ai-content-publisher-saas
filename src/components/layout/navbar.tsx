@@ -30,7 +30,7 @@ export function Navbar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
   const pageTitle = currentNav ? t(currentNav.titleKey) : t('navbar.dashboard');
 
   return (
-    <header className="h-14 border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/85 dark:bg-slate-950/85 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-8 select-none">
+    <header className="h-14 border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/85 dark:bg-slate-950/85 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 md:px-6 lg:px-8 select-none">
       <div className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-[#7C756C]">
         <span className="hover:text-[#1E1D1B] transition-colors">{t('navbar.workspace')}</span>
         <span>/</span>

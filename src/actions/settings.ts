@@ -5,12 +5,26 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { getCurrentOwner, requireOwner, getDbClient } from '@/lib/owner-context'
 
+const ReferenceImageSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).max(200),
+  type: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+  size: z.number().int().positive().max(2_500_000),
+  dataUrl: z.string().startsWith('data:image/').max(4_000_000),
+  uploadedAt: z.string().min(1),
+})
+
 const BrandProfileSchema = z.object({
   name: z.string().min(1, 'Business name is required'),
   business_type: z.string().min(1, 'Business type is required'),
   target_audience: z.string().min(1, 'Target audience is required'),
   tone: z.string().min(1, 'Tone is required'),
   personality: z.string().min(1, 'Personality is required'),
+  brand_description: z.string().max(3000).optional().default(''),
+  brand_instructions: z.string().max(3000).optional().default(''),
+  content_rules: z.string().max(3000).optional().default(''),
+  image_rules: z.string().max(3000).optional().default(''),
+  reference_images: z.array(ReferenceImageSchema).max(5).optional().default([]),
 })
 
 export async function saveBrandProfile(formData: z.infer<typeof BrandProfileSchema>) {

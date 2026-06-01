@@ -1,35 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { generatePosts } from '@/actions/generate';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { 
-  Sparkles, 
-  CheckCircle2, 
-  Cpu, 
-  SlidersHorizontal, 
-  BookOpen, 
-  Layers, 
-  AlertTriangle, 
-  Check, 
-  Zap,
-  Target,
+  Sparkle,
   Plus,
-  Trash2,
-  Link as LinkIcon,
   Globe,
   MoreHorizontal,
   ThumbsUp,
   MessageSquare,
   Share2,
   Send,
-  Sparkle
+  Target,
+  Laptop,
+  Smartphone,
+  X
 } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
 
@@ -48,16 +39,43 @@ interface GenerateFormProps {
     target_audience: string;
     tone: string;
     personality: string;
+    brand_description?: string | null;
+    brand_instructions?: string | null;
+    content_rules?: string | null;
+    image_rules?: string | null;
   } | null;
   hasOpenAIKey: boolean;
 }
 
-const TOPIC_OPTIONS = [
-  { value: 'กฎหมายแรงงาน', label: 'กฎหมายแรงงาน (Labor Law)' },
-  { value: 'PDPA / คุ้มครองข้อมูลส่วนบุคคล', label: 'PDPA & Data Privacy' },
-  { value: 'อสังหาริมทรัพย์ / โอนกรรมสิทธิ์', label: 'Real Estate & Property Law' },
-  { value: 'การตลาดธุรกิจบริการ', label: 'Service Business Marketing' },
-  { value: 'custom', label: 'กำหนดหัวข้อเอง (Custom Topic)' },
+type ContentLanguage = 'TH' | 'EN' | 'CN' | 'JP';
+
+const LANGUAGE_OPTIONS: Array<{ value: ContentLanguage; label: string }> = [
+  { value: 'TH', label: 'Thai / ภาษาไทย' },
+  { value: 'EN', label: 'English / ภาษาอังกฤษ' },
+  { value: 'CN', label: 'Chinese / ภาษาจีน' },
+  { value: 'JP', label: 'Japanese / ภาษาญี่ปุ่น' },
+];
+
+const TOPIC_PRESETS = [
+  { value: 'Labour Law Update', label: 'Labour Law Update' },
+  { value: 'PDPA Compliance Tips', label: 'PDPA Compliance Tips' },
+  { value: 'Service Business Marketing', label: 'Service Business Marketing' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
+];
+
+const OUTPUT_MODES = [
+  { value: 'Main post + secondary in comment', label: 'Main post + secondary in comments' },
+  { value: 'Bilingual caption', label: 'Bilingual caption' },
+  { value: 'Main post only', label: 'Main post only' },
+  { value: 'Separate versions', label: 'Separate versions' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
+];
+
+const AUDIENCES = [
+  { value: 'Legal & Compliance Professionals', label: 'Legal & Compliance Professionals' },
+  { value: 'SME Owners', label: 'SME Owners' },
+  { value: 'HR Managers', label: 'HR Managers' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
 ];
 
 const TONE_OPTIONS = [
@@ -67,151 +85,134 @@ const TONE_OPTIONS = [
   { value: 'Expert', label: 'Expert' },
   { value: 'Corporate', label: 'Corporate' },
   { value: 'Simple', label: 'Simple' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
 ];
 
-const PERSONALITY_OPTIONS = [
-  { value: 'น่าเชื่อถือ', label: 'น่าเชื่อถือ (Trustworthy)' },
-  { value: 'เป็นกันเอง', label: 'เป็นกันเอง (Approachable)' },
-  { value: 'จริงจัง', label: 'จริงจัง (Serious)' },
-  { value: 'ทันสมัย', label: 'ทันสมัย (Modern)' },
-  { value: 'ผู้เชี่ยวชาญ', label: 'ผู้เชี่ยวชาญ (Authority)' },
-  { value: 'เน้นขาย', label: 'เน้นขาย (Sales)' },
+const CONTENT_GOALS = [
+  { value: 'Educate', label: 'Educate' },
+  { value: 'Promote', label: 'Promote' },
+  { value: 'Engagement', label: 'Engagement' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
 ];
 
-const OBJECTIVE_OPTIONS = [
-  { val: 'Awareness', label: 'Awareness' },
-  { val: 'Education', label: 'Education' },
-  { val: 'Educational', label: 'เพื่อให้ความรู้ (Educational)' },
-  { val: 'Lead Gen / Sales', label: 'เพื่อเพิ่มลูกค้า / เน้นขาย (Lead Gen / Sales)' },
-  { val: 'Brand Awareness', label: 'เพื่อสร้างภาพลักษณ์แบรนด์ (Brand Awareness)' },
-  { val: 'Engagement Drive', label: 'เพื่อดึงดูดผู้ร่วมโต้ตอบ (Engagement Drive)' },
+const CONTENT_FORMATS = [
+  { value: 'Educational Post', label: 'Educational Post' },
+  { value: 'Checklist', label: 'Checklist' },
+  { value: 'Q&A', label: 'Q&A' },
+  { value: 'custom', label: 'กำหนดเอง (Custom)' }
 ];
 
 const CONTENT_TEMPLATES = [
   {
     id: 'labour-law',
     title: 'Labor Law Advice',
-    titleTh: 'แนะนำกฎหมายแรงงาน',
     desc: 'Educational tip breakdown',
-    descTh: 'สรุปหัวข้อย่อยและสาระสำคัญ',
     topic: 'Labour Law Update',
     audience: 'HR Managers',
     tone: 'Expert',
-    style: 'Practical',
-    objective: 'Education',
+    objective: 'Educate',
+    format: 'Educational Post',
     wordCount: '800',
   },
   {
     id: 'pdpa-compliance',
     title: 'PDPA Compliance Checklist',
-    titleTh: 'เช็คลิสต์ความถูกต้อง PDPA',
     desc: 'Step-by-step audit checklist',
-    descTh: 'ขั้นตอนการตรวจสอบระบบจัดเก็บข้อมูล',
     topic: 'PDPA Compliance Tips',
-    audience: 'Business Owners',
+    audience: 'SME Owners',
     tone: 'Professional',
-    style: 'Educational',
-    objective: 'Awareness',
+    objective: 'Educate',
+    format: 'Checklist',
     wordCount: '500',
   },
   {
     id: 'service-biz-qa',
     title: 'Service Business Q&A',
-    titleTh: 'ถามตอบกฎหมายธุรกิจบริการ',
     desc: 'Client interview mock',
-    descTh: 'จำลองบทสัมภาษณ์ลูกค้าและคำแนะนำ',
     topic: 'Service Business Marketing',
     audience: 'SME Owners',
     tone: 'Friendly',
-    style: 'Interactive',
     objective: 'Engagement',
-    wordCount: '600',
+    format: 'Q&A',
+    wordCount: '300',
+  },
+  {
+    id: 'expert-myth-buster',
+    title: 'Expert Myth-Buster',
+    desc: 'Confrontational value correction',
+    topic: 'PDPA Compliance Tips',
+    audience: 'Legal & Compliance Professionals',
+    tone: 'Corporate',
+    objective: 'Educate',
+    format: 'Educational Post',
+    wordCount: '1200',
   }
 ];
 
 export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) {
+  const { currentLanguage } = useLanguage();
+
+  // Workspace Level States
+  const [activeTab, setActiveTab] = useState<'manual' | 'quick'>('manual');
+  const [manualSettings, setManualSettings] = useState(true);
+  const [showManual, setShowManual] = useState(true);
+
+  // Form Field States
+  const [topicPreset, setTopicPreset] = useState<string>('PDPA Compliance Tips');
+  const [customTopic, setCustomTopic] = useState<string>('');
+  const [showCustomTopicInput, setShowCustomTopicInput] = useState(false);
+
+  const [primaryLang, setPrimaryLang] = useState<ContentLanguage>('TH');
+  const [secondaryLang, setSecondaryLang] = useState<ContentLanguage>('EN');
+  const [bothLanguages, setBothLanguages] = useState(true);
+
+  const [outputMode, setOutputMode] = useState<string>('Main post + secondary in comment');
+  const [customOutputMode, setCustomOutputMode] = useState<string>('');
+  const [showCustomOutput, setShowCustomOutput] = useState(false);
+
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('LinkedIn');
+
+  const [audience, setAudience] = useState<string>('Legal & Compliance Professionals');
+  const [customAudienceText, setCustomAudienceText] = useState<string>('');
+  const [showCustomAudience, setShowCustomAudience] = useState(false);
+
+  const [tone, setTone] = useState<string>('Professional');
+  const [customTone, setCustomTone] = useState<string>('');
+  const [showCustomTone, setShowCustomTone] = useState(false);
+
+  const [objective, setObjective] = useState<string>('Educate');
+  const [customGoal, setCustomGoal] = useState<string>('');
+  const [showCustomGoal, setShowCustomGoal] = useState(false);
+
+  const [format, setFormat] = useState<string>('Educational Post');
+  const [customFormat, setCustomFormat] = useState<string>('');
+  const [showCustomFormat, setShowCustomFormat] = useState(false);
+
+  const [hashtags, setHashtags] = useState<string[]>(['compliance', 'lawupdate', 'legalinsights']);
+  const [hashtagInput, setHashtagInput] = useState<string>('');
+
+  const [urls, setUrls] = useState<string[]>([]);
+  const [currentUrl, setCurrentUrl] = useState<string>('');
+
+  const [wordCount, setWordCount] = useState<string>('500');
+  const [manualContext, setManualContext] = useState<string>('');
+
+  // Processing & Output states
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
-  const [successCount, setSuccessCount] = useState<number | null>(null);
-  
-  const [selectedTopic, setSelectedTopic] = useState('custom');
-  const [customTopic, setCustomTopic] = useState('');
-  
-  // Platform selection state
-  const [selectedPlatform, setSelectedPlatform] = useState('LinkedIn');
-  
-  // Bilingual switch
-  const [generateBoth, setGenerateBoth] = useState(true);
-  
-  // Custom states
-  const [outputMode, setOutputMode] = useState('Main post + secondary in comment');
-  const [customOutputMode, setCustomOutputMode] = useState('');
-  const [customTone, setCustomTone] = useState('');
-  const [customAudienceText, setCustomAudienceText] = useState('');
-  const [customGoal, setCustomGoal] = useState('');
-  const [customFormat, setCustomFormat] = useState('');
-  const [hashtagInput, setHashtagInput] = useState('');
-  const [hashtags, setHashtags] = useState<string[]>(['compliance', 'lawupdate', 'legalinsights']);
-  
-  const [tone, setTone] = useState(initialBrand?.tone || 'Professional');
-  const [personality, setPersonality] = useState(initialBrand?.personality || 'น่าเชื่อถือ');
-  const [audience, setAudience] = useState(initialBrand?.target_audience || 'Legal & Compliance Professionals');
-  const [objective, setObjective] = useState('Educate');
-  const [format, setFormat] = useState('Educational Post');
-  const [wordCount, setWordCount] = useState('500');
-  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
-  const [showCustomOutput, setShowCustomOutput] = useState(true);
-  const [showCustomAudience, setShowCustomAudience] = useState(true);
-  const [showCustomTone, setShowCustomTone] = useState(true);
-  const [showCustomGoal, setShowCustomGoal] = useState(true);
-  const [showCustomFormat, setShowCustomFormat] = useState(true);
-
-  const { t, currentLanguage } = useLanguage();
-  const getLabel = (en: string, th: string) => currentLanguage === 'th' ? th : en;
-
-  // Knowledge Sources state variables
-  const [urls, setUrls] = useState<string[]>([]);
-  const [currentUrl, setCurrentUrl] = useState('');
-  const [manualContext, setManualContext] = useState('');
-
-  // Output Workspace state variables
   const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
-  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-
-  const handleAddUrl = () => {
-    if (!currentUrl.trim()) return;
-    try {
-      new URL(currentUrl);
-    } catch {
-      toast.error(currentLanguage === 'th' ? 'กรุณาระบุ URL ที่ถูกต้อง (เช่น https://example.com)' : 'Please enter a valid URL (e.g. https://example.com)');
-      return;
-    }
-    if (urls.length >= 5) {
-      toast.error(currentLanguage === 'th' ? 'สามารถเพิ่มได้สูงสุด 5 URLs' : 'You can add up to 5 URLs');
-      return;
-    }
-    if (urls.includes(currentUrl.trim())) {
-      toast.error(currentLanguage === 'th' ? 'URL นี้ถูกเพิ่มไปแล้ว' : 'This URL has already been added');
-      return;
-    }
-    setUrls([...urls, currentUrl.trim()]);
-    setCurrentUrl('');
-  };
-
-  const handleRemoveUrl = (indexToRemove: number) => {
-    setUrls(urls.filter((_, idx) => idx !== indexToRemove));
-  };
+  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
 
   const handleUseTemplate = (template: typeof CONTENT_TEMPLATES[number]) => {
-    setSelectedTopic('custom');
+    setTopicPreset(template.topic);
     setCustomTopic(template.topic);
     setAudience(template.audience);
     setTone(template.tone);
-    setPersonality(template.style);
     setObjective(template.objective);
+    setFormat(template.format);
     setWordCount(template.wordCount);
     setActiveTemplateId(template.id);
-    setSuccessCount(null);
   };
 
   const handleAddHashtag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -229,41 +230,75 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     setHashtags(hashtags.filter(t => t !== tag));
   };
 
+  const handleAddUrl = () => {
+    if (!currentUrl.trim()) return;
+    try {
+      new URL(currentUrl);
+    } catch {
+      toast.error(currentLanguage === 'th' ? 'กรุณาระบุ URL ที่ถูกต้อง' : 'Please enter a valid URL');
+      return;
+    }
+    if (urls.length >= 5) {
+      toast.error(currentLanguage === 'th' ? 'เพิ่มได้สูงสุด 5 ลิงก์' : 'You can add up to 5 URLs');
+      return;
+    }
+    if (urls.includes(currentUrl.trim())) {
+      toast.error(currentLanguage === 'th' ? 'ลิงก์นี้ถูกเพิ่มไปแล้ว' : 'This URL has already been added');
+      return;
+    }
+    setUrls([...urls, currentUrl.trim()]);
+    setCurrentUrl('');
+  };
+
+  const handleRemoveUrl = (index: number) => {
+    setUrls(urls.filter((_, idx) => idx !== index));
+  };
+
   async function handleSubmit() {
-    const finalTopic = selectedTopic === 'custom' ? customTopic : selectedTopic;
-    if (!finalTopic) {
+    const finalTopic = topicPreset === 'custom' ? customTopic : topicPreset;
+    if (!finalTopic.trim()) {
       toast.error(currentLanguage === 'th' ? 'กรุณาระบุหัวข้อคอนเทนต์' : 'Please enter a content topic');
       return;
     }
 
     setLoading(true);
     setLoadingStage(0);
-    
-    // Simulate step progress increments
+
     const intervalId = setInterval(() => {
       setLoadingStage(prev => (prev < 4 ? prev + 1 : prev));
     }, 2000);
 
+    let finalManualContext = manualContext;
+    if (bothLanguages && secondaryLang !== primaryLang) {
+      const primaryLabel = LANGUAGE_OPTIONS.find(l => l.value === primaryLang)?.label || primaryLang;
+      const secondaryLabel = LANGUAGE_OPTIONS.find(l => l.value === secondaryLang)?.label || secondaryLang;
+      finalManualContext = `${manualContext || ''}\n\n[System Rule]: Please output the content bilingually: primary language in ${primaryLabel}, secondary language in ${secondaryLabel}. Provide both versions back-to-back inside the generated text.`.trim();
+    }
+
     try {
       const result = await generatePosts({
         topic: finalTopic,
-        tone: tone,
-        personality: personality,
+        tone: tone === 'custom' ? customTone : tone,
+        personality: initialBrand?.personality || 'น่าเชื่อถือ',
         postCount: 5,
         urls: urls,
-        manualContext: manualContext || undefined
+        manualContext: finalManualContext || undefined,
+        language: primaryLang,
+        hashtagCount: (hashtags.length === 0 ? 0 : hashtags.length <= 5 ? 5 : hashtags.length <= 10 ? 10 : 15) as 0 | 5 | 10 | 15,
+        manualHashtags: hashtags.length > 0 ? hashtags : undefined
       });
+
       if (!result.success) {
         toast.error(result.error);
         return;
       }
-      setSuccessCount(result.count ?? null);
+
       if (result.posts && result.posts.length > 0) {
         setGeneratedPosts(result.posts);
       }
       toast.success(currentLanguage === 'th' ? `สร้างโพสต์สำเร็จ ${result.count} รายการ!` : `Successfully generated ${result.count} posts!`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : (currentLanguage === 'th' ? 'เกิดข้อผิดพลาด' : 'An error occurred');
+      const message = error instanceof Error ? error.message : 'Error generating content';
       toast.error(message);
     } finally {
       clearInterval(intervalId);
@@ -271,513 +306,705 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     }
   }
 
-  // Active post preview content resolver
+  // Pre-filled dynamic preview texts matching mockup
   const activePost = generatedPosts[0] || null;
-  const previewTitle = activePost?.title || "Your Workspace Brand";
-  const previewThai = activePost?.caption || "กฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA) ไม่ใช่แค่ข้อบังคับ แต่คือความไว้วางใจที่ลูกค้ามีให้กับองค์กรของคุณ การปฏิบัติตามอย่างถูกต้อง คือการสร้างมาตรฐานที่ดี และลดความเสี่ยงในระยะยาว";
-  const previewEnglish = activePost?.caption ? "" : "PDPA is more than a regulation—it's the trust your customers place in your organization. Proper compliance builds a sustainable standard and reduces long-term risk.";
-  const previewHashtags = activePost?.hashtags || hashtags.map(t => `#${t}`).join(' ');
+  const previewTextPrimary = activePost?.caption || "กฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA) ไม่ใช่ข้อบังคับ แต่คือความไว้วางใจที่ลูกค้ามีให้กับองค์กรของคุณ การปฏิบัติตามอย่างถูกต้อง คือการสร้างมาตรฐานที่ดีและลดความเสี่ยงในระยะยาว";
+  const previewTextSecondary = bothLanguages && !activePost?.caption 
+    ? "PDPA is more than a regulation—it's the trust your customers place in your organization. Proper compliance builds a sustainable standard and reduces long-term risk." 
+    : "";
+
+  const previewHashtags = activePost?.hashtags || (hashtags.map(t => `#${t}`).join(' '));
 
   return (
-    <div className="flex flex-col lg:flex-row w-full gap-8 select-none items-start pb-20 text-left">
+    <div className="flex flex-col space-y-6 select-none text-left w-full max-w-[1440px] mx-auto">
       
-      {/* PANE A: Control Deck (22% width) */}
-      <div className="w-full lg:w-[22%] shrink-0 space-y-6">
-        
-        {/* Brand Context HUD */}
-        <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.brandContext')}</h3>
-            </div>
-            <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">{currentLanguage === 'th' ? 'ดูทั้งหมด →' : 'View →'}</Link>
+      {/* 1. TOP HEADER SECTION */}
+      <div className="flex flex-col space-y-4">
+        {/* Breadcrumb & Action Row */}
+        <div className="flex justify-between items-center border-b border-[#E6DFD5] pb-4">
+          <div className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 tracking-tight uppercase">
+            <span>Workspace</span>
+            <span>/</span>
+            <span>Content Operations</span>
+            <span>/</span>
+            <span className="text-slate-800 font-bold">Editor Canvas</span>
           </div>
-          <div className="space-y-4 text-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FAF8F5] border border-[#E6DFD5] dark:bg-slate-800 flex items-center justify-center font-serif text-[#1E1D1B] dark:text-[#EBE7E0] font-bold text-sm">
-                OS
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
-                  {initialBrand?.name || (currentLanguage === 'th' ? 'แบรนด์ของคุณ' : "Your Workspace Brand")}
-                </p>
-                <p className="text-[10px] text-[#7C756C] dark:text-slate-500 font-medium">
-                  {initialBrand?.business_type || "Legal. Trusted. Precise."}
-                </p>
-              </div>
+          <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
+            <div className="flex gap-2">
+              <span className="cursor-pointer hover:text-slate-800">TH</span>
+              <span className="text-slate-800 underline">EN</span>
             </div>
-            
-            <div className="pt-3 border-t border-[#E6DFD5] dark:border-slate-800/80 text-[11px] text-[#7C756C] dark:text-slate-400">
-              <p className="font-medium text-[#7C756C] dark:text-slate-300">
-                {currentLanguage === 'th' ? 'น้ำเสียง:' : 'Voice:'} <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">{currentLanguage === 'th' ? 'มืออาชีพ • ทางการ • ชัดเจน' : 'Professional • Formal • Clear'}</span>
-              </p>
+            <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
+              OS
             </div>
+            <span className="cursor-pointer hover:text-slate-850">SIGN OUT</span>
           </div>
         </div>
 
-        {/* Content Templates */}
-        <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-                <line x1="16" y1="13" x2="8" y2="13"></line>
-                <line x1="16" y1="17" x2="8" y2="17"></line>
-              </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.templates')}</h3>
-            </div>
-            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{currentLanguage === 'th' ? 'ดูทั้งหมด →' : 'View all →'}</span>
+        {/* Dynamic Title controls */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+          <div>
+            <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 uppercase">
+              Editor Canvas
+            </h1>
           </div>
-          <div className="space-y-3">
-            {CONTENT_TEMPLATES.map((tmpl) => (
+
+          {/* Centered Mode switcher & Right Controls */}
+          <div className="flex items-center gap-6 shrink-0">
+            {/* Mode tabs */}
+            <div className="flex bg-[#FAF8F5] border border-[#E6DFD5] rounded-xl p-1">
               <button
-                key={tmpl.id}
-                type="button"
-                onClick={() => handleUseTemplate(tmpl)}
+                onClick={() => setActiveTab('manual')}
                 className={cn(
-                  "w-full text-left py-1 flex items-start gap-2.5 transition-all",
-                  activeTemplateId === tmpl.id ? "opacity-100" : "opacity-80 hover:opacity-100"
+                  "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  activeTab === 'manual' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#967F5C] fill-none stroke-current stroke-2" viewBox="0 0 24 24">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                </svg>
-                <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    "text-xs leading-normal truncate", 
-                    activeTemplateId === tmpl.id ? "text-[#1E1D1B] dark:text-[#EBE7E0] font-bold" : "text-[#1E1D1B] dark:text-[#EBE7E0] font-medium"
-                  )}>{currentLanguage === 'th' && tmpl.titleTh ? tmpl.titleTh : tmpl.title}</p>
-                  <p className="text-[10.5px] text-[#7C756C] dark:text-slate-500 font-medium leading-none mt-0.5">{currentLanguage === 'th' && tmpl.descTh ? tmpl.descTh : tmpl.desc}</p>
-                </div>
+                Manual
               </button>
-            ))}
-            <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
-              <span className="text-[10.5px] font-bold text-[#7C756C] dark:text-slate-400 hover:text-[#967F5C] cursor-pointer">{currentLanguage === 'th' ? 'เรียกดูเทมเพลตทั้งหมด →' : 'Browse all templates →'}</span>
+              <button
+                onClick={() => setActiveTab('quick')}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
+                  activeTab === 'quick' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                )}
+              >
+                Quick Mode
+              </button>
             </div>
+
+            {/* Toggle Manual Settings Switch */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-550">Manual settings:</span>
+              <button
+                onClick={() => setManualSettings(!manualSettings)}
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                  manualSettings ? "bg-emerald-600" : "bg-slate-200"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                    manualSettings ? "translate-x-4" : "translate-x-0"
+                  )}
+                />
+              </button>
+              <span className="text-xs font-black uppercase text-slate-400">{manualSettings ? 'On' : 'Off'}</span>
+            </div>
+
+            {/* Close/Open manual details */}
+            <button
+              onClick={() => setShowManual(!showManual)}
+              className="flex items-center gap-1.5 bg-[#FAF8F5] border border-[#E6DFD5] px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-[#FAF8F5]/80 transition-all shrink-0"
+            >
+              {showManual ? (
+                <>
+                  <span>Close Manual</span>
+                  <X className="w-3.5 h-3.5" />
+                </>
+              ) : (
+                <>
+                  <span>Open Manual</span>
+                  <Plus className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Active Content Angles */}
-        <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-          <div className="flex justify-between items-center pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-              </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.angles')}</h3>
+        {showManual && (
+          <p className="text-xs font-medium text-slate-450 pt-1">
+            Manual precision for complete control over your content output.
+          </p>
+        )}
+      </div>
+
+      {/* 2. MAIN WORKSPACE GRID */}
+      <div className="grid grid-cols-12 gap-6 items-start w-full">
+        
+        {/* PANE A: Left Column (22% / col-span-3) - Manual Panel toggled */}
+        {showManual && (
+          <div className="col-span-12 lg:col-span-3 space-y-6">
+            
+            {/* Brand Context HUD */}
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Brand Context</span>
+                </div>
+                <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">View →</Link>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#FAF8F5] border border-[#E6DFD5] flex items-center justify-center font-serif text-slate-900 font-bold text-sm">
+                    OS
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-xs text-slate-950 truncate">
+                      {initialBrand?.name || "Your Workspace Brand"}
+                    </p>
+                    <p className="text-[10px] text-slate-450 font-medium">
+                      {initialBrand?.business_type || "Legal. Trusted. Precise."}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="pt-3 border-t border-slate-50 text-[11px] text-slate-500 font-medium">
+                  Voice: <span className="text-slate-850 font-bold">Professional • Formal • Clear</span>
+                </div>
+              </div>
             </div>
-            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{currentLanguage === 'th' ? 'จัดการ →' : 'Manage →'}</span>
-          </div>
-          
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              { en: 'Educate & Convert', th: 'ให้ความรู้และดึงดูด' },
-              { en: 'Myth Busting', th: 'แก้ไขความเข้าใจผิด' },
-              { en: 'Compliance Alert', th: 'แจ้งเตือนข้อควรระวัง' },
-              { en: 'Interactive Q&A', th: 'ถามตอบกระตุ้นการมีส่วนร่วม' }
-            ].map((angle, idx) => (
-              <span key={idx} className="text-[9.5px] font-bold text-[#7C756C] dark:text-slate-400 bg-transparent border border-[#E6DFD5] dark:border-slate-700 px-2.5 py-1 rounded-lg">
-                {getLabel(angle.en, angle.th)}
-              </span>
-            ))}
-          </div>
-          
-          <div className="pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80 space-y-2">
-            <span className="block text-[9.5px] uppercase tracking-wider font-bold text-[#7C756C]">{currentLanguage === 'th' ? 'มุมมองที่ระบบแนะนำ' : 'Suggested Angle'}</span>
-            <div className="p-3.5 bg-[#FAF8F5] dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl text-left space-y-1.5">
-              <div className="flex items-start gap-2">
-                <svg className="w-4.5 h-4.5 fill-[#967F5C] stroke-[#967F5C] shrink-0 mt-0.5" viewBox="0 0 24 24">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                <div>
-                  <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] leading-snug">
-                    {currentLanguage === 'th' ? 'ชุดคู่มือข้อกำหนดความสอดคล้อง Q2' : 'Q2 Compliance Series'}
-                  </p>
-                  <p className="text-[10px] text-[#7C756C] font-semibold mt-0.5">
-                    {currentLanguage === 'th' ? 'สร้างการรับรู้และความไว้วางใจ' : 'Increase awareness and trust'}
-                  </p>
-                  <button 
-                    type="button"
-                    onClick={() => {
-                      setSelectedTopic('custom');
-                      setCustomTopic(currentLanguage === 'th' ? 'Q2 Compliance Series: คัมภีร์ดูแลความปลอดภัยข้อมูลสำหรับธุรกิจบริการ' : 'Q2 Compliance Series: Data security guidelines for service business');
-                    }}
-                    className="text-[10px] font-bold text-[#967F5C] hover:underline mt-2 block cursor-pointer"
+
+            {/* Content Templates */}
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Content Templates</span>
+                </div>
+                <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View all →</span>
+              </div>
+
+              <div className="space-y-3.5">
+                {CONTENT_TEMPLATES.map((tmpl) => (
+                  <button
+                    key={tmpl.id}
+                    onClick={() => handleUseTemplate(tmpl)}
+                    className={cn(
+                      "w-full text-left flex items-start gap-3 group transition-all",
+                      activeTemplateId === tmpl.id ? "opacity-100" : "opacity-75 hover:opacity-100"
+                    )}
                   >
-                    {currentLanguage === 'th' ? 'ใช้อินพุตของมุมนี้ →' : 'Use this angle →'}
+                    <div className="w-3.5 h-3.5 rounded bg-slate-50 flex items-center justify-center shrink-0 mt-0.5 border border-slate-150">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={cn(
+                        "text-xs leading-none",
+                        activeTemplateId === tmpl.id ? "text-slate-950 font-bold" : "text-slate-850 font-semibold"
+                      )}>
+                        {tmpl.title}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-medium leading-none mt-1 group-hover:text-slate-550 transition-colors">
+                        {tmpl.desc}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+                
+                <div className="pt-2 border-t border-slate-50">
+                  <span className="text-[10px] font-bold text-slate-400 hover:text-[#967F5C] cursor-pointer">
+                    Browse all templates →
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Active Content Angles */}
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Active Content Angles</span>
+                </div>
+                <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">Manage →</span>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                {['Educate & Convert', 'Myth Busting', 'Compliance Alert', 'Interactive Q&A'].map((angle, idx) => (
+                  <span key={idx} className="text-[9.5px] font-bold text-slate-550 bg-slate-50 border border-slate-150 px-2 py-0.5 rounded-md">
+                    {angle}
+                  </span>
+                ))}
+              </div>
+
+              <div className="pt-3 border-t border-slate-50 space-y-2">
+                <span className="block text-[9px] uppercase tracking-wider font-bold text-slate-400">Suggested Angle</span>
+                <div className="p-3 bg-[#FAF8F5] border border-slate-200/60 rounded-xl text-left space-y-1.5">
+                  <h4 className="font-bold text-xs text-slate-900 leading-tight">Q2 Compliance Series</h4>
+                  <p className="text-[10px] text-slate-400 font-semibold leading-tight">Increase awareness and trust</p>
+                  <button
+                    onClick={() => {
+                      setTopicPreset('PDPA Compliance Tips');
+                      setCustomTopic('Q2 Compliance Series: Data Privacy Auditing');
+                    }}
+                    className="text-[10px] font-bold text-[#967F5C] hover:underline mt-1.5 block"
+                  >
+                    Use this angle →
                   </button>
                 </div>
               </div>
             </div>
+
           </div>
-        </div>
+        )}
 
-      </div>
-
-      {/* PANE B: Command Composer (48% width) */}
-      <div className="w-full lg:w-[48%] flex-1 space-y-6">
-        
-        {/* COMPOSER FORM CARD */}
-        <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-6 space-y-6 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
+        {/* PANE B: Middle Column (48% / col-span-6) */}
+        <div className={cn(
+          "space-y-6",
+          showManual ? "col-span-12 lg:col-span-6" : "col-span-12 lg:col-span-8"
+        )}>
           
-          <div className="space-y-1 pb-3 border-b border-[#E6DFD5]/70 dark:border-slate-800/80">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="w-4.5 h-4.5 text-[#967F5C]" />
-              <span className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">{t('canvas.composer.title')}</span>
+          {/* Rules Summaries Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            {/* SAVED CONTENT RULES */}
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-4 flex justify-between items-center shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <div className="space-y-1.5">
+                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Content Rules</span>
+                <p className="text-xs font-bold text-slate-800">Labor Law • Legal & Compliance Pros</p>
+                <span className="block text-[9px] text-slate-400 font-semibold">Updated 2 days ago</span>
+              </div>
+              <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View →</span>
             </div>
-            <p className="text-[10.5px] text-[#7C756C] dark:text-slate-400 font-medium">
-              {t('canvas.composer.desc')}
-            </p>
+
+            {/* SAVED IMAGE RULES */}
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-4 flex justify-between items-center shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <div className="space-y-1.5">
+                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Image Rules</span>
+                <p className="text-xs font-bold text-slate-800">Professional • Minimal • Ivory Palette</p>
+                <span className="block text-[9px] text-slate-400 font-semibold">Updated 2 days ago</span>
+              </div>
+              <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View →</span>
+            </div>
+
           </div>
 
-          <div className="space-y-5">
-            {/* 1. Content Topic */}
+          {/* Form Composer Container */}
+          <div className="bg-white border border-[#E6DFD5] rounded-3xl p-6 space-y-6 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+            
+            {/* 1. CONTENT TOPIC */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.topic')}</Label>
-              <textarea 
-                value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
-                placeholder={currentLanguage === 'th' ? 'ระบุหัวข้อคอนเทนต์หรือข้อความหลัก...' : 'Enter your content topic or key message...'}
-                rows={2}
-                className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-3 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] outline-none resize-none font-medium leading-relaxed font-sans"
-              />
-            </div>
-
-            {/* 2. Languages */}
-            <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.language')}</Label>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex flex-1 gap-2.5">
-                  <div className="flex-1 space-y-1 text-left">
-                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'ภาษาหลัก' : 'Primary'}</span>
-                    <Select value="Thai">
-                      <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Thai">{currentLanguage === 'th' ? 'ภาษาไทย' : 'Thai'}</SelectItem>
-                        <SelectItem value="English">{currentLanguage === 'th' ? 'ภาษาอังกฤษ' : 'English'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex-1 space-y-1 text-left">
-                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'ภาษารอง' : 'Secondary'}</span>
-                    <Select value="English">
-                      <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Thai">{currentLanguage === 'th' ? 'ภาษาไทย' : 'Thai'}</SelectItem>
-                        <SelectItem value="English">{currentLanguage === 'th' ? 'ภาษาอังกฤษ' : 'English'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3.5 self-end h-9.5">
-                  <span className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'สร้างทั้งสองภาษา' : 'Generate both versions'}</span>
-                  <div className="flex items-center gap-2">
-                    <button 
-                      type="button" 
-                      onClick={() => setGenerateBoth(!generateBoth)} 
-                      className={cn(
-                        "w-10 h-5.5 rounded-full transition-colors relative flex items-center p-0.5 cursor-pointer", 
-                        generateBoth ? "bg-[#1E1D1B] dark:bg-[#EBE7E0]" : "bg-slate-200 dark:bg-slate-800"
-                      )}
-                    >
-                      <span className={cn(
-                        "w-4.5 h-4.5 rounded-full bg-white dark:bg-[#1E1D1B] transition-transform", 
-                        generateBoth ? "translate-x-4.5" : "translate-x-0"
-                      )} />
-                    </button>
-                    <svg className="w-3.5 h-3.5 fill-none stroke-[#7C756C] stroke-2" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="16" x2="12" y2="12"></line>
-                      <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Output Mode */}
-            <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.outputMode')}</Label>
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">1. Content Topic</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                 <div className="md:col-span-5">
-                  <Select value={outputMode} onValueChange={(val) => val && setOutputMode(val)}>
-                    <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                      <SelectValue />
+                  <Select 
+                    value={topicPreset} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setTopicPreset(val);
+                      if (val === 'custom') {
+                        setShowCustomTopicInput(true);
+                      } else {
+                        setShowCustomTopicInput(false);
+                        const match = TOPIC_PRESETS.find(p => p.value === val);
+                        if (match) setCustomTopic(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select topic preset..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Main post + secondary in comment">{currentLanguage === 'th' ? 'โพสต์หลัก + คอมเมนต์ภาษารอง' : 'Main post + secondary in comment'}</SelectItem>
-                      <SelectItem value="Bilingual caption">{currentLanguage === 'th' ? 'คำบรรยายสองภาษาในโพสต์เดียว' : 'Bilingual caption'}</SelectItem>
-                      <SelectItem value="Main post only">{currentLanguage === 'th' ? 'โพสต์ภาษาหลักเท่านั้น' : 'Main post only'}</SelectItem>
-                      <SelectItem value="Separate versions">{currentLanguage === 'th' ? 'แยกเวอร์ชันอย่างละโพสต์' : 'Separate versions'}</SelectItem>
+                      {TOPIC_PRESETS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="md:col-span-2">
                   <button
-                    type="button"
-                    onClick={() => setShowCustomOutput(!showCustomOutput)}
+                    onClick={() => setShowCustomTopicInput(!showCustomTopicInput)}
                     className={cn(
-                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-lg text-xs transition-all cursor-pointer",
-                      showCustomOutput 
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                        : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomTopicInput 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
                     )}
                   >
-                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
+                    Other
+                  </button>
+                </div>
+                <div className="md:col-span-5">
+                  <Input 
+                    value={customTopic}
+                    onChange={(e) => setCustomTopic(e.target.value)}
+                    placeholder="Describe custom topic..."
+                    disabled={!showCustomTopicInput}
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. LANGUAGES */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">2. Languages</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-4">
+                  <Select value={primaryLang} onValueChange={(val) => setPrimaryLang(val as ContentLanguage)}>
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>Primary: {opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-4">
+                  <Select value={secondaryLang} onValueChange={(val) => setSecondaryLang(val as ContentLanguage)}>
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map(opt => (
+                        <SelectItem key={opt.value} value={opt.value}>Secondary: {opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-4 flex items-center justify-between bg-slate-50/50 border border-slate-100 rounded-xl px-3 py-1.5 h-9.5">
+                  <span className="text-[10px] font-bold text-slate-500">Both versions</span>
+                  <button
+                    onClick={() => setBothLanguages(!bothLanguages)}
+                    className={cn(
+                      "relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                      bothLanguages ? "bg-indigo-600" : "bg-slate-200"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                        bothLanguages ? "translate-x-3" : "translate-x-0"
+                      )}
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. OUTPUT MODE */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">3. Output Mode</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-5">
+                  <Select 
+                    value={outputMode} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setOutputMode(val);
+                      if (val === 'custom') {
+                        setShowCustomOutput(true);
+                      } else {
+                        setShowCustomOutput(false);
+                        const match = OUTPUT_MODES.find(o => o.value === val);
+                        if (match) setCustomOutputMode(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select output mode..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {OUTPUT_MODES.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <button
+                    onClick={() => setShowCustomOutput(!showCustomOutput)}
+                    className={cn(
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomOutput 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
+                    )}
+                  >
+                    Other
                   </button>
                 </div>
                 <div className="md:col-span-5">
                   <Input 
                     value={customOutputMode}
                     onChange={(e) => setCustomOutputMode(e.target.value)}
-                    placeholder={currentLanguage === 'th' ? 'อธิบายรูปแบบการจัดโครงสร้างผลลัพธ์...' : 'Describe custom output mode...'}
+                    placeholder="Describe custom output mode..."
                     disabled={!showCustomOutput}
-                    className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 font-sans"
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
                   />
                 </div>
               </div>
             </div>
 
-            {/* 4. Platform */}
+            {/* 4. PLATFORM */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.platform')}</Label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">4. Platform</label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { name: 'LinkedIn', icon: () => (
-                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                       <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
                     </svg>
                   )},
                   { name: 'Facebook', icon: () => (
-                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                       <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
                     </svg>
                   )},
                   { name: 'Website', icon: () => (
-                    <svg className="w-3 h-3 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                       <circle cx="12" cy="12" r="10"></circle>
                       <line x1="2" y1="12" x2="22" y2="12"></line>
                       <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                     </svg>
                   )},
                   { name: 'Instagram', icon: () => (
-                    <svg className="w-3 h-3 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
+                    <svg className="w-3.5 h-3.5 fill-none stroke-current stroke-2" viewBox="0 0 24 24">
                       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
                       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                     </svg>
                   )},
-                  { name: 'Other', icon: () => <Plus className="w-3 h-3" /> }
+                  { name: 'Other', icon: () => <Plus className="w-3.5 h-3.5" /> }
                 ].map((p) => (
                   <button
                     key={p.name}
                     type="button"
                     onClick={() => setSelectedPlatform(p.name)}
                     className={cn(
-                      "px-4 py-2 rounded-lg border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
+                      "px-4 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-2 cursor-pointer",
                       selectedPlatform === p.name 
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                        : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
+                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:border-slate-350"
                     )}
                   >
                     {p.icon()}
-                    {p.name === 'Other' ? (currentLanguage === 'th' ? '+ อื่นๆ' : '+ Other') : p.name}
+                    {p.name}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* 5 & 6. Audience & Tone */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.audience')}</Label>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Select value={audience} onValueChange={(val) => val && setAudience(val)}>
-                        <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Legal & Compliance Professionals">{currentLanguage === 'th' ? 'ผู้เชี่ยวชาญด้านกฎหมายและ Compliance' : 'Legal & Compliance Professionals'}</SelectItem>
-                          <SelectItem value="SME Owners">{currentLanguage === 'th' ? 'เจ้าของธุรกิจ SME' : 'SME Owners'}</SelectItem>
-                          <SelectItem value="HR Managers">{currentLanguage === 'th' ? 'ผู้จัดการฝ่ายบุคคล (HR)' : 'HR Managers'}</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowCustomAudience(!showCustomAudience)}
-                      className={cn(
-                        "px-3.5 h-9.5 flex items-center justify-center font-bold border rounded-lg text-xs transition-all cursor-pointer",
-                        showCustomAudience
-                          ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]"
-                          : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
-                      )}
-                    >
-                      {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
-                    </button>
-                  </div>
-                  {showCustomAudience && (
-                    <Input 
-                      value={customAudienceText}
-                      onChange={(e) => setCustomAudienceText(e.target.value)}
-                      placeholder={currentLanguage === 'th' ? 'อธิบายกลุ่มเป้าหมายเพิ่มเติม...' : 'Describe custom audience...'}
-                      className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
-                    />
-                  )}
+            {/* 5. AUDIENCE */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">5. Audience</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-5">
+                  <Select 
+                    value={audience} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setAudience(val);
+                      if (val === 'custom') {
+                        setShowCustomAudience(true);
+                      } else {
+                        setShowCustomAudience(false);
+                        const match = AUDIENCES.find(a => a.value === val);
+                        if (match) setCustomAudienceText(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select target audience..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AUDIENCES.map((a) => (
+                        <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.tone')}</Label>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Select value={tone} onValueChange={(val) => val && setTone(val)}>
-                        <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {TONE_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {currentLanguage === 'th' ? (
-                                opt.value === 'Professional' ? 'ทางการ / มืออาชีพ' :
-                                opt.value === 'Friendly' ? 'เป็นกันเอง / สุภาพ' :
-                                opt.value === 'Educational' ? 'เพื่อให้ความรู้' :
-                                opt.value === 'Expert' ? 'ผู้เชี่ยวชาญ' :
-                                opt.value === 'Corporate' ? 'องค์กร / ธุรกิจ' :
-                                opt.value === 'Simple' ? 'เข้าใจง่าย / ทั่วไป' : opt.label
-                              ) : opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowCustomTone(!showCustomTone)}
-                      className={cn(
-                        "px-3.5 h-9.5 flex items-center justify-center font-bold border rounded-lg text-xs transition-all cursor-pointer",
-                        showCustomTone
-                          ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]"
-                          : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
-                      )}
-                    >
-                      {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
-                    </button>
-                  </div>
-                  {showCustomTone && (
-                    <Input 
-                      value={customTone}
-                      onChange={(e) => setCustomTone(e.target.value)}
-                      placeholder={currentLanguage === 'th' ? 'อธิบายโทนภาษาเพิ่มเติม...' : 'Describe custom tone...'}
-                      className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
-                    />
-                  )}
+                <div className="md:col-span-2">
+                  <button
+                    onClick={() => setShowCustomAudience(!showCustomAudience)}
+                    className={cn(
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomAudience 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
+                    )}
+                  >
+                    Other
+                  </button>
+                </div>
+                <div className="md:col-span-5">
+                  <Input 
+                    value={customAudienceText}
+                    onChange={(e) => setCustomAudienceText(e.target.value)}
+                    placeholder="Describe custom audience..."
+                    disabled={!showCustomAudience}
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* 7 & 8. Content Goal & Format */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.goal')}</Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex-1 min-w-0">
-                    <Select value={objective} onValueChange={(val) => val && setObjective(val)}>
-                      <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Educate">{currentLanguage === 'th' ? 'เพื่อให้ความรู้' : 'Educate'}</SelectItem>
-                        <SelectItem value="Promote">{currentLanguage === 'th' ? 'เพื่อประชาสัมพันธ์ / ขาย' : 'Promote'}</SelectItem>
-                        <SelectItem value="Engagement">{currentLanguage === 'th' ? 'เพื่อสร้างการคุยโต้ตอบ' : 'Engagement'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* 6. TONE */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">6. Tone</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-5">
+                  <Select 
+                    value={tone} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setTone(val);
+                      if (val === 'custom') {
+                        setShowCustomTone(true);
+                      } else {
+                        setShowCustomTone(false);
+                        const match = TONE_OPTIONS.find(t => t.value === val);
+                        if (match) setCustomTone(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select tone..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TONE_OPTIONS.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
                   <button
-                    type="button"
+                    onClick={() => setShowCustomTone(!showCustomTone)}
+                    className={cn(
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomTone 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
+                    )}
+                  >
+                    Other
+                  </button>
+                </div>
+                <div className="md:col-span-5">
+                  <Input 
+                    value={customTone}
+                    onChange={(e) => setCustomTone(e.target.value)}
+                    placeholder="Describe custom tone..."
+                    disabled={!showCustomTone}
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 7. CONTENT GOAL */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">7. Content Goal</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-5">
+                  <Select 
+                    value={objective} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setObjective(val);
+                      if (val === 'custom') {
+                        setShowCustomGoal(true);
+                      } else {
+                        setShowCustomGoal(false);
+                        const match = CONTENT_GOALS.find(g => g.value === val);
+                        if (match) setCustomGoal(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select content goal..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CONTENT_GOALS.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <button
                     onClick={() => setShowCustomGoal(!showCustomGoal)}
                     className={cn(
-                      "px-3 h-9.5 flex items-center justify-center font-bold border rounded-lg text-xs transition-all shrink-0 cursor-pointer",
-                      showCustomGoal
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]"
-                        : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomGoal 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
                     )}
                   >
-                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
+                    Other
                   </button>
-                  {showCustomGoal && (
-                    <Input 
-                      value={customGoal}
-                      onChange={(e) => setCustomGoal(e.target.value)}
-                      placeholder={currentLanguage === 'th' ? 'อธิบายเป้าหมายเพิ่มเติม...' : 'Describe custom goal...'}
-                      className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 flex-1 min-w-[120px]"
-                    />
-                  )}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.format')}</Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="flex-1 min-w-0">
-                    <Select value={format} onValueChange={(val) => val && setFormat(val)}>
-                      <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Educational Post">{currentLanguage === 'th' ? 'โพสต์บทความให้ความรู้' : 'Educational Post'}</SelectItem>
-                        <SelectItem value="Checklist">{currentLanguage === 'th' ? 'รายการเช็คลิสต์' : 'Checklist'}</SelectItem>
-                        <SelectItem value="Q&A">{currentLanguage === 'th' ? 'ถาม-ตอบ' : 'Q&A'}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowCustomFormat(!showCustomFormat)}
-                    className={cn(
-                      "px-3 h-9.5 flex items-center justify-center font-bold border rounded-lg text-xs transition-all shrink-0 cursor-pointer",
-                      showCustomFormat
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]"
-                        : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
-                    )}
-                  >
-                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
-                  </button>
-                  {showCustomFormat && (
-                    <Input 
-                      value={customFormat}
-                      onChange={(e) => setCustomFormat(e.target.value)}
-                      placeholder={currentLanguage === 'th' ? 'อธิบายรูปแบบเพิ่มเติม...' : 'Describe custom format...'}
-                      className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 flex-1 min-w-[120px]"
-                    />
-                  )}
+                <div className="md:col-span-5">
+                  <Input 
+                    value={customGoal}
+                    onChange={(e) => setCustomGoal(e.target.value)}
+                    placeholder="Describe custom goal..."
+                    disabled={!showCustomGoal}
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
+                  />
                 </div>
               </div>
             </div>
 
-            {/* 9. Hashtags */}
+            {/* 8. CONTENT FORMAT */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.hashtags')}</Label>
-              <div className="flex flex-wrap gap-1.5 p-2 border border-[#E6DFD5] dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg min-h-10 items-center">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">8. Content Format</label>
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+                <div className="md:col-span-5">
+                  <Select 
+                    value={format} 
+                    onValueChange={(val) => {
+                      if (!val) return;
+                      setFormat(val);
+                      if (val === 'custom') {
+                        setShowCustomFormat(true);
+                      } else {
+                        setShowCustomFormat(false);
+                        const match = CONTENT_FORMATS.find(f => f.value === val);
+                        if (match) setCustomFormat(match.label);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
+                      <SelectValue placeholder="Select content format..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CONTENT_FORMATS.map((f) => (
+                        <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-2">
+                  <button
+                    onClick={() => setShowCustomFormat(!showCustomFormat)}
+                    className={cn(
+                      "w-full h-9.5 flex items-center justify-center font-bold border rounded-xl text-xs transition-all",
+                      showCustomFormat 
+                        ? "bg-slate-900 border-slate-900 text-white" 
+                        : "bg-transparent border-slate-200/80 text-slate-500 hover:bg-slate-50"
+                    )}
+                  >
+                    Other
+                  </button>
+                </div>
+                <div className="md:col-span-5">
+                  <Input 
+                    value={customFormat}
+                    onChange={(e) => setCustomFormat(e.target.value)}
+                    placeholder="Describe custom format..."
+                    disabled={!showCustomFormat}
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80 disabled:bg-slate-50/50"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 9. HASHTAGS */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">9. Hashtags</label>
+              <div className="flex flex-wrap gap-1.5 p-2 border border-slate-200/80 rounded-xl bg-white min-h-10 items-center">
                 {hashtags.map((tag) => (
-                  <span key={tag} className="text-[10.5px] font-bold bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 px-2 py-0.5 rounded-lg flex items-center gap-1.5 text-[#1E1D1B] dark:text-[#EBE7E0]">
+                  <span key={tag} className="text-[10px] font-bold bg-[#FAF8F5] border border-slate-200/80 px-2 py-0.5 rounded-lg flex items-center gap-1.5 text-slate-800">
                     #{tag}
-                    <button type="button" onClick={() => handleRemoveHashtag(tag)} className="text-[#7C756C] hover:text-[#1E1D1B] font-bold text-[9px] cursor-pointer">×</button>
+                    <button type="button" onClick={() => handleRemoveHashtag(tag)} className="text-slate-400 hover:text-slate-900 font-bold text-[9px]">×</button>
                   </span>
                 ))}
                 <input 
@@ -785,187 +1012,231 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   value={hashtagInput}
                   onChange={(e) => setHashtagInput(e.target.value)}
                   onKeyDown={handleAddHashtag}
-                  placeholder={currentLanguage === 'th' ? 'เพิ่มแฮชแท็ก...' : 'Add hashtag...'}
-                  className="flex-1 text-xs outline-none bg-transparent min-w-[120px] text-[#1E1D1B] dark:text-[#EBE7E0]"
+                  placeholder="Add hashtag..."
+                  className="flex-1 text-xs outline-none bg-transparent min-w-[120px] text-slate-800"
                 />
               </div>
             </div>
 
-            {/* 10. Knowledge Source */}
+            {/* 10. KNOWLEDGE SOURCE */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.knowledge')}</Label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">10. Knowledge Source</label>
               <div className="flex gap-2">
                 <Input 
                   type="url"
                   value={currentUrl}
                   onChange={(e) => setCurrentUrl(e.target.value)}
                   placeholder="https://example.com/article"
-                  className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
+                  className="h-9.5 text-xs rounded-xl border-slate-200/80"
                 />
                 <Button 
                   type="button" 
                   onClick={handleAddUrl}
-                  className="bg-[#FAF8F5] text-[#1E1D1B] border border-[#E6DFD5] dark:bg-slate-800 dark:text-[#EBE7E0] dark:border-slate-700 font-bold text-xs h-9.5 rounded-lg px-4 hover:bg-slate-50 cursor-pointer shrink-0"
+                  className="bg-[#FAF8F5] text-slate-800 border border-slate-200/80 font-bold text-xs h-9.5 rounded-xl px-4 hover:bg-slate-50 shrink-0"
                 >
-                  {currentLanguage === 'th' ? '+ เพิ่มลิงก์' : '+ ADD URL'}
+                  + ADD URL
                 </Button>
               </div>
               
               {urls.length > 0 && (
-                <div className="flex flex-col gap-1.5 p-2 bg-[#FAF8F5] dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-700 rounded-lg mt-1.5">
+                <div className="flex flex-col gap-1.5 p-2 bg-[#FAF8F5] border border-slate-100 rounded-xl mt-1.5">
                   {urls.map((url, idx) => (
                     <div key={idx} className="flex justify-between items-center text-[10px]">
-                      <span className="truncate max-w-[280px] font-medium text-[#7C756C] flex items-center gap-1">
-                        <LinkIcon className="w-3 h-3 text-[#7C756C]" /> {url}
+                      <span className="truncate max-w-[280px] font-medium text-slate-500">
+                        {url}
                       </span>
-                      <button type="button" onClick={() => handleRemoveUrl(idx)} className="text-[#7C756C] hover:text-red-500 font-bold cursor-pointer">{currentLanguage === 'th' ? 'ลบออก' : 'Remove'}</button>
+                      <button type="button" onClick={() => handleRemoveUrl(idx)} className="text-rose-500 hover:text-rose-700 font-bold">Remove</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* 11. Notes / Constraints */}
+            {/* 11. WORD COUNT */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.notes')}</Label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">11. Word Count</label>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex bg-[#FAF8F5] border border-slate-200/80 rounded-xl p-1 shrink-0">
+                  {['150', '300', '500', '800', '1200'].map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setWordCount(val)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                        wordCount === val ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >
+                      {val} words
+                    </button>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-[140px]">
+                  <span className="text-[10px] font-bold text-slate-450 shrink-0">Custom word count</span>
+                  <Input
+                    type="number"
+                    value={wordCount}
+                    onChange={(e) => setWordCount(e.target.value)}
+                    placeholder="Enter number..."
+                    className="h-9.5 text-xs rounded-xl border-slate-200/80"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 12. NOTES / CONSTRAINTS (OPTIONAL) */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">12. Notes / Constraints (Optional)</label>
               <textarea 
                 value={manualContext}
                 onChange={(e) => setManualContext(e.target.value)}
-                placeholder={currentLanguage === 'th' ? 'ระบุแนวทาง ข้อห้าม หรือประเด็นสำคัญที่ต้องมี...' : 'Add any specific notes, constraints, or key points to include...'}
+                placeholder="Add any specific notes, constraints, or key points to include..."
                 rows={3}
-                className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-3 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] outline-none resize-none font-medium leading-relaxed"
+                className="w-full text-xs rounded-xl border border-slate-200/80 p-3 bg-white text-slate-800 outline-none resize-none font-medium leading-relaxed font-sans"
               />
             </div>
 
-          </div>
-
-          <div className="pt-2">
-            <Button 
-              onClick={handleSubmit}
-              disabled={loading || !hasOpenAIKey}
-              className="w-full bg-[#1E1D1B] hover:opacity-90 dark:bg-[#EBE7E0] dark:text-[#1E1D1B] text-white font-bold text-xs h-11 px-8 rounded-lg shadow-sm flex items-center justify-center gap-2 cursor-pointer uppercase tracking-wider"
-            >
-              {loading ? (
-                <>
-                  <span className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  {t('canvas.action.adding')}
-                </>
-              ) : (
-                <>
-                  <Sparkle className="w-4.5 h-4.5 fill-current" />
-                  {t('canvas.action.generate')}
-                </>
-              )}
-            </Button>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* PANE C: Expectation Hub (30% width) */}
-      <div className="w-full lg:w-[30%] shrink-0 space-y-6">
-        
-        {/* Content Performance Score */}
-        <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-          <div className="flex items-center gap-2 pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-            <Target className="w-4 h-4 text-[#967F5C]" />
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.preview.metrics')}</h3>
-          </div>
-          
-          <div className="space-y-4 pt-1">
-            {[
-              { name: currentLanguage === 'th' ? 'ความดึงดูดของ Hook' : 'Hook Strength', score: '8.6/10', pct: 86 },
-              { name: currentLanguage === 'th' ? 'ความง่ายในการอ่าน' : 'Readability Meter', score: '9.0/10', pct: 90 },
-              { name: currentLanguage === 'th' ? 'โอกาสการมีส่วนร่วม' : 'Engagement Potential', score: '7.4/10', pct: 74 },
-              { name: currentLanguage === 'th' ? 'ความชัดเจนของ CTA' : 'CTA Strength', score: '8.2/10', pct: 82 }
-            ].map((metric, idx) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex justify-between text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">
-                  <span className="font-semibold">{metric.name}</span>
-                  <span>{metric.score}</span>
-                </div>
-                <div className="w-full bg-[#FAF8F5] dark:bg-slate-850 h-1 rounded-full overflow-hidden">
-                  <div className="bg-[#1E1D1B] dark:bg-[#EBE7E0] h-full" style={{ width: `${metric.pct}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Platform Preview Feed */}
-        <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2" viewBox="0 0 24 24">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.preview.title')}</h3>
-            </div>
-            <div className="flex gap-2">
-              <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2 cursor-pointer" viewBox="0 0 24 24">
-                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                <line x1="8" y1="21" x2="16" y2="21"></line>
-                <line x1="12" y1="17" x2="12" y2="21"></line>
-              </svg>
-              <svg className="w-4 h-4 fill-none stroke-slate-400 dark:stroke-slate-600 stroke-2 cursor-pointer" viewBox="0 0 24 24">
-                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-                <line x1="12" y1="18" x2="12.01" y2="18"></line>
-              </svg>
-            </div>
-          </div>
-
-          {/* LinkedIn Styled Mockup Post */}
-          <div className="border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-4 space-y-3.5 bg-white dark:bg-slate-900/40 shadow-sm text-left">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-[#E6DFD5] flex items-center justify-center font-serif font-bold text-xs text-[#1E1D1B]">
-                  OS
-                </div>
-                <div>
-                  <h5 className="text-[11px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] leading-tight">
-                    {initialBrand?.name || (currentLanguage === 'th' ? 'แบรนด์ในพื้นที่ทำงานของคุณ' : 'Your Workspace Brand')}
-                  </h5>
-                  <div className="flex items-center gap-1.5 text-[9px] text-[#7C756C] font-semibold mt-0.5">
-                    <span>2m</span>
-                    <span>•</span>
-                    <Globe className="w-2.5 h-2.5" />
-                  </div>
-                </div>
-              </div>
-              <MoreHorizontal className="w-4 h-4 text-[#7C756C] cursor-pointer" />
-            </div>
-            
-            <div className="space-y-2.5 text-xs text-[#1E1D1B] dark:text-[#EBE7E0] font-medium leading-relaxed">
-              <p className="font-semibold">{previewThai}</p>
-              {previewEnglish && <p>{previewEnglish}</p>}
-              <p className="text-[#967F5C] font-bold mt-1.5 select-all">{previewHashtags}</p>
-            </div>
-            
-            <div className="aspect-[1.91/1] bg-[#FAF8F5] border border-dashed border-[#E6DFD5] dark:border-slate-800 dark:bg-slate-800 rounded-lg flex items-center justify-center p-4 text-center">
-              <span className="text-[9px] text-[#7C756C] font-bold uppercase tracking-wider">
-                {currentLanguage === 'th' ? (
+            {/* Submit Action Button */}
+            <div className="pt-2">
+              <Button
+                onClick={handleSubmit}
+                disabled={loading || !hasOpenAIKey}
+                className="w-full bg-[#0B1E33] hover:bg-[#071322] text-white font-black text-xs h-11 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md uppercase tracking-wider"
+              >
+                {loading ? (
                   <>
-                    ส่วนพรีวิวแสดงตัวอย่างผลลัพธ์สองภาษาและแฮชแท็ก<br/>
-                    การจัดวางรูปแบบจริงอาจแตกต่างตามแพลตฟอร์ม
+                    <span className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span>Generating stage {loadingStage + 1}/5...</span>
                   </>
                 ) : (
                   <>
-                    Preview shows bilingual output with hashtags.<br/>
-                    Actual formatting may vary by platform.
+                    <Sparkle className="w-4 h-4 fill-current" />
+                    <span>GENERATE CONTENT</span>
                   </>
                 )}
-              </span>
+              </Button>
             </div>
 
-            <div className="grid grid-cols-4 p-0.5 border-t border-[#E6DFD5]/50 dark:border-slate-800/80 pt-2 bg-slate-50/50 rounded-lg">
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><ThumbsUp className="w-3 h-3" /> {currentLanguage === 'th' ? 'ถูกใจ' : 'Like'}</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><MessageSquare className="w-3 h-3" /> {currentLanguage === 'th' ? 'แสดงความเห็น' : 'Comment'}</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Share2 className="w-3 h-3" /> {currentLanguage === 'th' ? 'แชร์' : 'Share'}</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Send className="w-3 h-3" /> {currentLanguage === 'th' ? 'ส่ง' : 'Send'}</button>
+          </div>
+
+        </div>
+
+        {/* PANE C: Expectation Hub (30% / col-span-3) */}
+        <div className={cn(
+          "space-y-6",
+          showManual ? "col-span-12 lg:col-span-3" : "col-span-12 lg:col-span-4"
+        )}>
+          
+          {/* Content Performance Score */}
+          <div className="bg-white border border-[#E6DFD5] rounded-3xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)] text-left">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+              <Target className="w-4 h-4 text-[#967F5C]" />
+              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">
+                Content Performance Score
+              </span>
+            </div>
+            
+            <div className="space-y-4 pt-1">
+              {[
+                { name: 'Hook Strength', score: '8.6/10', pct: 86 },
+                { name: 'Readability Meter', score: '9.0/10', pct: 90 },
+                { name: 'Engagement Potential', score: '7.4/10', pct: 74 },
+                { name: 'CTA Strength', score: '8.2/10', pct: 82 }
+              ].map((metric, idx) => (
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex justify-between text-xs font-bold text-slate-800">
+                    <span className="font-semibold">{metric.name}</span>
+                    <span>{metric.score}</span>
+                  </div>
+                  <div className="w-full bg-[#FAF8F5] h-1.5 rounded-full overflow-hidden">
+                    <div className="bg-slate-800 h-full" style={{ width: `${metric.pct}%` }} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Platform Preview Feed */}
+          <div className="bg-white border border-[#E6DFD5] rounded-3xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)] text-left">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">
+                Platform Preview Feed
+              </span>
+              <div className="flex gap-2 bg-[#FAF8F5] border border-slate-150 rounded-lg p-0.5">
+                <button
+                  onClick={() => setPreviewDevice('desktop')}
+                  className={cn(
+                    "p-1 rounded transition-colors",
+                    previewDevice === 'desktop' ? "bg-white shadow-xs text-slate-800" : "text-slate-400"
+                  )}
+                >
+                  <Laptop className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setPreviewDevice('mobile')}
+                  className={cn(
+                    "p-1 rounded transition-colors",
+                    previewDevice === 'mobile' ? "bg-white shadow-xs text-slate-800" : "text-slate-400"
+                  )}
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Social Post Mockup Card */}
+            <div className={cn(
+              "border border-slate-200/80 rounded-2xl p-4 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.01)] text-left space-y-3.5 transition-all",
+              previewDevice === 'mobile' ? "max-w-[290px] mx-auto" : "w-full"
+            )}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-slate-200 flex items-center justify-center font-serif font-bold text-xs text-slate-800">
+                    OS
+                  </div>
+                  <div>
+                    <h5 className="text-[11px] font-bold text-slate-900 leading-tight">
+                      {initialBrand?.name || "Your Workspace Brand"}
+                    </h5>
+                    <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-semibold mt-0.5">
+                      <span>2m</span>
+                      <span>•</span>
+                      <Globe className="w-2.5 h-2.5 text-slate-400" />
+                    </div>
+                  </div>
+                </div>
+                <MoreHorizontal className="w-4 h-4 text-slate-400 cursor-pointer" />
+              </div>
+              
+              <div className="space-y-2 text-xs text-slate-700 font-medium leading-relaxed">
+                <p className="font-semibold text-slate-850">{previewTextPrimary}</p>
+                {previewTextSecondary && <p className="text-slate-600">{previewTextSecondary}</p>}
+                <p className="text-[#967F5C] font-bold mt-1.5">{previewHashtags}</p>
+              </div>
+
+              {/* Feed Actions */}
+              <div className="grid grid-cols-4 p-0.5 border-t border-slate-100 pt-2 text-center">
+                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
+                  <ThumbsUp className="w-3.5 h-3.5" /> Like
+                </button>
+                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
+                  <MessageSquare className="w-3.5 h-3.5" /> Comment
+                </button>
+                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
+                  <Share2 className="w-3.5 h-3.5" /> Share
+                </button>
+                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
+                  <Send className="w-3.5 h-3.5" /> Send
+                </button>
+              </div>
+            </div>
+
+            <div className="text-[9.5px] text-slate-400 leading-normal font-semibold text-center pt-2">
+              Preview shows bilingual output with hashtags.<br/>
+              Actual formatting may vary by platform.
+            </div>
+          </div>
+
         </div>
 
       </div>

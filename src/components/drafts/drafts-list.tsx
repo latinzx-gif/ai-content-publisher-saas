@@ -190,11 +190,11 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
   };
 
   return (
-    <div className="flex-1 bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
+    <div className="flex-1 bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-4 md:p-6 lg:p-8 flex flex-col space-y-6 min-w-0 overflow-x-hidden">
       
       {/* Header and Title */}
       <div className="space-y-1 text-left pb-3 border-b border-[#E6DFD5] dark:border-slate-800">
-        <h2 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
+        <h2 className="text-3xl font-heading font-semibold tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
           {t('board.title')}
         </h2>
         <p className="text-xs text-[#7C756C] dark:text-slate-400">
@@ -230,13 +230,15 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
       </div>
 
       {/* Main Workspace (Kanban columns + right notes sidebar) */}
-      <div className="flex-1 grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-[minmax(0,3fr)_minmax(260px,1fr)] gap-6 items-start min-w-0 overflow-hidden">
         
-        {/* Kanban Board Container (3/4 Grid) */}
-        <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
+        {/* Kanban Board Container */}
+        <div className="min-w-0 overflow-hidden">
+          <div className="overflow-x-auto pb-4">
+            <div className="flex flex-row flex-nowrap gap-4 items-start snap-x w-max min-w-full">
           
           {/* Column 1: DRAFT */}
-          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px]">
+          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.draft')}</span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
@@ -255,7 +257,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           </div>
 
           {/* Column 2: IN REVIEW */}
-          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px]">
+          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.inReview')}</span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
@@ -274,7 +276,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           </div>
 
           {/* Column 3: APPROVED */}
-          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px]">
+          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.approved')}</span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
@@ -293,7 +295,7 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
           </div>
 
           {/* Column 4: SCHEDULED */}
-          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px]">
+          <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.scheduled')}</span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
@@ -311,10 +313,12 @@ export function DraftsList({ initialPosts, hasBufferKey }: DraftsListProps) {
             </div>
           </div>
 
+            </div>
+          </div>
         </div>
 
         {/* Right Sidebar (1/4 Grid) */}
-        <div className="space-y-6 text-left">
+        <div className="space-y-6 text-left min-w-0">
           
           {/* Review Notes */}
           <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">

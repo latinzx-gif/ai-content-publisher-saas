@@ -1,0 +1,311 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e5] [cursor=pointer]:
+        - generic [ref=e6]:
+          - generic [ref=e7]: Content OS Studio
+          - generic [ref=e8]: พื้นที่ทำงานจำลอง
+        - img [ref=e9]
+      - navigation [ref=e11]:
+        - generic [ref=e13]:
+          - link "ศูนย์ควบคุมการดำเนินงาน" [ref=e458] [cursor=pointer]:
+            - /url: /
+            - img
+            - generic [ref=e15]: ศูนย์ควบคุมการดำเนินงาน
+          - link "สตูดิโอสร้างคอนเทนต์" [ref=e459] [cursor=pointer]:
+            - /url: /generate
+            - img
+            - generic [ref=e17]: สตูดิโอสร้างคอนเทนต์
+          - link "บอร์ดตรวจสอบโพสต์" [ref=e460] [cursor=pointer]:
+            - /url: /drafts
+            - img
+            - generic [ref=e19]: บอร์ดตรวจสอบโพสต์
+          - link "ปฏิทินและการเผยแพร่" [ref=e461] [cursor=pointer]:
+            - /url: /calendar
+            - img
+            - generic [ref=e21]: ปฏิทินและการเผยแพร่
+          - link "เครื่องมือสร้างคอลลาจภาพ" [ref=e462] [cursor=pointer]:
+            - /url: /asset-composer
+            - img
+            - generic [ref=e23]: เครื่องมือสร้างคอลลาจภาพ
+        - generic [ref=e26]:
+          - link "น้ำเสียงและตัวตนแบรนด์" [ref=e463] [cursor=pointer]:
+            - /url: /profile
+            - img
+            - generic [ref=e28]: น้ำเสียงและตัวตนแบรนด์
+          - link "ช่องทางเผยแพร่และ API" [ref=e464] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e30]: ช่องทางเผยแพร่และ API
+          - link "ตั้งค่าทั่วไป" [ref=e465] [cursor=pointer]:
+            - /url: /settings
+            - img
+            - generic [ref=e32]: ตั้งค่าทั่วไป
+      - generic [ref=e33]:
+        - generic [ref=e36]: ระบบท่อส่งคอนเทนต์เชื่อมต่อแล้ว
+        - generic [ref=e37]: ระบบการทำงานปกติทุกส่วน
+    - generic [ref=e38]:
+      - banner [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: พื้นที่ทำงาน
+          - generic [ref=e42]: /
+          - generic [ref=e43]: ควบคุมการดำเนินงาน
+          - generic [ref=e44]: /
+          - generic [ref=e45]: บอร์ดตรวจสอบโพสต์
+        - generic [ref=e46]:
+          - generic [ref=e47]:
+            - button "TH" [ref=e466] [cursor=pointer]
+            - generic [ref=e49]: /
+            - button "EN" [ref=e467] [cursor=pointer]
+          - generic [ref=e51]:
+            - generic [ref=e52]: OS
+            - button "ออกจากระบบ" [ref=e468] [cursor=pointer]
+      - main [ref=e54]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - heading "บอร์ดตรวจสอบโพสต์" [level=2] [ref=e469]
+            - paragraph [ref=e60]: ย้ายคอนเทนต์ผ่านการรีวิวของฝ่ายกฎหมาย ฝ่ายแบรนด์ และพร้อมเผยแพร่อย่างชัดเจน
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: แคมเปญ
+              - generic [ref=e64] [cursor=pointer]:
+                - generic [ref=e65]: ทั้งหมด
+                - img [ref=e66]
+            - generic [ref=e68]:
+              - generic [ref=e69]: แพลตฟอร์ม
+              - generic [ref=e70] [cursor=pointer]:
+                - generic [ref=e71]: ทั้งหมด
+                - img [ref=e72]
+            - generic [ref=e74]:
+              - generic [ref=e75]: ภาษา
+              - generic [ref=e76] [cursor=pointer]:
+                - generic [ref=e77]: ทั้งหมด
+                - img [ref=e78]
+            - generic [ref=e80]:
+              - generic [ref=e81]: สถานะ
+              - generic [ref=e82] [cursor=pointer]:
+                - generic [ref=e83]: ทั้งหมด
+                - img [ref=e84]
+            - generic [ref=e86]:
+              - generic [ref=e87]: ความสำคัญ
+              - generic [ref=e88] [cursor=pointer]:
+                - generic [ref=e89]: ทั้งหมด
+                - img [ref=e90]
+            - button "กรองเพิ่มเติม" [ref=e470]
+          - generic [ref=e94]:
+            - generic [ref=e97]:
+              - generic [ref=e98]:
+                - generic [ref=e99]:
+                  - generic [ref=e100]: แบบร่าง
+                  - generic [ref=e101]: "8"
+                - generic [ref=e102]:
+                  - generic [ref=e126] [cursor=pointer]:
+                    - generic [ref=e127]:
+                      - heading "Stay Ahead with PDPA Compliance!" [level=4] [ref=e473]
+                      - img [ref=e129]
+                    - generic [ref=e133]:
+                      - generic [ref=e134]:
+                        - generic [ref=e135]: TH
+                        - generic [ref=e136]: EN
+                      - generic [ref=e137]: •
+                      - generic [ref=e138]: facebook
+                    - generic [ref=e140]:
+                      - generic [ref=e141]: กฎหมาย
+                      - generic [ref=e143]: บัญชี
+                      - generic [ref=e145]: แบรนด์
+                    - button "อนุมัติ" [ref=e474]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e149] [cursor=pointer]:
+                    - generic [ref=e150]:
+                      - heading "Your PDPA Questions Answered" [level=4] [ref=e475]
+                      - img [ref=e152]
+                    - generic [ref=e156]:
+                      - generic [ref=e157]:
+                        - generic [ref=e158]: TH
+                        - generic [ref=e159]: EN
+                      - generic [ref=e160]: •
+                      - generic [ref=e161]: facebook
+                    - generic [ref=e163]:
+                      - generic [ref=e164]: กฎหมาย
+                      - generic [ref=e166]: บัญชี
+                      - generic [ref=e168]: แบรนด์
+                    - button "อนุมัติ" [ref=e476]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e172] [cursor=pointer]:
+                    - generic [ref=e173]:
+                      - heading "PDPA Compliance Checklist for SMEs" [level=4] [ref=e477]
+                      - img [ref=e175]
+                    - generic [ref=e179]:
+                      - generic [ref=e180]:
+                        - generic [ref=e181]: TH
+                        - generic [ref=e182]: EN
+                      - generic [ref=e183]: •
+                      - generic [ref=e184]: facebook
+                    - generic [ref=e186]:
+                      - generic [ref=e187]: กฎหมาย
+                      - generic [ref=e189]: บัญชี
+                      - generic [ref=e191]: แบรนด์
+                    - button "อนุมัติ" [ref=e478]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e195] [cursor=pointer]:
+                    - generic [ref=e196]:
+                      - heading "Common PDPA Compliance Mistake" [level=4] [ref=e479]
+                      - img [ref=e198]
+                    - generic [ref=e202]:
+                      - generic [ref=e203]:
+                        - generic [ref=e204]: TH
+                        - generic [ref=e205]: EN
+                      - generic [ref=e206]: •
+                      - generic [ref=e207]: facebook
+                    - generic [ref=e209]:
+                      - generic [ref=e210]: กฎหมาย
+                      - generic [ref=e212]: บัญชี
+                      - generic [ref=e214]: แบรนด์
+                    - button "อนุมัติ" [ref=e480]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e218] [cursor=pointer]:
+                    - generic [ref=e219]:
+                      - heading "คำถามที่พบบ่อยเกี่ยวกับ PDPA" [level=4] [ref=e481]
+                      - img [ref=e221]
+                    - generic [ref=e225]:
+                      - generic [ref=e226]:
+                        - generic [ref=e227]: TH
+                        - generic [ref=e228]: EN
+                      - generic [ref=e229]: •
+                      - generic [ref=e230]: facebook
+                    - generic [ref=e232]:
+                      - generic [ref=e233]: กฎหมาย
+                      - generic [ref=e235]: บัญชี
+                      - generic [ref=e237]: แบรนด์
+                    - button "อนุมัติ" [ref=e482]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e241] [cursor=pointer]:
+                    - generic [ref=e242]:
+                      - heading "เช็คลิสต์การปฏิบัติตาม PDPA สำหรับธุรกิจ SME" [level=4] [ref=e483]
+                      - img [ref=e244]
+                    - generic [ref=e248]:
+                      - generic [ref=e249]:
+                        - generic [ref=e250]: TH
+                        - generic [ref=e251]: EN
+                      - generic [ref=e252]: •
+                      - generic [ref=e253]: facebook
+                    - generic [ref=e255]:
+                      - generic [ref=e256]: กฎหมาย
+                      - generic [ref=e258]: บัญชี
+                      - generic [ref=e260]: แบรนด์
+                    - button "อนุมัติ" [ref=e484]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e264] [cursor=pointer]:
+                    - generic [ref=e265]:
+                      - heading "ความเข้าใจผิดเกี่ยวกับ PDPA ที่ต้องระวัง!" [level=4] [ref=e485]
+                      - img [ref=e267]
+                    - generic [ref=e271]:
+                      - generic [ref=e272]:
+                        - generic [ref=e273]: TH
+                        - generic [ref=e274]: EN
+                      - generic [ref=e275]: •
+                      - generic [ref=e276]: facebook
+                    - generic [ref=e278]:
+                      - generic [ref=e279]: กฎหมาย
+                      - generic [ref=e281]: บัญชี
+                      - generic [ref=e283]: แบรนด์
+                    - button "อนุมัติ" [ref=e486]:
+                      - img
+                      - text: อนุมัติ
+                  - generic [ref=e287] [cursor=pointer]:
+                    - generic [ref=e288]:
+                      - 'heading "กรณีศึกษา: การละเมิด PDPA ส่งผลกระทบต่อธุรกิจอย่างไร" [level=4] [ref=e487]'
+                      - img [ref=e290]
+                    - generic [ref=e294]:
+                      - generic [ref=e295]:
+                        - generic [ref=e296]: TH
+                        - generic [ref=e297]: EN
+                      - generic [ref=e298]: •
+                      - generic [ref=e299]: facebook
+                    - generic [ref=e301]:
+                      - generic [ref=e302]: กฎหมาย
+                      - generic [ref=e304]: บัญชี
+                      - generic [ref=e306]: แบรนด์
+                    - button "อนุมัติ" [ref=e488]:
+                      - img
+                      - text: อนุมัติ
+                  - button "+ เพิ่มเนื้อหา" [ref=e489]
+              - generic [ref=e311]:
+                - generic [ref=e312]:
+                  - generic [ref=e313]: อยู่ระหว่างรีวิว
+                  - generic [ref=e314]: "0"
+                - button "+ เพิ่มเนื้อหา" [ref=e490]
+              - generic [ref=e317]:
+                - generic [ref=e318]:
+                  - generic [ref=e319]: อนุมัติแล้ว
+                  - generic [ref=e320]: "0"
+                - button "+ เพิ่มเนื้อหา" [ref=e491]
+              - generic [ref=e323]:
+                - generic [ref=e324]:
+                  - generic [ref=e325]: ตั้งเวลาแล้ว
+                  - generic [ref=e326]: "2"
+                - generic [ref=e327]:
+                  - generic [ref=e523] [cursor=pointer]:
+                    - generic [ref=e524]:
+                      - 'heading "PDPA Compliance: Myth vs Fact [Brand Memory Verified]" [level=4] [ref=e525]'
+                      - img [ref=e526]
+                    - generic [ref=e530]:
+                      - generic [ref=e531]:
+                        - generic [ref=e532]: TH
+                        - generic [ref=e533]: EN
+                      - generic [ref=e534]: •
+                      - generic [ref=e535]: facebook
+                    - generic [ref=e536]:
+                      - img [ref=e537]
+                      - generic [ref=e539]: 20 พ.ค. 2025 • 09:00
+                    - generic [ref=e541]:
+                      - generic [ref=e542]: กฎหมาย
+                      - generic [ref=e544]: บัญชี
+                      - generic [ref=e546]: แบรนด์
+                  - generic [ref=e328] [cursor=pointer]:
+                    - generic [ref=e329]:
+                      - 'heading "การปฏิบัติตาม PDPA: สำคัญอย่างไร? [Smoke Edited]" [level=4] [ref=e492]'
+                      - img [ref=e331]
+                    - generic [ref=e335]:
+                      - generic [ref=e336]:
+                        - generic [ref=e337]: TH
+                        - generic [ref=e338]: EN
+                      - generic [ref=e339]: •
+                      - generic [ref=e340]: facebook
+                    - generic [ref=e341]:
+                      - img [ref=e342]
+                      - generic [ref=e344]: 20 พ.ค. 2025 • 09:00
+                    - generic [ref=e346]:
+                      - generic [ref=e347]: กฎหมาย
+                      - generic [ref=e349]: บัญชี
+                      - generic [ref=e351]: แบรนด์
+                  - button "+ เพิ่มเนื้อหา" [ref=e493]
+            - generic [ref=e355]:
+              - generic [ref=e356]:
+                - generic [ref=e357]: บันทึกการรีวิว
+                - textbox "เพิ่มบันทึกสำหรับบอร์ดนี้..." [ref=e494]
+                - button "บันทึกข้อความ" [ref=e495]
+              - generic [ref=e361]:
+                - generic [ref=e362]: กฎการอนุมัติ
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - img [ref=e366]
+                    - generic [ref=e368]: ตรวจเช็คเนื้อหาสองภาษาแล้ว
+                  - generic [ref=e369]:
+                    - img [ref=e371]
+                    - generic [ref=e373]: ตรวจสอบแฮชแท็กแล้ว
+                  - generic [ref=e374]:
+                    - img [ref=e376]
+                    - generic [ref=e378]: ยืนยันแหล่งที่มาข้อมูลแล้ว
+                  - generic [ref=e379]:
+                    - img [ref=e381]
+                    - generic [ref=e383]: อนุมัติรูปแบบเทมเพลตภาพแล้ว
+  - button "Open Next.js Dev Tools" [ref=e389] [cursor=pointer]:
+    - img [ref=e390]
+  - alert [ref=e393]

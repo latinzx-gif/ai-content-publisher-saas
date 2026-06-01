@@ -11,7 +11,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       className={cn(
         // Design System: h-10, rounded-xl, slate border, indigo focus ring
         "h-10 w-full min-w-0 rounded-xl border border-slate-200 dark:border-slate-700",
-        "bg-white dark:bg-slate-900/60 px-3 py-1 text-sm font-medium",
+        "font-body bg-white dark:bg-slate-900/60 px-3 py-1 text-sm font-medium",
         "text-slate-800 dark:text-slate-200 transition-all outline-none",
         "placeholder:text-slate-400 dark:placeholder:text-slate-500",
         "focus-visible:border-indigo-400 focus-visible:ring-2 focus-visible:ring-indigo-300/40",
