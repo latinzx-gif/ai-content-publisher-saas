@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useLanguage } from '@/components/providers/language-provider'
 
 export function LoginForm() {
+  const { t } = useLanguage()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -35,7 +37,7 @@ export function LoginForm() {
       {/* Email */}
       <div className="space-y-1.5">
         <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          อีเมล
+          {t('auth.login.email')}
         </Label>
         <Input
           id="email"
@@ -52,10 +54,10 @@ export function LoginForm() {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-            รหัสผ่าน
+            {t('auth.login.password')}
           </Label>
           <a href="#" className="text-[11px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors">
-            ลืมรหัสผ่าน?
+            {t('auth.login.forgot')}
           </a>
         </div>
         <div className="relative">
@@ -88,10 +90,10 @@ export function LoginForm() {
         {loading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            กำลังเข้าสู่ระบบ...
+            {t('auth.login.loading')}
           </span>
         ) : (
-          'เข้าสู่ระบบ'
+          t('auth.login.submit')
         )}
       </Button>
     </form>

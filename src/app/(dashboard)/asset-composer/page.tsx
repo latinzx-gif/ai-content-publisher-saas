@@ -2,558 +2,671 @@
 
 import React, { useState } from 'react';
 import { 
-  ChevronDown, 
   Check, 
   Plus, 
-  HelpCircle,
-  Image as ImageIcon,
-  Columns,
-  Grid,
-  Layout,
-  BookOpen
+  Info,
+  Sparkles,
+  Trash2
 } from 'lucide-react';
+
+function FacebookIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
+    </svg>
+  );
+}
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { useLanguage } from '@/components/providers/language-provider';
+
+// Unsplash premium neutral warm-toned photography URLs matching the mockup
+const MOCK_IMAGES = {
+  cover: 'https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=800&q=80',
+  support1: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&w=400&q=80',
+  support2: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=400&q=80',
+  support3: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=400&q=80',
+  support4: 'https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?auto=format&fit=crop&w=400&q=80'
+};
+
+const LAYOUT_PRESETS = [
+  {
+    id: 'vertical_1_2',
+    name: 'Vertical 1+2',
+    fullName: 'Vertical 1+2 • One Large + Two Small',
+    desc: '3 images • cover 2:3 • support images 1:1 • max 3 images',
+    summaryLayout: 'Vertical 1+2 (One Large + Two Small)',
+    summaryCount: '3 images (1 cover + 2 support)',
+    summaryRatios: 'Cover 2:3 • Support 1:1'
+  },
+  {
+    id: 'vertical_1_3',
+    name: 'Vertical 1+3',
+    fullName: 'Vertical 1+3 • One Large + Three Small',
+    desc: '4 images • cover 2:3 • support images 1:1 • max 4 images',
+    summaryLayout: 'Vertical 1+3 (One Large + Three Small)',
+    summaryCount: '4 images (1 cover + 3 support)',
+    summaryRatios: 'Cover 2:3 • Support 1:1'
+  },
+  {
+    id: 'vertical_2_3',
+    name: 'Vertical 2+3',
+    fullName: 'Vertical 2+3 • Two Large + Three Small',
+    desc: '5 images • cover 1:1 • support images 1:1 • max 5 images',
+    summaryLayout: 'Vertical 2+3 (Two Large + Three Small)',
+    summaryCount: '5 images (2 cover + 3 support)',
+    summaryRatios: 'Cover 1:1 • Support 1:1'
+  },
+  {
+    id: 'horizontal_1_2',
+    name: 'Horizontal 1+2',
+    fullName: 'Horizontal 1+2 • One Large + Two Small',
+    desc: '3 images • cover 3:2 • support images 1:1 • max 3 images',
+    summaryLayout: 'Horizontal 1+2 (One Large + Two Small)',
+    summaryCount: '3 images (1 cover + 2 support)',
+    summaryRatios: 'Cover 3:2 • Support 1:1'
+  },
+  {
+    id: 'horizontal_1_3',
+    name: 'Horizontal 1+3',
+    fullName: 'Horizontal 1+3 • One Large + Three Small',
+    desc: '4 images • cover 3:2 • support images 1:1 • max 4 images',
+    summaryLayout: 'Horizontal 1+3 (One Large + Three Small)',
+    summaryCount: '4 images (1 cover + 3 support)',
+    summaryRatios: 'Cover 3:2 • Support 1:1'
+  },
+  {
+    id: 'horizontal_2_3',
+    name: 'Horizontal 2+3',
+    fullName: 'Horizontal 2+3 • Two Large + Three Small',
+    desc: '5 images • cover 1:1 • support images 1:1 • max 5 images',
+    summaryLayout: 'Horizontal 2+3 (Two Large + Three Small)',
+    summaryCount: '5 images (2 cover + 3 support)',
+    summaryRatios: 'Cover 1:1 • Support 1:1'
+  },
+  {
+    id: 'square_4',
+    name: 'Square 4',
+    fullName: 'Square 4 • Four Equal Tiles',
+    desc: '4 images • tiles 1:1 • max 4 images',
+    summaryLayout: 'Square 4 (Four Equal Tiles)',
+    summaryCount: '4 images (4 tiles)',
+    summaryRatios: 'Tiles 1:1'
+  }
+];
 
 export default function AssetComposerPage() {
-  const { t, currentLanguage } = useLanguage();
-  const [assetGoal, setAssetGoal] = useState('Promote a service or solution');
-  const [imageMode, setImageMode] = useState('Collage');
-  const [imageCount, setImageCount] = useState(4);
-  const [presetLayout, setPresetLayout] = useState('One Large + Three Small');
-  const [aspectRatio, setAspectRatio] = useState('4:5');
-  const [language, setLanguage] = useState('Bilingual');
-  const [density, setDensity] = useState('Medium');
-  const [visualPreset, setVisualPreset] = useState('Quiet Luxury - Editorial');
+  const [manualSettings, setManualSettings] = useState(false);
+  const [activeTab, setActiveTab] = useState<'quick' | 'manual'>('quick');
+  const [topic, setTopic] = useState('');
+  const [selectedPreset, setSelectedPreset] = useState(LAYOUT_PRESETS[1]); // Default to Vertical 1+3
 
-  // Helper to resolve translation inline for option values
-  const getLabel = (enVal: string, thVal: string) => {
-    return currentLanguage === 'th' ? thVal : enVal;
+  // Interactive Rules lists
+  const [imageRules, setImageRules] = useState<string[]>([
+    'Quiet luxury editorial',
+    'Bilingual text in image allowed',
+    'Low text density',
+    'Approved template set',
+    'Facebook layout rules on'
+  ]);
+  
+  const [contentRules, setContentRules] = useState<string[]>([
+    'TH primary, EN secondary',
+    'Hashtags enabled',
+    'Brand voice preset: Professional',
+    'Approved sources only',
+    'Compliance & legal review on'
+  ]);
+
+  const [newImageRule, setNewImageRule] = useState('');
+  const [newContentRule, setNewContentRule] = useState('');
+
+  const addImageRule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newImageRule.trim()) {
+      setImageRules([...imageRules, newImageRule.trim()]);
+      setNewImageRule('');
+      toast.success('Added new image guideline rule.');
+    }
   };
 
-  // Option lists with TH/EN values
-  const imageModes = [
-    { en: 'Single Image', th: 'ภาพเดี่ยว' },
-    { en: 'Carousel', th: 'ภาพสไลด์ (Carousel)' },
-    { en: 'Collage', th: 'ภาพคอลลาจ' },
-    { en: 'Template Reuse', th: 'ใช้เทมเพลตซ้ำ' },
-    { en: '+ Other', th: '+ อื่นๆ' }
-  ];
+  const addContentRule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newContentRule.trim()) {
+      setContentRules([...contentRules, newContentRule.trim()]);
+      setNewContentRule('');
+      toast.success('Added new content guideline rule.');
+    }
+  };
 
-  const presetLayouts = [
-    { en: 'Single Poster', th: 'โปสเตอร์เดี่ยว', icon: ImageIcon },
-    { en: 'Split Two-Up', th: 'แบ่งสองฝั่ง', icon: Columns },
-    { en: 'Four-Tile Grid', th: 'ตารางสี่ช่อง', icon: Grid },
-    { en: 'One Large + Three Small', th: 'หนึ่งใหญ่ สามเล็ก', icon: Layout },
-    { en: 'Magazine Mosaic', th: 'โมเสกนิตยสาร', icon: Layout }
-  ];
+  const removeImageRule = (index: number) => {
+    setImageRules(imageRules.filter((_, i) => i !== index));
+  };
 
-  const aspectRatios = [
-    { en: '1:1', th: '1:1' },
-    { en: '4:5', th: '4:5' },
-    { en: '16:9', th: '16:9' },
-    { en: '+ Other', th: '+ อื่นๆ' }
-  ];
+  const removeContentRule = (index: number) => {
+    setContentRules(contentRules.filter((_, i) => i !== index));
+  };
 
-  const languages = [
-    { en: 'Thai', th: 'ภาษาไทย' },
-    { en: 'English', th: 'ภาษาอังกฤษ' },
-    { en: 'Bilingual', th: 'สองภาษา' },
-    { en: '+ Other', th: '+ อื่นๆ' }
-  ];
-
-  const densities = [
-    { en: 'Low', th: 'น้อย' },
-    { en: 'Medium', th: 'ปานกลาง' },
-    { en: 'High', th: 'มาก' }
-  ];
-
-  const goals = [
-    { en: 'Promote a service or solution', th: 'โปรโมทบริการหรือโซลูชันธุรกิจ' },
-    { en: 'Educate on legal compliance', th: 'ให้ความรู้เรื่องการปฏิบัติตามกฎหมาย' },
-    { en: 'Share industry news & insights', th: 'แบ่งปันข่าวสารและข้อมูลเชิงลึก' }
-  ];
-
-  // Resolve current active state text
-  const currentGoalLabel = goals.find(g => g.en === assetGoal)?.th && currentLanguage === 'th'
-    ? goals.find(g => g.en === assetGoal)?.th
-    : assetGoal;
+  const handleGenerate = () => {
+    toast.success('AI Asset Composer launched! Compiling image parameters & layouts.');
+  };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
+    <div className="flex-1 overflow-y-auto bg-[#FAF9F6] text-slate-800 p-6 sm:p-8 flex flex-col space-y-6 select-none font-sans min-h-screen">
       
-      {/* Title Header */}
-      <div className="space-y-1 text-left pb-3 border-b border-[#E6DFD5] dark:border-slate-800">
-        <h2 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
-          {t('composer.title')}
-        </h2>
-        <p className="text-xs text-[#7C756C] dark:text-slate-400">
-          {t('composer.subtitle')}
-        </p>
+      {/* Top Workspace Header Breadcrumbs */}
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
+        <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold tracking-tight">
+          <span>Workspace</span>
+          <span>/</span>
+          <span>Content Operations</span>
+          <span>/</span>
+          <span className="text-slate-800 font-bold">Asset Composer</span>
+        </div>
+        <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
+          <div className="flex gap-2">
+            <span className="cursor-pointer hover:text-slate-800">TH</span>
+            <span className="text-slate-800 underline">EN</span>
+          </div>
+          <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
+            OS
+          </div>
+          <span className="cursor-pointer hover:text-slate-850">SIGN OUT</span>
+        </div>
       </div>
 
-      {/* Main Container (Two-column layout) */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+      {/* Main Container */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start max-w-7xl mx-auto w-full">
         
-        {/* Left Column: Parameter Selector Form */}
-        <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-6 space-y-6 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left">
+        {/* Left 2 Columns: Composer controls */}
+        <div className="xl:col-span-2 space-y-6 text-left">
           
-          {/* Goal Selector */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.goal.label')}</label>
-              <div className="h-9.5 border border-[#E6DFD5] dark:border-slate-700 rounded-lg px-3 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-xs font-semibold">
-                <span>{currentGoalLabel}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
-              </div>
+          {/* Header Title Section */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 uppercase">
+                Asset Composer
+              </h1>
+              <p className="text-xs text-slate-450 font-medium">
+                One-click visual generation using your saved brand rules and Facebook layout presets.
+              </p>
             </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.goal.custom')}</label>
-              <input 
-                type="text" 
-                placeholder={t('composer.goal.placeholder')}
-                className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-9.5 outline-none font-medium"
-              />
-            </div>
-          </div>
-
-          {/* Image Mode */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.mode.label')}</label>
-            <div className="flex flex-wrap gap-2">
-              {imageModes.map((mode) => (
-                <button
-                  key={mode.en}
-                  type="button"
-                  onClick={() => setImageMode(mode.en)}
+            
+            {/* Manual settings switch */}
+            <div className="flex items-center gap-2 bg-white/40 px-3 py-1.5 rounded-xl border border-slate-200/50 shrink-0 self-start sm:self-center">
+              <span className="text-[10px] font-bold text-slate-550">Manual settings</span>
+              <button 
+                onClick={() => setManualSettings(!manualSettings)}
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                  manualSettings ? "bg-indigo-600" : "bg-slate-200"
+                )}
+              >
+                <span className="sr-only">Toggle manual settings</span>
+                <span
                   className={cn(
-                    "px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer",
-                    imageMode === mode.en 
-                      ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                      : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
+                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                    manualSettings ? "translate-x-4" : "translate-x-0"
                   )}
-                >
-                  {getLabel(mode.en, mode.th)}
-                </button>
-              ))}
+                />
+              </button>
+              <span className="text-[10px] font-black uppercase text-slate-400">{manualSettings ? 'On' : 'Off'}</span>
+              <Info className="w-3.5 h-3.5 text-slate-400 cursor-pointer hover:text-slate-600" />
             </div>
           </div>
 
-          {/* Image Count */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.count.label')}</label>
-            <div className="flex gap-2">
-              {[1, 2, 4, 6].map((count) => (
-                <button
-                  key={count}
-                  type="button"
-                  onClick={() => setImageCount(count)}
-                  className={cn(
-                    "w-10 h-8 rounded-lg border text-xs font-bold transition-all cursor-pointer flex items-center justify-center",
-                    imageCount === count 
-                      ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                      : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
-                  )}
-                >
-                  {count}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Layout Presets */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.layout.label')}</label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-              {presetLayouts.map((lay) => (
-                <button
-                  key={lay.en}
-                  type="button"
-                  onClick={() => setPresetLayout(lay.en)}
-                  className={cn(
-                    "p-3 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center gap-2 h-full justify-between",
-                    presetLayout === lay.en 
-                      ? "bg-[#FAF8F5] border-[#967F5C] text-[#1E1D1B] font-bold dark:bg-slate-800/50" 
-                      : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]/50"
-                  )}
-                >
-                  <lay.icon className="w-4 h-4 text-[#967F5C] shrink-0" />
-                  <span className="text-[9px] font-bold leading-tight mt-1">{getLabel(lay.en, lay.th)}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Aspect Ratio & Text Language */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.ratio.label')}</label>
-              <div className="flex gap-2">
-                {aspectRatios.map((ratio) => (
-                  <button
-                    key={ratio.en}
-                    type="button"
-                    onClick={() => setAspectRatio(ratio.en)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer flex-1 text-center",
-                      aspectRatio === ratio.en 
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                        : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
-                    )}
-                  >
-                    {getLabel(ratio.en, ratio.th)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.lang.label')}</label>
-              <div className="flex gap-2">
-                {languages.map((lang) => (
-                  <button
-                    key={lang.en}
-                    type="button"
-                    onClick={() => setLanguage(lang.en)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer flex-1 text-center",
-                      language === lang.en 
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                        : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
-                    )}
-                  >
-                    {getLabel(lang.en, lang.th)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Text Density & Visual Style Preset */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.density.label')}</label>
-              <div className="flex gap-2">
-                {densities.map((dens) => (
-                  <button
-                    key={dens.en}
-                    type="button"
-                    onClick={() => setDensity(dens.en)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-lg border text-xs font-bold transition-all cursor-pointer flex-1 text-center",
-                      density === dens.en 
-                        ? "bg-[#1E1D1B] border-[#1E1D1B] text-white dark:bg-[#EBE7E0] dark:text-[#1E1D1B]" 
-                        : "bg-transparent border-[#E6DFD5] dark:border-slate-800 text-[#7C756C] hover:border-[#967F5C]"
-                    )}
-                  >
-                    {getLabel(dens.en, dens.th)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.preset.label')}</label>
-              <div className="h-9.5 border border-[#E6DFD5] dark:border-slate-700 rounded-lg px-3 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-xs font-semibold">
-                <span>{getLabel(visualPreset, 'Quiet Luxury - สไตล์นิตยสาร')}</span>
-                <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
-              </div>
-            </div>
-          </div>
-
-          {/* Reference Assets */}
-          <div className="space-y-2">
-            <label className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{t('composer.ref.label')}</label>
-            <div className="border border-dashed border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/30 dark:bg-slate-900 rounded-lg p-5 flex flex-col items-center justify-center gap-2 text-center text-xs">
-              <ImageIcon className="w-7 h-7 text-[#7C756C]" />
-              <p className="font-semibold text-[#7C756C]">{t('composer.ref.placeholder')}</p>
-              <Button variant="outline" className="h-7 text-[10px] font-bold border-[#E6DFD5] rounded mt-1">
-                {t('composer.ref.btn')}
-              </Button>
-            </div>
-          </div>
-
-          {/* CTA Generate Button */}
-          <div className="pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80 flex justify-end">
-            <Button 
-              onClick={() => toast.success(t('composer.success'))}
-              className="bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs h-11 px-8 rounded-lg shadow-sm flex items-center gap-2 cursor-pointer"
+          {/* Quick Mode / Manual Tabs */}
+          <div className="flex gap-6 border-b border-slate-200/70 text-xs">
+            <button 
+              onClick={() => setActiveTab('quick')}
+              className={cn(
+                "pb-3 font-black tracking-wider uppercase transition-all duration-200 border-b-2 px-1",
+                activeTab === 'quick' ? "border-amber-600 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
+              )}
             >
-              {t('composer.action.generate')} <Plus className="w-4 h-4" />
+              Quick Mode
+            </button>
+            <button 
+              onClick={() => setActiveTab('manual')}
+              className={cn(
+                "pb-3 font-black tracking-wider uppercase transition-all duration-200 border-b-2 px-1",
+                activeTab === 'manual' ? "border-amber-600 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
+              )}
+            >
+              Manual
+            </button>
+          </div>
+
+          {/* Input campaign card */}
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-450">Campaign / Visual Topic</Label>
+              <span className="text-[9px] text-slate-400 font-bold">{topic.length}/150</span>
+            </div>
+            <textarea 
+              value={topic}
+              onChange={(e) => setTopic(e.target.value.slice(0, 150))}
+              placeholder="Enter campaign name, product, message or visual topic..."
+              className="w-full h-24 text-xs font-semibold text-slate-800 placeholder-slate-400 border-none outline-none resize-none p-0 focus:ring-0 bg-transparent"
+            />
+          </div>
+
+          {/* Saved Rules side-by-side grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* SAVED IMAGE RULES */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Saved Image Rules</span>
+                </div>
+                <span className="text-[9px] bg-emerald-50 text-emerald-700 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Active</span>
+              </div>
+              
+              <div className="space-y-2">
+                {imageRules.map((rule, index) => (
+                  <div key={index} className="flex items-center justify-between text-xs font-semibold text-slate-650 group/item">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3.5 h-3.5 rounded bg-slate-100 flex items-center justify-center shrink-0">
+                        <Check className="w-2.5 h-2.5 text-slate-700" />
+                      </div>
+                      <span>{rule}</span>
+                    </div>
+                    <button 
+                      onClick={() => removeImageRule(index)}
+                      className="opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-rose-600 transition-opacity p-0.5 rounded"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Image Rule Form */}
+              <form onSubmit={addImageRule} className="flex gap-2 pt-2 border-t border-slate-50">
+                <input 
+                  type="text" 
+                  value={newImageRule}
+                  onChange={(e) => setNewImageRule(e.target.value)}
+                  placeholder="Add custom image rule..."
+                  className="flex-1 bg-slate-50/50 border border-slate-200/60 rounded-xl px-3 py-1.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                />
+                <Button type="submit" variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0 bg-slate-150/40 hover:bg-slate-150">
+                  <Plus className="w-4 h-4 text-slate-600" />
+                </Button>
+              </form>
+            </div>
+
+            {/* SAVED CONTENT RULES */}
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] space-y-4">
+              <div className="flex justify-between items-center border-b border-slate-50 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">Saved Content Rules</span>
+                </div>
+                <span className="text-[9px] bg-emerald-50 text-emerald-700 font-black px-1.5 py-0.5 rounded uppercase tracking-wider">Active</span>
+              </div>
+              
+              <div className="space-y-2">
+                {contentRules.map((rule, index) => (
+                  <div key={index} className="flex items-center justify-between text-xs font-semibold text-slate-655 group/item">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3.5 h-3.5 rounded bg-slate-100 flex items-center justify-center shrink-0">
+                        <Check className="w-2.5 h-2.5 text-slate-700" />
+                      </div>
+                      <span>{rule}</span>
+                    </div>
+                    <button 
+                      onClick={() => removeContentRule(index)}
+                      className="opacity-0 group-hover/item:opacity-100 text-slate-400 hover:text-rose-600 transition-opacity p-0.5 rounded"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Add Content Rule Form */}
+              <form onSubmit={addContentRule} className="flex gap-2 pt-2 border-t border-slate-50">
+                <input 
+                  type="text" 
+                  value={newContentRule}
+                  onChange={(e) => setNewContentRule(e.target.value)}
+                  placeholder="Add custom content rule..."
+                  className="flex-1 bg-slate-50/50 border border-slate-200/60 rounded-xl px-3 py-1.5 text-xs font-semibold placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                />
+                <Button type="submit" variant="ghost" size="icon" className="h-8 w-8 rounded-xl shrink-0 bg-slate-150/40 hover:bg-slate-150">
+                  <Plus className="w-4 h-4 text-slate-600" />
+                </Button>
+              </form>
+            </div>
+
+          </div>
+
+          {/* Facebook Layout Presets Header */}
+          <div className="space-y-4 pt-2">
+            <h3 className="text-[10px] font-black uppercase tracking-wider text-slate-450">Facebook Layout Presets</h3>
+            
+            {/* The schematic preset cards grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+              {LAYOUT_PRESETS.map((preset) => {
+                const isSelected = selectedPreset.id === preset.id;
+                return (
+                  <button
+                    key={preset.id}
+                    onClick={() => setSelectedPreset(preset)}
+                    className={cn(
+                      "p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-between gap-3 h-28 relative group/btn",
+                      isSelected 
+                        ? "bg-white border-amber-600 shadow-md" 
+                        : "bg-white border-slate-200/70 hover:border-slate-350"
+                    )}
+                  >
+                    {/* Checkmark overlay for active layout */}
+                    {isSelected && (
+                      <div className="absolute top-1.5 right-1.5 bg-amber-600 text-white rounded-full p-0.5">
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                    )}
+
+                    {/* Miniature layout schematic grids */}
+                    <div className="w-full flex-1 flex items-center justify-center px-2">
+                      <div className="w-12 h-10 border border-slate-200 rounded p-0.5 bg-slate-50 flex gap-0.5 overflow-hidden">
+                        
+                        {preset.id === 'vertical_1_2' && (
+                          <>
+                            <div className="w-7 h-full bg-slate-300 rounded-sm" />
+                            <div className="flex-1 flex flex-col gap-0.5">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </>
+                        )}
+
+                        {preset.id === 'vertical_1_3' && (
+                          <>
+                            <div className="w-7 h-full bg-slate-300 rounded-sm" />
+                            <div className="flex-1 flex flex-col gap-0.5">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </>
+                        )}
+
+                        {preset.id === 'vertical_2_3' && (
+                          <>
+                            <div className="w-5 h-full flex flex-col gap-0.5">
+                              <div className="flex-1 bg-slate-300 rounded-sm" />
+                              <div className="flex-1 bg-slate-300 rounded-sm" />
+                            </div>
+                            <div className="flex-1 flex flex-col gap-0.5">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </>
+                        )}
+
+                        {preset.id === 'horizontal_1_2' && (
+                          <div className="w-full h-full flex flex-col gap-0.5">
+                            <div className="h-5 bg-slate-300 rounded-sm w-full" />
+                            <div className="flex-1 flex gap-0.5 w-full">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </div>
+                        )}
+
+                        {preset.id === 'horizontal_1_3' && (
+                          <div className="w-full h-full flex flex-col gap-0.5">
+                            <div className="h-5 bg-slate-300 rounded-sm w-full" />
+                            <div className="flex-1 flex gap-0.5 w-full">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </div>
+                        )}
+
+                        {preset.id === 'horizontal_2_3' && (
+                          <div className="w-full h-full flex flex-col gap-0.5">
+                            <div className="h-4.5 flex gap-0.5 w-full">
+                              <div className="flex-1 bg-slate-300 rounded-sm" />
+                              <div className="flex-1 bg-slate-300 rounded-sm" />
+                            </div>
+                            <div className="flex-1 flex gap-0.5 w-full">
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                              <div className="flex-1 bg-slate-250 rounded-sm" />
+                            </div>
+                          </div>
+                        )}
+
+                        {preset.id === 'square_4' && (
+                          <div className="grid grid-cols-2 grid-rows-2 gap-0.5 w-full h-full">
+                            <div className="bg-slate-300 rounded-sm" />
+                            <div className="bg-slate-250 rounded-sm" />
+                            <div className="bg-slate-250 rounded-sm" />
+                            <div className="bg-slate-250 rounded-sm" />
+                          </div>
+                        )}
+
+                      </div>
+                    </div>
+                    
+                    <span className="text-[9px] font-bold text-slate-655 tracking-tight group-hover/btn:text-slate-900 transition-colors">
+                      {preset.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Layout details display panel */}
+            <div className="p-4 bg-white border border-slate-200/80 rounded-2xl flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="text-xs font-bold text-slate-800">{selectedPreset.fullName}</h4>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{selectedPreset.desc}</p>
+              </div>
+              <FacebookIcon className="w-4 h-4 text-blue-600 shrink-0" />
+            </div>
+
+          </div>
+
+          {/* Action trigger footer */}
+          <div className="pt-4 border-t border-slate-200/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <Button 
+              onClick={handleGenerate}
+              className="bg-[#0B1E33] hover:bg-[#071322] text-white font-black text-xs h-11 px-8 rounded-xl flex items-center gap-2 w-full sm:w-auto shadow-md"
+            >
+              <Sparkles className="w-4 h-4" />
+              GENERATE VISUAL
             </Button>
+            <span className="text-xs font-bold text-slate-400 hover:text-indigo-650 cursor-pointer hover:underline">
+              Open Manual
+            </span>
           </div>
 
         </div>
 
-        {/* Right Column: Preview Pane & Output Summaries */}
-        <div className="space-y-6 flex flex-col h-full justify-between">
+        {/* Right 1 Column: Preview & summary panels */}
+        <div className="space-y-6 text-left">
           
-          {/* Collage Preview Card */}
-          <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left flex-1 space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">
-                {t('composer.preview.title', { preset: getLabel(presetLayout, presetLayouts.find(l => l.en === presetLayout)?.th || presetLayout), count: imageCount })}
-              </span>
-              <span className="text-[#7C756C] text-[10px] font-bold">{aspectRatio}</span>
+          {/* Layout Preview Pane */}
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] flex flex-col space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Layout Preview</span>
+                <Info className="w-3.5 h-3.5 text-slate-350 cursor-pointer hover:text-slate-500" />
+              </div>
             </div>
 
-            {/* Collage Layout Grid */}
-            <div className="w-full rounded-xl overflow-hidden bg-[#F3EFEA] dark:bg-slate-800 aspect-[4/5] relative">
+            {/* Dynamic visual preview representing the layout grids */}
+            <div className="w-full aspect-[4/5] bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden relative p-1.5">
               
-              {presetLayout === 'Single Poster' && (
-                <div className="w-full h-full relative bg-gradient-to-tr from-[#2C2A29] to-[#4A4745] flex flex-col justify-end p-6 text-white transition-all duration-300">
-                  <div className="absolute inset-0 bg-[#2C2A29]/65 mix-blend-multiply" />
-                  <div className="relative z-10 space-y-4">
-                    <span className="text-[10px] uppercase tracking-widest font-bold text-[#C8B69B] block border-b border-[#C8B69B]/40 pb-1.5">
-                      {currentLanguage === 'th' ? 'การพิจารณาคดีและกฎหมาย' : 'Legal Advisory'}
-                    </span>
-                    <h3 className="font-serif text-2xl md:text-3xl tracking-wide leading-tight">
-                      {currentLanguage === 'th' ? 'ความชัดเจนในวันนี้ ความมั่นใจในวันข้างหน้า' : 'Clarity today. Confidence tomorrow.'}
-                    </h3>
-                    <p className="text-xs text-[#E6DFD5]/90 font-medium leading-relaxed">
-                      {currentLanguage === 'th'
-                        ? 'คำปรึกษาที่ตรงประเด็นและมีความแม่นยำจากทีมผู้เชี่ยวชาญเพื่อปกป้องทรัพย์สินและผลประโยชน์ของแบรนด์'
-                        : 'Precision-driven counsel and guidance from elite legal experts to safeguard your brand assets.'}
-                    </p>
-                    <p className="text-[9px] text-[#C8B69B] font-semibold tracking-wider pt-2">
-                      {currentLanguage === 'th' ? 'พันธมิตรทางกฎหมายที่แบรนด์ชั้นนำไว้วางใจ' : 'Your trusted legal partner for every milestone.'}
-                    </p>
+              {/* Vertical 1+2 Layout */}
+              {selectedPreset.id === 'vertical_1_2' && (
+                <div className="grid grid-cols-2 gap-1.5 h-full w-full">
+                  <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                    <div className="absolute inset-0 bg-black/30" />
+                    {/* Left overlay typography */}
+                    <div className="absolute bottom-4 left-4 right-4 text-white z-10 space-y-1">
+                      <h3 className="font-heading font-black text-sm tracking-tight leading-tight">Compliance by Design.</h3>
+                      <p className="text-[9px] font-medium leading-relaxed opacity-90">มาตรฐานที่คุณวางใจ เพื่อการเติบโตที่ยั่งยืน</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-rows-2 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
                   </div>
                 </div>
               )}
 
-              {presetLayout === 'Split Two-Up' && (
-                <div className="grid grid-cols-2 gap-2 h-full w-full p-1 bg-white dark:bg-slate-900 transition-all duration-300">
-                  {/* Left Panel */}
-                  <div className="relative bg-gradient-to-tr from-[#2C2A29] to-[#4A4745] flex flex-col justify-end p-4 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-[#2C2A29]/60 mix-blend-multiply" />
-                    <div className="relative z-10 space-y-2.5">
-                      <span className="text-[8px] uppercase tracking-widest font-bold text-[#C8B69B] block border-b border-[#C8B69B]/20 pb-0.5">
-                        {currentLanguage === 'th' ? 'คำแนะนำ' : 'Guidance'}
-                      </span>
-                      <h4 className="font-serif text-sm md:text-base tracking-wide leading-snug">
-                        {currentLanguage === 'th' ? 'แนวทางที่แม่นยำ' : 'Strategic Guidance'}
-                      </h4>
-                      <p className="text-[9px] text-[#E6DFD5]/90">
-                        {currentLanguage === 'th' ? 'การนำทางในกรอบกฎหมายที่ซับซ้อน' : 'Navigating complex frameworks with absolute precision.'}
-                      </p>
+              {/* Vertical 1+3 Layout (mockup target) */}
+              {selectedPreset.id === 'vertical_1_3' && (
+                <div className="grid grid-cols-2 gap-1.5 h-full w-full">
+                  <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute bottom-4 left-4 text-white z-10 space-y-1">
+                      <h3 className="font-heading font-black text-sm tracking-tight leading-tight">Compliance by Design.</h3>
+                      <p className="text-[9px] font-medium leading-relaxed opacity-90">มาตรฐานที่คุณวางใจ เพื่อการเติบโตที่ยั่งยืน</p>
                     </div>
                   </div>
-
-                  {/* Right Panel */}
-                  <div className="relative bg-gradient-to-br from-[#5C5650] to-[#756E67] flex flex-col justify-end p-4 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-black/40" />
-                    <div className="relative z-10 space-y-2.5">
-                      <span className="text-[8px] uppercase tracking-widest font-bold text-[#C8B69B] block border-b border-[#C8B69B]/20 pb-0.5">
-                        {currentLanguage === 'th' ? 'ทางออกธุรกิจ' : 'Outcomes'}
-                      </span>
-                      <h4 className="font-serif text-sm md:text-base tracking-wide leading-snug">
-                        {currentLanguage === 'th' ? 'คำปรึกษาที่ตอบโจทย์' : 'Tailored Solutions'}
-                      </h4>
-                      <p className="text-[9px] text-[#E6DFD5]/90">
-                        {currentLanguage === 'th' ? 'โซลูชันที่ออกแบบมาเพื่อธุรกิจของคุณ' : 'Outcome-focused strategies tailored to your enterprise.'}
-                      </p>
-                    </div>
+                  <div className="grid grid-rows-3 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support3})` }} />
                   </div>
                 </div>
               )}
 
-              {presetLayout === 'Four-Tile Grid' && (
-                <div className="grid grid-cols-2 grid-rows-2 gap-2 h-full w-full p-1 bg-white dark:bg-slate-900 transition-all duration-300">
-                  {[
-                    {
-                      title: currentLanguage === 'th' ? 'กฎหมายนิติบุคคล' : 'Corporate Law',
-                      desc: currentLanguage === 'th' ? 'การจัดตั้งและดูแลโครงสร้างธุรกิจ' : 'Business establishment & framework',
-                      grad: 'from-[#2C2A29] to-[#3C3A39]'
-                    },
-                    {
-                      title: currentLanguage === 'th' ? 'วางแผนโครงสร้างภาษี' : 'Tax Advisory',
-                      desc: currentLanguage === 'th' ? 'การบริหารจัดการภาษีนิติบุคคลอย่างเป็นระบบ' : 'Corporate tax optimization strategy',
-                      grad: 'from-[#4E4B49] to-[#5E5B59]'
-                    },
-                    {
-                      title: currentLanguage === 'th' ? 'ทรัพย์สินทางปัญญา' : 'IP Protection',
-                      desc: currentLanguage === 'th' ? 'ความคุ้มครองลิขสิทธิ์และเครื่องหมายการค้า' : 'Copyright & trademark protection',
-                      grad: 'from-[#5C5650] to-[#6C6660]'
-                    },
-                    {
-                      title: currentLanguage === 'th' ? 'ความสอดคล้อง PDPA' : 'PDPA Compliance',
-                      desc: currentLanguage === 'th' ? 'ระบบการจัดเก็บข้อมูลลูกค้าที่ถูกต้อง' : 'Customer data privacy frameworks',
-                      grad: 'from-[#383634] to-[#484644]'
-                    }
-                  ].map((tile, i) => (
-                    <div key={i} className={cn("relative bg-gradient-to-tr flex flex-col justify-end p-3.5 text-white rounded-lg overflow-hidden", tile.grad)}>
-                      <div className="absolute inset-0 bg-black/35" />
-                      <div className="relative z-10 space-y-1.5 flex-1 flex flex-col justify-end">
-                        <h4 className="font-serif text-[11px] font-bold tracking-wide leading-tight border-b border-white/10 pb-1">{tile.title}</h4>
-                        <p className="text-[8px] text-[#E6DFD5]/90 leading-normal">{tile.desc}</p>
+              {/* Vertical 2+3 Layout */}
+              {selectedPreset.id === 'vertical_2_3' && (
+                <div className="grid grid-cols-2 gap-1.5 h-full w-full">
+                  <div className="grid grid-rows-2 gap-1.5">
+                    <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                      <div className="absolute inset-0 bg-black/25" />
+                      <div className="absolute bottom-2.5 left-2.5 text-white z-10">
+                        <h3 className="font-heading font-bold text-[10px] tracking-tight leading-tight">Compliance by Design.</h3>
                       </div>
                     </div>
-                  ))}
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                  </div>
+                  <div className="grid grid-rows-3 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support3})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support4})` }} />
+                  </div>
                 </div>
               )}
 
-              {presetLayout === 'One Large + Three Small' && (
-                <div className="grid grid-cols-2 gap-2 h-full w-full p-1 bg-white dark:bg-slate-900 transition-all duration-300">
-                  {/* Left Column (Large Image) */}
-                  <div className="relative bg-gradient-to-tr from-[#2C2A29] to-[#4A4745] flex flex-col justify-end p-5 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-[#2C2A29]/60 mix-blend-multiply" />
-                    <div className="relative z-10 space-y-3">
-                      <span className="text-[8px] uppercase tracking-widest font-bold text-[#C8B69B] block border-b border-[#C8B69B]/40 pb-1">
-                        {currentLanguage === 'th' ? 'ที่ปรึกษากฎหมาย' : 'Legal Advisory'}
-                      </span>
-                      <h3 className="font-serif text-lg tracking-wide leading-tight">
-                        {currentLanguage === 'th' ? 'ความชัดเจนในวันนี้ ความมั่นใจในวันข้างหน้า' : 'Clarity today. Confidence tomorrow.'}
-                      </h3>
-                      <p className="text-[8px] text-[#E6DFD5]/95">
-                        {currentLanguage === 'th' ? 'คำปรึกษาที่ชัดเจนในวันนี้ เพื่อความมั่นใจที่ยั่งยืน' : 'Clear counsel today for sustained assurance.'}
-                      </p>
-                      <p className="text-[8px] text-[#C8B69B] font-semibold tracking-wider pt-2">
-                        {currentLanguage === 'th' ? 'พันธมิตรที่ไว้ใจได้ในทุกเป้าหมายธุรกิจ' : 'Your trusted legal partner.'}
-                      </p>
+              {/* Horizontal 1+2 Layout */}
+              {selectedPreset.id === 'horizontal_1_2' && (
+                <div className="grid grid-rows-2 gap-1.5 h-full w-full">
+                  <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute bottom-4 left-4 text-white z-10 space-y-1">
+                      <h3 className="font-heading font-black text-sm tracking-tight leading-tight">Compliance by Design.</h3>
+                      <p className="text-[9px] font-medium leading-relaxed opacity-90">มาตรฐานที่คุณวางใจ เพื่อการเติบโตที่ยั่งยืน</p>
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                  </div>
+                </div>
+              )}
 
-                  {/* Right Column (Three Small Images) */}
-                  <div className="grid grid-rows-3 gap-2">
-                    {[
-                      {
-                        title: currentLanguage === 'th' ? 'คำแนะนำเชิงกลยุทธ์' : 'Strategic guidance for every stage.',
-                        grad: 'from-[#5C5650] to-[#756E67]'
-                      },
-                      {
-                        title: currentLanguage === 'th' ? 'ยึดมั่นความถูกต้อง มุ่งผลสัมฤทธิ์' : 'Rooted in integrity. Focused on outcomes.',
-                        grad: 'from-[#383634] to-[#595653]'
-                      },
-                      {
-                        title: currentLanguage === 'th' ? 'ทางออกทางกฎหมายสำหรับธุรกิจคุณ' : 'Solutions tailored to your business.',
-                        grad: 'from-[#4E4B49] to-[#696562]'
-                      }
-                    ].map((small, idx) => (
-                      <div key={idx} className={cn("relative bg-gradient-to-br flex flex-col justify-end p-3 text-white rounded-lg overflow-hidden", small.grad)}>
-                        <div className="absolute inset-0 bg-black/40" />
-                        <p className="relative z-10 font-serif text-[9px] leading-tight">{small.title}</p>
+              {/* Horizontal 1+3 Layout */}
+              {selectedPreset.id === 'horizontal_1_3' && (
+                <div className="grid grid-rows-2 gap-1.5 h-full w-full">
+                  <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="absolute bottom-4 left-4 text-white z-10 space-y-1">
+                      <h3 className="font-heading font-black text-sm tracking-tight leading-tight">Compliance by Design.</h3>
+                      <p className="text-[9px] font-medium leading-relaxed opacity-90">มาตรฐานที่คุณวางใจ เพื่อการเติบโตที่ยั่งยืน</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support3})` }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Horizontal 2+3 Layout */}
+              {selectedPreset.id === 'horizontal_2_3' && (
+                <div className="grid grid-rows-2 gap-1.5 h-full w-full">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                      <div className="absolute inset-0 bg-black/25" />
+                      <div className="absolute bottom-2.5 left-2.5 text-white z-10">
+                        <h3 className="font-heading font-bold text-[10px] tracking-tight leading-tight">Compliance by Design.</h3>
                       </div>
-                    ))}
+                    </div>
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support3})` }} />
+                    <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support4})` }} />
                   </div>
                 </div>
               )}
 
-              {presetLayout === 'Magazine Mosaic' && (
-                <div className="grid grid-cols-3 grid-rows-3 gap-2 h-full w-full p-1 bg-white dark:bg-slate-900 transition-all duration-300">
-                  {/* Left Column (Covers 2cols x 3rows) */}
-                  <div className="col-span-2 row-span-3 relative bg-gradient-to-tr from-[#2C2A29] to-[#5C5650] flex flex-col justify-end p-5 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-black/45" />
-                    <div className="relative z-10 space-y-3">
-                      <span className="text-[8px] uppercase tracking-widest font-bold text-[#C8B69B] block border-b border-[#C8B69B]/40 pb-1">
-                        {currentLanguage === 'th' ? 'สรุปรายงานเด่น' : 'Featured Report'}
-                      </span>
-                      <h3 className="font-serif text-xl tracking-wide leading-tight">
-                        {currentLanguage === 'th' ? 'เจาะลึกทิศทาง และการคุ้มครองตราสินค้า' : 'Modern Brand Protection Insights'}
-                      </h3>
-                      <p className="text-[8px] text-[#E6DFD5]/90 leading-normal">
-                        {currentLanguage === 'th' ? 'สำรวจกลยุทธ์ระดับโลกสำหรับธุรกิจและเครื่องหมายการค้า' : 'Exploring global asset structures and intellectual property laws.'}
-                      </p>
+              {/* Square 4 Layout */}
+              {selectedPreset.id === 'square_4' && (
+                <div className="grid grid-cols-2 grid-rows-2 gap-1.5 h-full w-full">
+                  <div className="relative rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.cover})` }}>
+                    <div className="absolute inset-0 bg-black/25" />
+                    <div className="absolute bottom-3 left-3 text-white z-10">
+                      <h3 className="font-heading font-bold text-xs tracking-tight leading-tight">Compliance.</h3>
                     </div>
                   </div>
-
-                  {/* Right Top Card */}
-                  <div className="row-span-1 relative bg-gradient-to-tr from-[#383634] to-[#4E4B49] flex flex-col justify-end p-2.5 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-black/40" />
-                    <h4 className="relative z-10 font-serif text-[8px] font-semibold leading-tight">
-                      {currentLanguage === 'th' ? 'การจัดการความเสี่ยง' : 'Risk Audit'}
-                    </h4>
-                  </div>
-
-                  {/* Right Middle Card */}
-                  <div className="row-span-1 relative bg-gradient-to-br from-[#595653] to-[#756E67] flex flex-col justify-end p-2.5 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-black/45" />
-                    <h4 className="relative z-10 font-serif text-[8px] font-semibold leading-tight">
-                      {currentLanguage === 'th' ? 'เช็คลิสต์สัญญา' : 'Contracts'}
-                    </h4>
-                  </div>
-
-                  {/* Right Bottom Card */}
-                  <div className="row-span-1 relative bg-gradient-to-tr from-[#2C2A29] to-[#383634] flex flex-col justify-end p-2.5 text-white rounded-lg overflow-hidden">
-                    <div className="absolute inset-0 bg-black/40" />
-                    <h4 className="relative z-10 font-serif text-[8px] font-semibold leading-tight">
-                      {currentLanguage === 'th' ? 'คดีความองค์กร' : 'Litigation'}
-                    </h4>
-                  </div>
+                  <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support1})` }} />
+                  <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support2})` }} />
+                  <div className="rounded-xl overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url(${MOCK_IMAGES.support3})` }} />
                 </div>
               )}
 
             </div>
           </div>
 
-          {/* Bottom summaries metadata */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Output Summary metadata card */}
+          <div className="bg-white border border-slate-200/80 rounded-3xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] space-y-4">
+            <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">
+              Output Summary
+            </span>
             
-            {/* Output Summary */}
-            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-3.5">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">
-                {t('composer.summary.title')}
-              </span>
-              
-              <div className="space-y-2 text-[10.5px] font-semibold text-[#1E1D1B] dark:text-[#EBE7E0]">
-                {[
-                  { label: t('composer.mode.label'), val: getLabel(imageMode, imageModes.find(m => m.en === imageMode)?.th || imageMode) },
-                  { label: t('composer.count.label'), val: imageCount },
-                  { label: t('composer.layout.label'), val: getLabel(presetLayout, presetLayouts.find(l => l.en === presetLayout)?.th || presetLayout) },
-                  { label: t('composer.ratio.label'), val: getLabel(aspectRatio, aspectRatios.find(r => r.en === aspectRatio)?.th || aspectRatio) },
-                  { label: t('composer.lang.label'), val: getLabel(language, languages.find(l => l.en === language)?.th || language) },
-                  { label: t('composer.density.label'), val: getLabel(density, densities.find(d => d.en === density)?.th || density) },
-                  { label: t('composer.preset.label'), val: getLabel(visualPreset, 'Quiet Luxury - สไตล์นิตยสาร') }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center py-0.5">
-                    <span className="text-[#7C756C]">{item.label}</span>
-                    <span className="font-bold">{item.val}</span>
-                  </div>
-                ))}
+            <div className="space-y-3.5 text-xs font-semibold text-slate-700">
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-50">
+                <span className="text-slate-400">Layout</span>
+                <span className="font-bold text-slate-800">{selectedPreset.summaryLayout}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-50">
+                <span className="text-slate-400">Image Count</span>
+                <span className="font-bold text-slate-800">{selectedPreset.summaryCount}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-50">
+                <span className="text-slate-400">Text Language</span>
+                <span className="font-bold text-slate-800">TH primary, EN secondary</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5 border-b border-slate-50">
+                <span className="text-slate-400">Aspect Ratios</span>
+                <span className="font-bold text-slate-800">{selectedPreset.summaryRatios}</span>
+              </div>
+              <div className="flex justify-between items-center py-0.5">
+                <span className="text-slate-400">Platform</span>
+                <span className="font-bold text-slate-800">Facebook (New Pages Experience)</span>
               </div>
             </div>
 
-            {/* Media Rules & Tips */}
-            <div className="space-y-4">
-              
-              {/* Media Rules */}
-              <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-2.5">
-                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">
-                  {t('composer.rules.title')}
-                </span>
-                <div className="space-y-2 text-xs">
-                  {[
-                    currentLanguage === 'th' ? 'อนุญาตให้ใช้ข้อความสองภาษา (ไทย/อังกฤษ)' : 'Bilingual text allowed',
-                    currentLanguage === 'th' ? 'รองรับแฮชแท็กในคำบรรยายภาพ' : 'Hashtag support in caption',
-                    currentLanguage === 'th' ? 'ใช้เฉพาะเทมเพลตที่ได้รับการอนุมัติ' : 'Approved templates only'
-                  ].map((rule, idx) => (
-                    <div key={idx} className="flex items-center gap-2 py-0.5">
-                      <div className="w-3.5 h-3.5 rounded bg-[#EBE6DF] text-[#1E1D1B] flex items-center justify-center shrink-0">
-                        <Check className="w-2.5 h-2.5" />
-                      </div>
-                      <span className="font-bold text-[10.5px] text-[#1E1D1B] dark:text-[#EBE7E0]">{rule}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tips */}
-              <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-2">
-                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">
-                  {t('composer.tips.title')}
-                </span>
-                <p className="text-[10px] text-[#7C756C] leading-normal font-medium">
-                  {t('composer.tips.desc')}
-                </p>
-                <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer block pt-1">
-                  {t('composer.tips.link')}
-                </span>
-              </div>
-
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-400 font-medium leading-relaxed text-center">
+              Visuals will be generated according to your saved rules and layout preset.
             </div>
-
           </div>
 
         </div>
@@ -561,5 +674,14 @@ export default function AssetComposerPage() {
       </div>
 
     </div>
+  );
+}
+
+// Label Component placeholder since it was used from original page structure imports.
+function Label({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <label className={cn("block text-xs font-medium text-slate-700", className)}>
+      {children}
+    </label>
   );
 }

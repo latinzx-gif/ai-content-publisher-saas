@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useLanguage } from '@/components/providers/language-provider';
 
 // Custom inline SVG icons matching feather paths
 const Instagram = (props: React.SVGProps<SVGSVGElement>) => (
@@ -43,7 +44,59 @@ const Youtube = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 export default function CalendarPage() {
+  const { t, currentLanguage } = useLanguage();
   const [outputMode, setOutputMode] = useState('Main post + comment');
+
+  const getLocalizedDay = (name: string) => {
+    const map: Record<string, { th: string, en: string }> = {
+      'MON': { th: 'จ.', en: 'MON' },
+      'TUE': { th: 'อ.', en: 'TUE' },
+      'WED': { th: 'พ.', en: 'WED' },
+      'THU': { th: 'พฤ.', en: 'THU' },
+      'FRI': { th: 'ศ.', en: 'FRI' },
+      'SAT': { th: 'ส.', en: 'SAT' },
+      'SUN': { th: 'อา.', en: 'SUN' }
+    };
+    return currentLanguage === 'th' ? map[name]?.th : map[name]?.en;
+  };
+
+  const getLocalizedSlot = (slot: string) => {
+    if (slot === 'ALL-DAY') return currentLanguage === 'th' ? 'ทั้งวัน' : 'ALL-DAY';
+    return slot;
+  };
+
+  const getEventTitle = (title: string) => {
+    const map: Record<string, { th: string, en: string }> = {
+      'Q2 Tax Advisory Series': { th: 'ซีรีส์การวางแผนภาษี Q2', en: 'Q2 Tax Advisory Series' },
+      'Labor Law Updates': { th: 'อัปเดตกฎหมายแรงงาน 2025', en: 'Labor Law Updates' },
+      'Corporate Compliance Hub': { th: 'ศูนย์ข้อกำหนดกฎหมายองค์กร', en: 'Corporate Compliance Hub' },
+      'PDPA Compliance Checklist': { th: 'เช็คลิสต์ความถูกต้อง PDPA', en: 'PDPA Compliance Checklist' },
+      'Export Myth-Buster': { th: 'ล้างความเชื่อผิดๆ เรื่องส่งออก', en: 'Export Myth-Buster' }
+    };
+    return currentLanguage === 'th' ? (map[title]?.th || title) : (map[title]?.en || title);
+  };
+
+  const getQueueTitle = (title: string) => {
+    const map: Record<string, { th: string, en: string }> = {
+      'Service Business Q&A': { th: 'ถามตอบธุรกิจบริการ', en: 'Service Business Q&A' },
+      'Client Interview: Legal Strategy': { th: 'สัมภาษณ์ลูกค้า: กลยุทธ์กฎหมาย', en: 'Client Interview: Legal Strategy' },
+      'Tax Insight: Q2 Planning': { th: 'เจาะลึกภาษี: แผนงาน Q2', en: 'Tax Insight: Q2 Planning' }
+    };
+    return currentLanguage === 'th' ? (map[title]?.th || title) : (map[title]?.en || title);
+  };
+
+  const getQueueLabel = (label: string) => {
+    if (label === '1:1 format') return currentLanguage === 'th' ? 'ขนาด 1:1' : '1:1 format';
+    if (label === '4-tile format') return currentLanguage === 'th' ? 'สไตล์ 4 ช่อง' : '4-tile format';
+    return label;
+  };
+
+  const getQueueTime = (time: string) => {
+    if (time.includes('May 26')) return currentLanguage === 'th' ? '26 พ.ค. 2025 • 10:00' : time;
+    if (time.includes('May 27')) return currentLanguage === 'th' ? '27 พ.ค. 2025 • 14:00' : time;
+    if (time.includes('May 28')) return currentLanguage === 'th' ? '28 พ.ค. 2025 • 10:00' : time;
+    return time;
+  };
 
   const days = [
     { name: 'MON', date: '19' },
@@ -117,25 +170,25 @@ export default function CalendarPage() {
       {/* Title Header */}
       <div className="space-y-1 text-left pb-3 border-b border-[#E6DFD5] dark:border-slate-800">
         <h2 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
-          Calendar & Publishing
+          {t('calendar.title')}
         </h2>
         <p className="text-xs text-[#7C756C] dark:text-slate-400">
-          Schedule bilingual content, captions, comments, and visual assets across channels.
+          {t('calendar.subtitle')}
         </p>
       </div>
 
       {/* Filters Row */}
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 p-3 rounded-xl text-xs shadow-[0_2px_6px_rgba(30,29,27,0.01)] text-left items-end">
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">Posting Date</span>
+          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{t('calendar.filters.date')}</span>
           <div className="h-8 border border-[#E6DFD5] dark:border-slate-700 rounded px-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-[11px] font-semibold">
-            <span>May 19 - May 25, 2025</span>
+            <span>{currentLanguage === 'th' ? '19 พ.ค. - 25 พ.ค. 2025' : 'May 19 - May 25, 2025'}</span>
             <CalendarIcon className="w-3.5 h-3.5 text-[#7C756C]" />
           </div>
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">Posting Time</span>
+          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{t('calendar.filters.time')}</span>
           <div className="h-8 border border-[#E6DFD5] dark:border-slate-700 rounded px-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-[11px] font-semibold">
             <span>10:00 AM</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
@@ -143,15 +196,15 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">Timezone</span>
+          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{t('calendar.filters.timezone')}</span>
           <div className="h-8 border border-[#E6DFD5] dark:border-slate-700 rounded px-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-[11px] font-semibold">
-            <span>(GMT+07:00) Bangkok</span>
+            <span>{currentLanguage === 'th' ? '(GMT+07:00) กรุงเทพฯ' : '(GMT+07:00) Bangkok'}</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
           </div>
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">Platform</span>
+          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{t('calendar.filters.platform')}</span>
           <div className="h-8 border border-[#E6DFD5] dark:border-slate-700 rounded px-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-[11px] font-semibold">
             <span>Instagram</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
@@ -159,16 +212,16 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">Publish Mode</span>
+          <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{t('calendar.filters.mode')}</span>
           <div className="h-8 border border-[#E6DFD5] dark:border-slate-700 rounded px-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50/50 text-[11px] font-semibold">
-            <span>Scheduled</span>
+            <span>{currentLanguage === 'th' ? 'ตั้งเวลาแล้ว' : 'Scheduled'}</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#7C756C]" />
           </div>
         </div>
 
         <div className="flex items-center justify-end h-8">
           <Button variant="outline" className="h-8 text-[10px] font-bold border-[#E6DFD5] px-4 w-full md:w-auto">
-            Other / custom
+            {t('calendar.filters.custom')}
           </Button>
         </div>
       </div>
@@ -187,16 +240,18 @@ export default function CalendarPage() {
               <div className="flex items-center gap-4">
                 <div className="flex items-center border border-[#E6DFD5] dark:border-slate-700 rounded overflow-hidden">
                   <button className="p-1.5 hover:bg-slate-50 border-r border-[#E6DFD5]"><ChevronLeft className="w-3.5 h-3.5" /></button>
-                  <button className="px-3 py-1 font-bold text-[10px] uppercase bg-slate-50">Today</button>
+                  <button className="px-3 py-1 font-bold text-[10px] uppercase bg-slate-50">{t('calendar.view.today')}</button>
                   <button className="p-1.5 hover:bg-slate-50 border-l border-[#E6DFD5]"><ChevronRight className="w-3.5 h-3.5" /></button>
                 </div>
-                <span className="font-serif font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">May 19 – 25, 2025</span>
+                <span className="font-serif font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">
+                  {currentLanguage === 'th' ? '19 – 25 พ.ค. 2025' : 'May 19 – 25, 2025'}
+                </span>
               </div>
               
               <div className="flex items-center gap-2">
                 <div className="flex border border-[#E6DFD5] dark:border-slate-700 rounded overflow-hidden font-bold text-[9px] uppercase tracking-wider">
-                  <button className="px-3 py-1.5 bg-[#FAF8F5] text-[#1E1D1B] border-r border-[#E6DFD5]">Week</button>
-                  <button className="px-3 py-1.5 text-[#7C756C] hover:bg-slate-50">Month</button>
+                  <button className="px-3 py-1.5 bg-[#FAF8F5] text-[#1E1D1B] border-r border-[#E6DFD5]">{t('calendar.view.week')}</button>
+                  <button className="px-3 py-1.5 text-[#7C756C] hover:bg-slate-50">{t('calendar.view.month')}</button>
                 </div>
                 <button className="p-1.5 border border-[#E6DFD5] rounded hover:bg-slate-50"><Settings className="w-3.5 h-3.5" /></button>
               </div>
@@ -205,12 +260,12 @@ export default function CalendarPage() {
             {/* Weekly Calendar Slots Grid */}
             <div className="grid grid-cols-[80px_1fr] border-b border-[#E6DFD5] dark:border-slate-800">
               <div className="bg-[#FAF8F5] dark:bg-slate-900 border-r border-[#E6DFD5] dark:border-slate-800 p-2 font-bold text-[9px] uppercase text-[#7C756C] text-center">
-                TIME
+                {t('calendar.view.time')}
               </div>
               <div className="grid grid-cols-7 divide-x divide-[#E6DFD5] dark:divide-slate-800">
                 {days.map((d, i) => (
                   <div key={i} className="p-2 text-center text-[10px]">
-                    <span className="block font-bold text-[#7C756C]">{d.name}</span>
+                    <span className="block font-bold text-[#7C756C]">{getLocalizedDay(d.name)}</span>
                     <span className="block font-serif font-medium text-[#1E1D1B] dark:text-[#EBE7E0] text-sm mt-0.5">{d.date}</span>
                   </div>
                 ))}
@@ -222,7 +277,7 @@ export default function CalendarPage() {
               {timeSlots.map((time, slotIdx) => (
                 <div key={slotIdx} className="grid grid-cols-[80px_1fr]">
                   <div className="p-2 font-bold text-[9px] text-[#7C756C] border-r border-[#E6DFD5] dark:border-slate-800 text-center flex items-center justify-center bg-[#FAF8F5]/50 dark:bg-slate-900/50">
-                    {time}
+                    {getLocalizedSlot(time)}
                   </div>
                   <div className="grid grid-cols-7 divide-x divide-[#E6DFD5] dark:divide-slate-800 min-h-[48px] relative bg-white dark:bg-slate-900">
                     {days.map((_, dayIdx) => {
@@ -231,7 +286,7 @@ export default function CalendarPage() {
                         <div key={dayIdx} className="p-1 flex items-stretch justify-stretch min-h-[48px] relative">
                           {event && (
                             <div className={cn("w-full p-2 border rounded-lg text-[9px] font-semibold flex flex-col justify-between leading-snug cursor-pointer hover:shadow-sm transition-all", event.color)}>
-                              <p className="font-bold line-clamp-1">{event.title}</p>
+                              <p className="font-bold line-clamp-1">{getEventTitle(event.title)}</p>
                               <div className="flex justify-between items-center text-[8px] opacity-80 mt-1 font-bold">
                                 <span>{event.time}</span>
                                 <span>{event.format}</span>
@@ -253,23 +308,25 @@ export default function CalendarPage() {
             
             {/* Output Mode Card */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-4">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Output Mode</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('calendar.filters.mode')}</span>
               <div className="space-y-2.5 text-xs font-semibold">
                 {[
-                  'Main post only',
-                  'Main post + comment',
-                  'Bilingual caption',
-                  'Separate versions'
+                  { value: 'Main post only', labelTh: 'โพสต์ภาษาหลักเท่านั้น', labelEn: 'Main post only' },
+                  { value: 'Main post + comment', labelTh: 'โพสต์หลัก + คอมเมนต์ภาษารอง', labelEn: 'Main post + comment' },
+                  { value: 'Bilingual caption', labelTh: 'คำบรรยายสองภาษาในโพสต์เดียว', labelEn: 'Bilingual caption' },
+                  { value: 'Separate versions', labelTh: 'แยกเวอร์ชันอย่างละโพสต์', labelEn: 'Separate versions' }
                 ].map((mode) => (
-                  <label key={mode} className="flex items-center gap-2.5 cursor-pointer">
+                  <label key={mode.value} className="flex items-center gap-2.5 cursor-pointer">
                     <input 
                       type="radio" 
                       name="output_mode" 
-                      checked={outputMode === mode}
-                      onChange={() => setOutputMode(mode)}
+                      checked={outputMode === mode.value}
+                      onChange={() => setOutputMode(mode.value)}
                       className="w-3.5 h-3.5 border-[#E6DFD5] text-[#967F5C]"
                     />
-                    <span className={cn(outputMode === mode ? "text-[#1E1D1B] dark:text-[#EBE7E0]" : "text-[#7C756C]")}>{mode}</span>
+                    <span className={cn(outputMode === mode.value ? "text-[#1E1D1B] dark:text-[#EBE7E0]" : "text-[#7C756C]")}>
+                      {currentLanguage === 'th' ? mode.labelTh : mode.labelEn}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -277,25 +334,25 @@ export default function CalendarPage() {
 
             {/* Caption & Comment Preview */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-4 md:col-span-2">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Caption & Comment Preview</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('calendar.preview.captionTitle')}</span>
               <div className="space-y-3.5 text-xs">
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-[#7C756C] uppercase">
-                    <span>Primary Caption (TH)</span>
+                    <span>{t('calendar.preview.primary')}</span>
                     <span>48 / 2200</span>
                   </div>
                   <p className="p-2 border border-[#E6DFD5] dark:border-slate-700 bg-[#FAF8F5] dark:bg-slate-900 rounded-lg text-[#1E1D1B] dark:text-[#EBE7E0] font-medium leading-relaxed">
-                    กฎหมายแรงงานใหม่มีอะไรที่ควรรู้ในปี 2025
+                    {currentLanguage === 'th' ? 'กฎหมายแรงงานใหม่มีอะไรที่ควรรู้ในปี 2025' : 'What to know about the new labor law in 2025'}
                   </p>
                 </div>
                 
                 <div className="space-y-1">
                   <div className="flex justify-between text-[9px] font-bold text-[#7C756C] uppercase">
-                    <span>Secondary Comment (EN)</span>
+                    <span>{t('calendar.preview.secondary')}</span>
                     <span>72 / 2200</span>
                   </div>
                   <p className="p-2 border border-[#E6DFD5] dark:border-slate-700 bg-[#FAF8F5] dark:bg-slate-900 rounded-lg text-[#1E1D1B] dark:text-[#EBE7E0] font-medium leading-relaxed">
-                    Key changes in Thailand&apos;s new labor law to know in 2025. 💡
+                    {currentLanguage === 'th' ? 'ข้อเปลี่ยนแปลงสำคัญในกฎหมายแรงงานใหม่ของไทยปี 2025 💡' : 'Key changes in Thailand\'s new labor law to know in 2025. 💡'}
                   </p>
                 </div>
               </div>
@@ -305,10 +362,10 @@ export default function CalendarPage() {
 
           {/* Assets preview card */}
           <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left space-y-4">
-            <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Assets</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('calendar.preview.assets')}</span>
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="w-24 h-24 bg-[#FAF8F5] border border-[#E6DFD5] dark:border-slate-700 rounded-lg flex items-center justify-center shrink-0 p-2 text-center text-[10px] font-bold text-[#7C756C]">
-                Image Asset Preview
+                {currentLanguage === 'th' ? 'พรีวิวภาพ' : 'Image Asset Preview'}
               </div>
               <div className="space-y-3 flex-1 min-w-0">
                 <div>
@@ -316,8 +373,8 @@ export default function CalendarPage() {
                   <p className="text-[10px] text-[#7C756C] mt-0.5">1080 x 1080 px • 153 KB</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" className="h-7 text-[9px] font-bold border-[#E6DFD5] px-2.5 rounded">Change Asset</Button>
-                  <Button variant="outline" className="h-7 text-[9px] font-bold border-[#E6DFD5] px-2.5 rounded">+ Add Variation</Button>
+                  <Button variant="outline" className="h-7 text-[9px] font-bold border-[#E6DFD5] px-2.5 rounded">{t('calendar.preview.changeAsset')}</Button>
+                  <Button variant="outline" className="h-7 text-[9px] font-bold border-[#E6DFD5] px-2.5 rounded">{t('calendar.preview.addVar')}</Button>
                 </div>
               </div>
             </div>
@@ -331,8 +388,8 @@ export default function CalendarPage() {
           {/* Publish Queue */}
           <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
             <div className="flex justify-between items-center">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Publish Queue</span>
-              <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">View all →</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('calendar.sidebar.queue')}</span>
+              <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{t('calendar.sidebar.viewAll')}</span>
             </div>
 
             <div className="space-y-4 pt-1">
@@ -346,11 +403,11 @@ export default function CalendarPage() {
                     IMG
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">{item.title}</p>
-                    <p className="text-[9px] text-[#7C756C] dark:text-slate-500 font-bold mt-0.5">{item.time}</p>
+                    <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">{getQueueTitle(item.title)}</p>
+                    <p className="text-[9px] text-[#7C756C] dark:text-slate-500 font-bold mt-0.5">{getQueueTime(item.time)}</p>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-[8px] bg-slate-50 border border-[#E6DFD5] px-1 rounded font-bold text-[#7C756C] uppercase">TH/EN</span>
-                      <span className="text-[8px] bg-slate-50 border border-[#E6DFD5] px-1 rounded font-bold text-[#7C756C] uppercase">{item.label}</span>
+                      <span className="text-[8px] bg-slate-50 border border-[#E6DFD5] px-1 rounded font-bold text-[#7C756C] uppercase">{getQueueLabel(item.label)}</span>
                     </div>
                   </div>
                 </div>
@@ -361,8 +418,8 @@ export default function CalendarPage() {
           {/* Channel Readiness */}
           <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
             <div className="flex justify-between items-center">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Channel Readiness</span>
-              <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">View all →</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('calendar.sidebar.readiness')}</span>
+              <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{t('calendar.sidebar.viewAll')}</span>
             </div>
 
             <div className="space-y-4 pt-1">
@@ -385,21 +442,21 @@ export default function CalendarPage() {
             
             <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#7C756C] pt-1">
               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              <span>All channels healthy</span>
+              <span>{t('calendar.sidebar.healthy')}</span>
             </div>
           </div>
 
           {/* Final Checklist */}
           <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-            <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Final Checklist</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('calendar.sidebar.checklist')}</span>
             
             <div className="space-y-3 pt-1 text-xs">
               {[
-                { label: 'Date confirmed', sub: 'May 23, 2025' },
-                { label: 'Account selected', sub: 'Instagram' },
-                { label: 'Hashtags checked', sub: '12 verified' },
-                { label: 'Asset attached', sub: '1 image' },
-                { label: 'Approval complete', sub: 'Legal Team' }
+                { label: currentLanguage === 'th' ? 'ยืนยันวันเผยแพร่แล้ว' : 'Date confirmed', sub: currentLanguage === 'th' ? '23 พ.ค. 2025' : 'May 23, 2025' },
+                { label: currentLanguage === 'th' ? 'เลือกบัญชีผู้ใช้แล้ว' : 'Account selected', sub: 'Instagram' },
+                { label: currentLanguage === 'th' ? 'ตรวจสอบแฮชแท็กแล้ว' : 'Hashtags checked', sub: currentLanguage === 'th' ? 'ยืนยันแล้ว 12 ตัว' : '12 verified' },
+                { label: currentLanguage === 'th' ? 'แนบไฟล์สื่อแล้ว' : 'Asset attached', sub: currentLanguage === 'th' ? 'ภาพ 1 รูป' : '1 image' },
+                { label: currentLanguage === 'th' ? 'อนุมัติเรียบร้อยแล้ว' : 'Approval complete', sub: currentLanguage === 'th' ? 'ฝ่ายกฎหมาย' : 'Legal Team' }
               ].map((item, idx) => (
                 <div key={idx} className="flex items-center gap-2.5 py-1 justify-between">
                   <div className="flex items-center gap-2.5">
@@ -415,10 +472,10 @@ export default function CalendarPage() {
 
             <div className="pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
               <Button 
-                onClick={() => toast.success('Scheduled successfully')}
+                onClick={() => toast.success(currentLanguage === 'th' ? 'ตั้งเวลากำหนดการสำเร็จแล้ว' : 'Scheduled successfully')}
                 className="w-full bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs h-10 rounded-lg shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4" /> Ready to publish
+                <CheckCircle2 className="w-4 h-4" /> {t('calendar.sidebar.ready')}
               </Button>
             </div>
           </div>

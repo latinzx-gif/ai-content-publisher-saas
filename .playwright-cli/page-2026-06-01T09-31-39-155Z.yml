@@ -1,0 +1,245 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Content OS Studio
+        - generic [ref=e8]: พื้นที่ทำงานจำลอง
+      - img [ref=e9]
+    - navigation [ref=e11]:
+      - generic [ref=e13]:
+        - link "ศูนย์ควบคุมการดำเนินงาน" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img
+          - generic [ref=e15]: ศูนย์ควบคุมการดำเนินงาน
+        - link "สตูดิโอสร้างคอนเทนต์" [ref=e16] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - generic [ref=e17]: สตูดิโอสร้างคอนเทนต์
+        - link "บอร์ดตรวจสอบโพสต์" [ref=e18] [cursor=pointer]:
+          - /url: /drafts
+          - img
+          - generic [ref=e19]: บอร์ดตรวจสอบโพสต์
+        - link "ปฏิทินและการเผยแพร่" [ref=e20] [cursor=pointer]:
+          - /url: /calendar
+          - img
+          - generic [ref=e21]: ปฏิทินและการเผยแพร่
+        - link "เครื่องมือสร้างคอลลาจภาพ" [ref=e22] [cursor=pointer]:
+          - /url: /asset-composer
+          - img
+          - generic [ref=e23]: เครื่องมือสร้างคอลลาจภาพ
+      - generic [ref=e26]:
+        - link "น้ำเสียงและตัวตนแบรนด์" [ref=e27] [cursor=pointer]:
+          - /url: /profile
+          - img
+          - generic [ref=e28]: น้ำเสียงและตัวตนแบรนด์
+        - link "ช่องทางเผยแพร่และ API" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e30]: ช่องทางเผยแพร่และ API
+        - link "ตั้งค่าทั่วไป" [ref=e31] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e32]: ตั้งค่าทั่วไป
+    - generic [ref=e33]:
+      - generic [ref=e36]: ระบบท่อส่งคอนเทนต์เชื่อมต่อแล้ว
+      - generic [ref=e37]: ระบบการทำงานปกติทุกส่วน
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: พื้นที่ทำงาน
+        - generic [ref=e42]: /
+        - generic [ref=e43]: ควบคุมการดำเนินงาน
+        - generic [ref=e44]: /
+        - generic [ref=e45]: ศูนย์ควบคุมการดำเนินงาน
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - button "TH" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]: /
+          - button "EN" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: OS
+          - button "ออกจากระบบ" [ref=e53] [cursor=pointer]
+    - main [ref=e54]:
+      - generic [ref=e57]:
+        - generic [ref=e59]:
+          - heading "ศูนย์ควบคุมการดำเนินงาน" [level=1] [ref=e60]
+          - paragraph [ref=e61]: ดูแลภาพรวมเนื้อหาแบบสองภาษา ขั้นตอนการรีวิว และการเผยแพร่ในที่เดียว
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: บรีฟงาน
+            - generic [ref=e65]: "5"
+            - generic [ref=e66]: Generated
+          - generic [ref=e68]:
+            - generic [ref=e69]: แบบร่าง
+            - generic [ref=e70]: "4"
+            - generic [ref=e71]: กำลังดำเนินการ
+          - generic [ref=e73]:
+            - generic [ref=e74]: รอการรีวิว
+            - generic [ref=e75]: "0"
+            - generic [ref=e76]: Approved
+          - generic [ref=e78]:
+            - generic [ref=e79]: ตั้งเวลาเผยแพร่
+            - generic [ref=e80]: "0"
+            - generic [ref=e81]: ที่กำลังจะมาถึง
+          - generic [ref=e83]:
+            - generic [ref=e84]: เผยแพร่แล้ว
+            - generic [ref=e85]: "1"
+            - generic [ref=e86]: เดือนนี้
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - heading "ภาพรวมแคมเปญคอนเทนต์" [level=3] [ref=e91]
+                - link "ดูทั้งหมด" [ref=e92] [cursor=pointer]:
+                  - /url: /drafts
+                  - text: ดูทั้งหมด
+                  - img [ref=e93]
+              - table [ref=e96]:
+                - rowgroup [ref=e97]:
+                  - row "แคมเปญ ภาษา สถานะ หลักเกณฑ์ถัดไป ผู้รับผิดชอบ" [ref=e98]:
+                    - columnheader "แคมเปญ" [ref=e99]
+                    - columnheader "ภาษา" [ref=e100]
+                    - columnheader "สถานะ" [ref=e101]
+                    - columnheader "หลักเกณฑ์ถัดไป" [ref=e102]
+                    - columnheader "ผู้รับผิดชอบ" [ref=e103]
+                    - columnheader [ref=e104]
+                - rowgroup [ref=e105]:
+                  - row "OS คำถามที่พบบ่อยเกี่ยวกับ PDPA PDPA Compliance Tips TH EN Draft Content Draft OS" [ref=e106]:
+                    - cell "OS คำถามที่พบบ่อยเกี่ยวกับ PDPA PDPA Compliance Tips" [ref=e107]:
+                      - generic [ref=e108]:
+                        - generic [ref=e109]: OS
+                        - generic [ref=e110]:
+                          - paragraph [ref=e111]: คำถามที่พบบ่อยเกี่ยวกับ PDPA
+                          - paragraph [ref=e112]: PDPA Compliance Tips
+                    - cell "TH EN" [ref=e113]:
+                      - generic [ref=e114]:
+                        - generic [ref=e115]: TH
+                        - generic [ref=e116]: EN
+                    - cell "Draft" [ref=e117]:
+                      - generic [ref=e118]: Draft
+                    - cell "Content Draft" [ref=e120]
+                    - cell "OS" [ref=e121]:
+                      - generic [ref=e122]: OS
+                    - cell [ref=e123]:
+                      - img [ref=e124] [cursor=pointer]
+                  - row "OS เช็คลิสต์การปฏิบัติตาม PDPA สำหรับธุรกิจ SME PDPA Compliance Tips TH EN Draft Content Draft OS" [ref=e128]:
+                    - cell "OS เช็คลิสต์การปฏิบัติตาม PDPA สำหรับธุรกิจ SME PDPA Compliance Tips" [ref=e129]:
+                      - generic [ref=e130]:
+                        - generic [ref=e131]: OS
+                        - generic [ref=e132]:
+                          - paragraph [ref=e133]: เช็คลิสต์การปฏิบัติตาม PDPA สำหรับธุรกิจ SME
+                          - paragraph [ref=e134]: PDPA Compliance Tips
+                    - cell "TH EN" [ref=e135]:
+                      - generic [ref=e136]:
+                        - generic [ref=e137]: TH
+                        - generic [ref=e138]: EN
+                    - cell "Draft" [ref=e139]:
+                      - generic [ref=e140]: Draft
+                    - cell "Content Draft" [ref=e142]
+                    - cell "OS" [ref=e143]:
+                      - generic [ref=e144]: OS
+                    - cell [ref=e145]:
+                      - img [ref=e146] [cursor=pointer]
+                  - row "OS ความเข้าใจผิดเกี่ยวกับ PDPA ที่ต้องระวัง! PDPA Compliance Tips TH EN Draft Content Draft OS" [ref=e150]:
+                    - cell "OS ความเข้าใจผิดเกี่ยวกับ PDPA ที่ต้องระวัง! PDPA Compliance Tips" [ref=e151]:
+                      - generic [ref=e152]:
+                        - generic [ref=e153]: OS
+                        - generic [ref=e154]:
+                          - paragraph [ref=e155]: ความเข้าใจผิดเกี่ยวกับ PDPA ที่ต้องระวัง!
+                          - paragraph [ref=e156]: PDPA Compliance Tips
+                    - cell "TH EN" [ref=e157]:
+                      - generic [ref=e158]:
+                        - generic [ref=e159]: TH
+                        - generic [ref=e160]: EN
+                    - cell "Draft" [ref=e161]:
+                      - generic [ref=e162]: Draft
+                    - cell "Content Draft" [ref=e164]
+                    - cell "OS" [ref=e165]:
+                      - generic [ref=e166]: OS
+                    - cell [ref=e167]:
+                      - img [ref=e168] [cursor=pointer]
+                  - 'row "OS กรณีศึกษา: การละเมิด PDPA ส่งผลกระทบต่อธุรกิจอย่างไร PDPA Compliance Tips TH EN Draft Content Draft OS" [ref=e172]':
+                    - 'cell "OS กรณีศึกษา: การละเมิด PDPA ส่งผลกระทบต่อธุรกิจอย่างไร PDPA Compliance Tips" [ref=e173]':
+                      - generic [ref=e174]:
+                        - generic [ref=e175]: OS
+                        - generic [ref=e176]:
+                          - paragraph [ref=e177]: "กรณีศึกษา: การละเมิด PDPA ส่งผลกระทบต่อธุรกิจอย่างไร"
+                          - paragraph [ref=e178]: PDPA Compliance Tips
+                    - cell "TH EN" [ref=e179]:
+                      - generic [ref=e180]:
+                        - generic [ref=e181]: TH
+                        - generic [ref=e182]: EN
+                    - cell "Draft" [ref=e183]:
+                      - generic [ref=e184]: Draft
+                    - cell "Content Draft" [ref=e186]
+                    - cell "OS" [ref=e187]:
+                      - generic [ref=e188]: OS
+                    - cell [ref=e189]:
+                      - img [ref=e190] [cursor=pointer]
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - img [ref=e197]
+                - generic [ref=e199]:
+                  - heading "รูปแบบป้อนข้อมูลอัจฉริยะ (Smart Input Pattern)" [level=4] [ref=e200]
+                  - paragraph [ref=e201]: "ทุกฟิลด์การเลือกจะใช้กฎ: ค่ากำหนดสำเร็จรูป, อื่น ๆ, และระบุเอง"
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - text: "ตัวอย่าง: กลุ่มเป้าหมาย"
+                  - combobox [ref=e204]:
+                    - option "ธุรกิจทั่วไป" [selected]
+                    - option "นักกฎหมาย / ผู้ตรวจสอบ"
+                    - option "ผู้ประกอบการ SME"
+                - generic [ref=e205]:
+                  - checkbox "อื่นๆ / ระบุเอง" [ref=e206]
+                  - generic [ref=e207] [cursor=pointer]: อื่นๆ / ระบุเอง
+                - generic [ref=e208]:
+                  - text: อธิบายกลุ่มเป้าหมายเพิ่มเติม...
+                  - textbox "อธิบายกลุ่มเป้าหมายเพิ่มเติม..." [disabled] [ref=e209]
+              - button "นำรูปแบบไปใช้" [ref=e211]:
+                - text: นำรูปแบบไปใช้
+                - img
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - generic [ref=e214]: ข้อมูลตัวตนแบรนด์
+              - generic [ref=e215]:
+                - generic [ref=e216]: OS
+                - generic [ref=e217]:
+                  - heading "Smoke Legal Advisory" [level=4] [ref=e218]
+                  - paragraph [ref=e219]: น่าเชื่อถือ
+            - generic [ref=e220]:
+              - generic [ref=e222]: กฎของระบบ
+              - generic [ref=e223]:
+                - generic [ref=e224]:
+                  - generic [ref=e225]: เปิดใช้งานผลลัพธ์สองภาษา
+                  - generic [ref=e226]: TH / EN
+                - generic [ref=e227]:
+                  - generic [ref=e228]: เปิดใช้งานการรองรับแฮชแท็ก
+                  - generic [ref=e229]: "On"
+                - generic [ref=e230]:
+                  - generic [ref=e231]: บังคับใช้แหล่งข้อมูลที่อนุมัติแล้วเท่านั้น
+                  - generic [ref=e232]: Enforced
+              - link "จัดการกฎเกณฑ์ →" [ref=e234] [cursor=pointer]:
+                - /url: /profile
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - generic [ref=e237]: ระดับความสมบูรณ์ของช่องทาง
+                - generic [ref=e238]: ดูทั้งหมด
+              - generic [ref=e239]:
+                - generic [ref=e241]:
+                  - generic [ref=e242]: Draft
+                  - generic [ref=e243]: "4"
+                - generic [ref=e247]:
+                  - generic [ref=e248]: Approved
+                  - generic [ref=e249]: "0"
+                - generic [ref=e252]:
+                  - generic [ref=e253]: Published
+                  - generic [ref=e254]: "1"
+              - paragraph [ref=e257]: Live status mix from Supabase content rows.
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - generic [ref=e260]: คิวงานถัดไป
+                - link "ดูทั้งหมด" [ref=e261] [cursor=pointer]:
+                  - /url: /calendar
+              - paragraph [ref=e263]: No approved posts queued.
+              - link "ดูปฏิทินทั้งหมด →" [ref=e265] [cursor=pointer]:
+                - /url: /calendar

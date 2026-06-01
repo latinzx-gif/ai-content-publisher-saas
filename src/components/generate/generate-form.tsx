@@ -91,7 +91,9 @@ const CONTENT_TEMPLATES = [
   {
     id: 'labour-law',
     title: 'Labor Law Advice',
+    titleTh: 'แนะนำกฎหมายแรงงาน',
     desc: 'Educational tip breakdown',
+    descTh: 'สรุปหัวข้อย่อยและสาระสำคัญ',
     topic: 'Labour Law Update',
     audience: 'HR Managers',
     tone: 'Expert',
@@ -102,7 +104,9 @@ const CONTENT_TEMPLATES = [
   {
     id: 'pdpa-compliance',
     title: 'PDPA Compliance Checklist',
+    titleTh: 'เช็คลิสต์ความถูกต้อง PDPA',
     desc: 'Step-by-step audit checklist',
+    descTh: 'ขั้นตอนการตรวจสอบระบบจัดเก็บข้อมูล',
     topic: 'PDPA Compliance Tips',
     audience: 'Business Owners',
     tone: 'Professional',
@@ -113,7 +117,9 @@ const CONTENT_TEMPLATES = [
   {
     id: 'service-biz-qa',
     title: 'Service Business Q&A',
+    titleTh: 'ถามตอบกฎหมายธุรกิจบริการ',
     desc: 'Client interview mock',
+    descTh: 'จำลองบทสัมภาษณ์ลูกค้าและคำแนะนำ',
     topic: 'Service Business Marketing',
     audience: 'SME Owners',
     tone: 'Friendly',
@@ -161,6 +167,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   const [showCustomFormat, setShowCustomFormat] = useState(true);
 
   const { t, currentLanguage } = useLanguage();
+  const getLabel = (en: string, th: string) => currentLanguage === 'th' ? th : en;
 
   // Knowledge Sources state variables
   const [urls, setUrls] = useState<string[]>([]);
@@ -176,15 +183,15 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     try {
       new URL(currentUrl);
     } catch {
-      toast.error('กรุณาระบุ URL ที่ถูกต้อง (เช่น https://example.com)');
+      toast.error(currentLanguage === 'th' ? 'กรุณาระบุ URL ที่ถูกต้อง (เช่น https://example.com)' : 'Please enter a valid URL (e.g. https://example.com)');
       return;
     }
     if (urls.length >= 5) {
-      toast.error('สามารถเพิ่มได้สูงสุด 5 URLs');
+      toast.error(currentLanguage === 'th' ? 'สามารถเพิ่มได้สูงสุด 5 URLs' : 'You can add up to 5 URLs');
       return;
     }
     if (urls.includes(currentUrl.trim())) {
-      toast.error('URL นี้ถูกเพิ่มไปแล้ว');
+      toast.error(currentLanguage === 'th' ? 'URL นี้ถูกเพิ่มไปแล้ว' : 'This URL has already been added');
       return;
     }
     setUrls([...urls, currentUrl.trim()]);
@@ -225,7 +232,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   async function handleSubmit() {
     const finalTopic = selectedTopic === 'custom' ? customTopic : selectedTopic;
     if (!finalTopic) {
-      toast.error('กรุณาระบุหัวข้อคอนเทนต์');
+      toast.error(currentLanguage === 'th' ? 'กรุณาระบุหัวข้อคอนเทนต์' : 'Please enter a content topic');
       return;
     }
 
@@ -254,9 +261,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       if (result.posts && result.posts.length > 0) {
         setGeneratedPosts(result.posts);
       }
-      toast.success(`สร้างโพสต์สำเร็จ ${result.count} รายการ!`);
+      toast.success(currentLanguage === 'th' ? `สร้างโพสต์สำเร็จ ${result.count} รายการ!` : `Successfully generated ${result.count} posts!`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาด';
+      const message = error instanceof Error ? error.message : (currentLanguage === 'th' ? 'เกิดข้อผิดพลาด' : 'An error occurred');
       toast.error(message);
     } finally {
       clearInterval(intervalId);
@@ -285,9 +292,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">Brand Context</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.brandContext')}</h3>
             </div>
-            <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">View →</Link>
+            <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">{currentLanguage === 'th' ? 'ดูทั้งหมด →' : 'View →'}</Link>
           </div>
           <div className="space-y-4 text-xs">
             <div className="flex items-center gap-3">
@@ -296,7 +303,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
-                  {initialBrand?.name || "Your Workspace Brand"}
+                  {initialBrand?.name || (currentLanguage === 'th' ? 'แบรนด์ของคุณ' : "Your Workspace Brand")}
                 </p>
                 <p className="text-[10px] text-[#7C756C] dark:text-slate-500 font-medium">
                   {initialBrand?.business_type || "Legal. Trusted. Precise."}
@@ -306,7 +313,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             
             <div className="pt-3 border-t border-[#E6DFD5] dark:border-slate-800/80 text-[11px] text-[#7C756C] dark:text-slate-400">
               <p className="font-medium text-[#7C756C] dark:text-slate-300">
-                Voice: <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">Professional • Formal • Clear</span>
+                {currentLanguage === 'th' ? 'น้ำเสียง:' : 'Voice:'} <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">{currentLanguage === 'th' ? 'มืออาชีพ • ทางการ • ชัดเจน' : 'Professional • Formal • Clear'}</span>
               </p>
             </div>
           </div>
@@ -322,9 +329,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 <line x1="16" y1="13" x2="8" y2="13"></line>
                 <line x1="16" y1="17" x2="8" y2="17"></line>
               </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">Content Templates</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.templates')}</h3>
             </div>
-            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">View all →</span>
+            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{currentLanguage === 'th' ? 'ดูทั้งหมด →' : 'View all →'}</span>
           </div>
           <div className="space-y-3">
             {CONTENT_TEMPLATES.map((tmpl) => (
@@ -345,13 +352,13 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   <p className={cn(
                     "text-xs leading-normal truncate", 
                     activeTemplateId === tmpl.id ? "text-[#1E1D1B] dark:text-[#EBE7E0] font-bold" : "text-[#1E1D1B] dark:text-[#EBE7E0] font-medium"
-                  )}>{tmpl.title}</p>
-                  <p className="text-[10.5px] text-[#7C756C] dark:text-slate-500 font-medium leading-none mt-0.5">{tmpl.desc}</p>
+                  )}>{currentLanguage === 'th' && tmpl.titleTh ? tmpl.titleTh : tmpl.title}</p>
+                  <p className="text-[10.5px] text-[#7C756C] dark:text-slate-500 font-medium leading-none mt-0.5">{currentLanguage === 'th' && tmpl.descTh ? tmpl.descTh : tmpl.desc}</p>
                 </div>
               </button>
             ))}
             <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
-              <span className="text-[10.5px] font-bold text-[#7C756C] dark:text-slate-400 hover:text-[#967F5C] cursor-pointer">Browse all templates →</span>
+              <span className="text-[10.5px] font-bold text-[#7C756C] dark:text-slate-400 hover:text-[#967F5C] cursor-pointer">{currentLanguage === 'th' ? 'เรียกดูเทมเพลตทั้งหมด →' : 'Browse all templates →'}</span>
             </div>
           </div>
         </div>
@@ -364,38 +371,47 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 <circle cx="12" cy="12" r="10"></circle>
                 <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
               </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">Active Content Angles</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.sidebar.angles')}</h3>
             </div>
-            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">Manage →</span>
+            <span className="text-[10px] font-bold text-[#967F5C] hover:underline cursor-pointer">{currentLanguage === 'th' ? 'จัดการ →' : 'Manage →'}</span>
           </div>
           
           <div className="flex flex-wrap gap-1.5">
-            {['Educate & Convert', 'Myth Busting', 'Compliance Alert', 'Interactive Q&A'].map((angle, idx) => (
+            {[
+              { en: 'Educate & Convert', th: 'ให้ความรู้และดึงดูด' },
+              { en: 'Myth Busting', th: 'แก้ไขความเข้าใจผิด' },
+              { en: 'Compliance Alert', th: 'แจ้งเตือนข้อควรระวัง' },
+              { en: 'Interactive Q&A', th: 'ถามตอบกระตุ้นการมีส่วนร่วม' }
+            ].map((angle, idx) => (
               <span key={idx} className="text-[9.5px] font-bold text-[#7C756C] dark:text-slate-400 bg-transparent border border-[#E6DFD5] dark:border-slate-700 px-2.5 py-1 rounded-lg">
-                {angle}
+                {getLabel(angle.en, angle.th)}
               </span>
             ))}
           </div>
           
           <div className="pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80 space-y-2">
-            <span className="block text-[9.5px] uppercase tracking-wider font-bold text-[#7C756C]">Suggested Angle</span>
+            <span className="block text-[9.5px] uppercase tracking-wider font-bold text-[#7C756C]">{currentLanguage === 'th' ? 'มุมมองที่ระบบแนะนำ' : 'Suggested Angle'}</span>
             <div className="p-3.5 bg-[#FAF8F5] dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl text-left space-y-1.5">
               <div className="flex items-start gap-2">
                 <svg className="w-4.5 h-4.5 fill-[#967F5C] stroke-[#967F5C] shrink-0 mt-0.5" viewBox="0 0 24 24">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
                 <div>
-                  <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] leading-snug">Q2 Compliance Series</p>
-                  <p className="text-[10px] text-[#7C756C] font-semibold mt-0.5">Increase awareness and trust</p>
+                  <p className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] leading-snug">
+                    {currentLanguage === 'th' ? 'ชุดคู่มือข้อกำหนดความสอดคล้อง Q2' : 'Q2 Compliance Series'}
+                  </p>
+                  <p className="text-[10px] text-[#7C756C] font-semibold mt-0.5">
+                    {currentLanguage === 'th' ? 'สร้างการรับรู้และความไว้วางใจ' : 'Increase awareness and trust'}
+                  </p>
                   <button 
                     type="button"
                     onClick={() => {
                       setSelectedTopic('custom');
-                      setCustomTopic('Q2 Compliance Series: คัมภีร์ดูแลความปลอดภัยข้อมูลสำหรับธุรกิจบริการ');
+                      setCustomTopic(currentLanguage === 'th' ? 'Q2 Compliance Series: คัมภีร์ดูแลความปลอดภัยข้อมูลสำหรับธุรกิจบริการ' : 'Q2 Compliance Series: Data security guidelines for service business');
                     }}
                     className="text-[10px] font-bold text-[#967F5C] hover:underline mt-2 block cursor-pointer"
                   >
-                    Use this angle →
+                    {currentLanguage === 'th' ? 'ใช้อินพุตของมุมนี้ →' : 'Use this angle →'}
                   </button>
                 </div>
               </div>
@@ -414,59 +430,59 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
           <div className="space-y-1 pb-3 border-b border-[#E6DFD5]/70 dark:border-slate-800/80">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4.5 h-4.5 text-[#967F5C]" />
-              <span className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">Command Composer</span>
+              <span className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">{t('canvas.composer.title')}</span>
             </div>
             <p className="text-[10.5px] text-[#7C756C] dark:text-slate-400 font-medium">
-              Define what to create. Our AI will handle the structure, tone, and bilingual output.
+              {t('canvas.composer.desc')}
             </p>
           </div>
 
           <div className="space-y-5">
             {/* 1. Content Topic */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">1. Content Topic</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.topic')}</Label>
               <textarea 
                 value={customTopic}
                 onChange={(e) => setCustomTopic(e.target.value)}
-                placeholder="Enter your content topic or key message..."
+                placeholder={currentLanguage === 'th' ? 'ระบุหัวข้อคอนเทนต์หรือข้อความหลัก...' : 'Enter your content topic or key message...'}
                 rows={2}
-                className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-3 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] outline-none resize-none font-medium leading-relaxed"
+                className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-3 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] outline-none resize-none font-medium leading-relaxed font-sans"
               />
             </div>
 
             {/* 2. Languages */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">2. Languages</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.language')}</Label>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex flex-1 gap-2.5">
                   <div className="flex-1 space-y-1 text-left">
-                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">Primary</span>
+                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'ภาษาหลัก' : 'Primary'}</span>
                     <Select value="Thai">
                       <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Thai">Thai</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
+                        <SelectItem value="Thai">{currentLanguage === 'th' ? 'ภาษาไทย' : 'Thai'}</SelectItem>
+                        <SelectItem value="English">{currentLanguage === 'th' ? 'ภาษาอังกฤษ' : 'English'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="flex-1 space-y-1 text-left">
-                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">Secondary</span>
+                    <span className="text-[9px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'ภาษารอง' : 'Secondary'}</span>
                     <Select value="English">
                       <SelectTrigger className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Thai">Thai</SelectItem>
-                        <SelectItem value="English">English</SelectItem>
+                        <SelectItem value="Thai">{currentLanguage === 'th' ? 'ภาษาไทย' : 'Thai'}</SelectItem>
+                        <SelectItem value="English">{currentLanguage === 'th' ? 'ภาษาอังกฤษ' : 'English'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-3.5 self-end h-9.5">
-                  <span className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">Generate both versions</span>
+                  <span className="text-[10px] font-bold text-[#7C756C] uppercase tracking-wider">{currentLanguage === 'th' ? 'สร้างทั้งสองภาษา' : 'Generate both versions'}</span>
                   <div className="flex items-center gap-2">
                     <button 
                       type="button" 
@@ -493,7 +509,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 3. Output Mode */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">3. Output Mode</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.outputMode')}</Label>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5 items-center">
                 <div className="md:col-span-5">
                   <Select value={outputMode} onValueChange={(val) => val && setOutputMode(val)}>
@@ -501,10 +517,10 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Main post + secondary in comment">Main post + secondary in comment</SelectItem>
-                      <SelectItem value="Bilingual caption">Bilingual caption</SelectItem>
-                      <SelectItem value="Main post only">Main post only</SelectItem>
-                      <SelectItem value="Separate versions">Separate versions</SelectItem>
+                      <SelectItem value="Main post + secondary in comment">{currentLanguage === 'th' ? 'โพสต์หลัก + คอมเมนต์ภาษารอง' : 'Main post + secondary in comment'}</SelectItem>
+                      <SelectItem value="Bilingual caption">{currentLanguage === 'th' ? 'คำบรรยายสองภาษาในโพสต์เดียว' : 'Bilingual caption'}</SelectItem>
+                      <SelectItem value="Main post only">{currentLanguage === 'th' ? 'โพสต์ภาษาหลักเท่านั้น' : 'Main post only'}</SelectItem>
+                      <SelectItem value="Separate versions">{currentLanguage === 'th' ? 'แยกเวอร์ชันอย่างละโพสต์' : 'Separate versions'}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -519,16 +535,16 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
                     )}
                   >
-                    Other
+                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
                   </button>
                 </div>
                 <div className="md:col-span-5">
                   <Input 
                     value={customOutputMode}
                     onChange={(e) => setCustomOutputMode(e.target.value)}
-                    placeholder="Describe custom output mode..."
+                    placeholder={currentLanguage === 'th' ? 'อธิบายรูปแบบการจัดโครงสร้างผลลัพธ์...' : 'Describe custom output mode...'}
                     disabled={!showCustomOutput}
-                    className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
+                    className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 font-sans"
                   />
                 </div>
               </div>
@@ -536,7 +552,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 4. Platform */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">4. Platform</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.platform')}</Label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { name: 'LinkedIn', icon: () => (
@@ -577,7 +593,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                     )}
                   >
                     {p.icon()}
-                    {p.name === 'Other' ? '+ Other' : p.name}
+                    {p.name === 'Other' ? (currentLanguage === 'th' ? '+ อื่นๆ' : '+ Other') : p.name}
                   </button>
                 ))}
               </div>
@@ -586,7 +602,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             {/* 5 & 6. Audience & Tone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">5. Audience</Label>
+                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.audience')}</Label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <div className="flex-1">
@@ -595,9 +611,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Legal & Compliance Professionals">Legal & Compliance Professionals</SelectItem>
-                          <SelectItem value="SME Owners">SME Owners</SelectItem>
-                          <SelectItem value="HR Managers">HR Managers</SelectItem>
+                          <SelectItem value="Legal & Compliance Professionals">{currentLanguage === 'th' ? 'ผู้เชี่ยวชาญด้านกฎหมายและ Compliance' : 'Legal & Compliance Professionals'}</SelectItem>
+                          <SelectItem value="SME Owners">{currentLanguage === 'th' ? 'เจ้าของธุรกิจ SME' : 'SME Owners'}</SelectItem>
+                          <SelectItem value="HR Managers">{currentLanguage === 'th' ? 'ผู้จัดการฝ่ายบุคคล (HR)' : 'HR Managers'}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -611,14 +627,14 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                           : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
                       )}
                     >
-                      Other
+                      {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
                     </button>
                   </div>
                   {showCustomAudience && (
                     <Input 
                       value={customAudienceText}
                       onChange={(e) => setCustomAudienceText(e.target.value)}
-                      placeholder="Describe custom audience..."
+                      placeholder={currentLanguage === 'th' ? 'อธิบายกลุ่มเป้าหมายเพิ่มเติม...' : 'Describe custom audience...'}
                       className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
                     />
                   )}
@@ -626,7 +642,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">6. Tone</Label>
+                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.tone')}</Label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
                     <div className="flex-1">
@@ -636,7 +652,16 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         </SelectTrigger>
                         <SelectContent>
                           {TONE_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {currentLanguage === 'th' ? (
+                                opt.value === 'Professional' ? 'ทางการ / มืออาชีพ' :
+                                opt.value === 'Friendly' ? 'เป็นกันเอง / สุภาพ' :
+                                opt.value === 'Educational' ? 'เพื่อให้ความรู้' :
+                                opt.value === 'Expert' ? 'ผู้เชี่ยวชาญ' :
+                                opt.value === 'Corporate' ? 'องค์กร / ธุรกิจ' :
+                                opt.value === 'Simple' ? 'เข้าใจง่าย / ทั่วไป' : opt.label
+                              ) : opt.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -651,14 +676,14 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                           : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
                       )}
                     >
-                      Other
+                      {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
                     </button>
                   </div>
                   {showCustomTone && (
                     <Input 
                       value={customTone}
                       onChange={(e) => setCustomTone(e.target.value)}
-                      placeholder="Describe custom tone..."
+                      placeholder={currentLanguage === 'th' ? 'อธิบายโทนภาษาเพิ่มเติม...' : 'Describe custom tone...'}
                       className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700"
                     />
                   )}
@@ -669,7 +694,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             {/* 7 & 8. Content Goal & Format */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">7. Content Goal</Label>
+                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.goal')}</Label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1 min-w-0">
                     <Select value={objective} onValueChange={(val) => val && setObjective(val)}>
@@ -677,9 +702,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Educate">Educate</SelectItem>
-                        <SelectItem value="Promote">Promote</SelectItem>
-                        <SelectItem value="Engagement">Engagement</SelectItem>
+                        <SelectItem value="Educate">{currentLanguage === 'th' ? 'เพื่อให้ความรู้' : 'Educate'}</SelectItem>
+                        <SelectItem value="Promote">{currentLanguage === 'th' ? 'เพื่อประชาสัมพันธ์ / ขาย' : 'Promote'}</SelectItem>
+                        <SelectItem value="Engagement">{currentLanguage === 'th' ? 'เพื่อสร้างการคุยโต้ตอบ' : 'Engagement'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -693,13 +718,13 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
                     )}
                   >
-                    Other
+                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
                   </button>
                   {showCustomGoal && (
                     <Input 
                       value={customGoal}
                       onChange={(e) => setCustomGoal(e.target.value)}
-                      placeholder="Describe custom goal..."
+                      placeholder={currentLanguage === 'th' ? 'อธิบายเป้าหมายเพิ่มเติม...' : 'Describe custom goal...'}
                       className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 flex-1 min-w-[120px]"
                     />
                   )}
@@ -707,7 +732,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">8. Content Format</Label>
+                <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.format')}</Label>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1 min-w-0">
                     <Select value={format} onValueChange={(val) => val && setFormat(val)}>
@@ -715,9 +740,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Educational Post">Educational Post</SelectItem>
-                        <SelectItem value="Checklist">Checklist</SelectItem>
-                        <SelectItem value="Q&A">Q&A</SelectItem>
+                        <SelectItem value="Educational Post">{currentLanguage === 'th' ? 'โพสต์บทความให้ความรู้' : 'Educational Post'}</SelectItem>
+                        <SelectItem value="Checklist">{currentLanguage === 'th' ? 'รายการเช็คลิสต์' : 'Checklist'}</SelectItem>
+                        <SelectItem value="Q&A">{currentLanguage === 'th' ? 'ถาม-ตอบ' : 'Q&A'}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -731,13 +756,13 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                         : "bg-transparent border-[#E6DFD5] text-[#7C756C] dark:border-slate-800"
                     )}
                   >
-                    Other
+                    {currentLanguage === 'th' ? 'อื่นๆ' : 'Other'}
                   </button>
                   {showCustomFormat && (
                     <Input 
                       value={customFormat}
                       onChange={(e) => setCustomFormat(e.target.value)}
-                      placeholder="Describe custom format..."
+                      placeholder={currentLanguage === 'th' ? 'อธิบายรูปแบบเพิ่มเติม...' : 'Describe custom format...'}
                       className="h-9.5 text-xs rounded-lg border-[#E6DFD5] dark:border-slate-700 flex-1 min-w-[120px]"
                     />
                   )}
@@ -747,7 +772,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 9. Hashtags */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">9. Hashtags</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.hashtags')}</Label>
               <div className="flex flex-wrap gap-1.5 p-2 border border-[#E6DFD5] dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg min-h-10 items-center">
                 {hashtags.map((tag) => (
                   <span key={tag} className="text-[10.5px] font-bold bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 px-2 py-0.5 rounded-lg flex items-center gap-1.5 text-[#1E1D1B] dark:text-[#EBE7E0]">
@@ -760,7 +785,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   value={hashtagInput}
                   onChange={(e) => setHashtagInput(e.target.value)}
                   onKeyDown={handleAddHashtag}
-                  placeholder="Add hashtag..."
+                  placeholder={currentLanguage === 'th' ? 'เพิ่มแฮชแท็ก...' : 'Add hashtag...'}
                   className="flex-1 text-xs outline-none bg-transparent min-w-[120px] text-[#1E1D1B] dark:text-[#EBE7E0]"
                 />
               </div>
@@ -768,7 +793,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 10. Knowledge Source */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">10. Knowledge Source</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.knowledge')}</Label>
               <div className="flex gap-2">
                 <Input 
                   type="url"
@@ -782,7 +807,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   onClick={handleAddUrl}
                   className="bg-[#FAF8F5] text-[#1E1D1B] border border-[#E6DFD5] dark:bg-slate-800 dark:text-[#EBE7E0] dark:border-slate-700 font-bold text-xs h-9.5 rounded-lg px-4 hover:bg-slate-50 cursor-pointer shrink-0"
                 >
-                  + ADD URL
+                  {currentLanguage === 'th' ? '+ เพิ่มลิงก์' : '+ ADD URL'}
                 </Button>
               </div>
               
@@ -793,7 +818,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                       <span className="truncate max-w-[280px] font-medium text-[#7C756C] flex items-center gap-1">
                         <LinkIcon className="w-3 h-3 text-[#7C756C]" /> {url}
                       </span>
-                      <button type="button" onClick={() => handleRemoveUrl(idx)} className="text-[#7C756C] hover:text-red-500 font-bold cursor-pointer">Remove</button>
+                      <button type="button" onClick={() => handleRemoveUrl(idx)} className="text-[#7C756C] hover:text-red-500 font-bold cursor-pointer">{currentLanguage === 'th' ? 'ลบออก' : 'Remove'}</button>
                     </div>
                   ))}
                 </div>
@@ -802,11 +827,11 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 11. Notes / Constraints */}
             <div className="space-y-2">
-              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">11. Notes / Constraints (Optional)</Label>
+              <Label className="text-[10.5px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] uppercase tracking-wider">{t('canvas.label.notes')}</Label>
               <textarea 
                 value={manualContext}
                 onChange={(e) => setManualContext(e.target.value)}
-                placeholder="Add any specific notes, constraints, or key points to include..."
+                placeholder={currentLanguage === 'th' ? 'ระบุแนวทาง ข้อห้าม หรือประเด็นสำคัญที่ต้องมี...' : 'Add any specific notes, constraints, or key points to include...'}
                 rows={3}
                 className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-3 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] outline-none resize-none font-medium leading-relaxed"
               />
@@ -823,12 +848,12 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               {loading ? (
                 <>
                   <span className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Generating Content...
+                  {t('canvas.action.adding')}
                 </>
               ) : (
                 <>
                   <Sparkle className="w-4.5 h-4.5 fill-current" />
-                  Generate Content
+                  {t('canvas.action.generate')}
                 </>
               )}
             </Button>
@@ -845,15 +870,15 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         <div className="bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
           <div className="flex items-center gap-2 pb-2 border-b border-[#E6DFD5] dark:border-slate-850">
             <Target className="w-4 h-4 text-[#967F5C]" />
-            <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">Content Performance Score</h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.preview.metrics')}</h3>
           </div>
           
           <div className="space-y-4 pt-1">
             {[
-              { name: 'Hook Strength', score: '8.6/10', pct: 86 },
-              { name: 'Readability Meter', score: '9.0/10', pct: 90 },
-              { name: 'Engagement Potential', score: '7.4/10', pct: 74 },
-              { name: 'CTA Strength', score: '8.2/10', pct: 82 }
+              { name: currentLanguage === 'th' ? 'ความดึงดูดของ Hook' : 'Hook Strength', score: '8.6/10', pct: 86 },
+              { name: currentLanguage === 'th' ? 'ความง่ายในการอ่าน' : 'Readability Meter', score: '9.0/10', pct: 90 },
+              { name: currentLanguage === 'th' ? 'โอกาสการมีส่วนร่วม' : 'Engagement Potential', score: '7.4/10', pct: 74 },
+              { name: currentLanguage === 'th' ? 'ความชัดเจนของ CTA' : 'CTA Strength', score: '8.2/10', pct: 82 }
             ].map((metric, idx) => (
               <div key={idx} className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">
@@ -876,7 +901,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
-              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">Platform Preview Feed</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#1E1D1B] dark:text-[#EBE7E0]">{t('canvas.preview.title')}</h3>
             </div>
             <div className="flex gap-2">
               <svg className="w-4 h-4 fill-none stroke-[#967F5C] stroke-2 cursor-pointer" viewBox="0 0 24 24">
@@ -899,7 +924,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   OS
                 </div>
                 <div>
-                  <h5 className="text-[11px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] leading-tight">Your Workspace Brand</h5>
+                  <h5 className="text-[11px] font-bold text-[#1E1D1B] dark:text-[#EBE7E0] leading-tight">
+                    {initialBrand?.name || (currentLanguage === 'th' ? 'แบรนด์ในพื้นที่ทำงานของคุณ' : 'Your Workspace Brand')}
+                  </h5>
                   <div className="flex items-center gap-1.5 text-[9px] text-[#7C756C] font-semibold mt-0.5">
                     <span>2m</span>
                     <span>•</span>
@@ -918,16 +945,25 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             
             <div className="aspect-[1.91/1] bg-[#FAF8F5] border border-dashed border-[#E6DFD5] dark:border-slate-800 dark:bg-slate-800 rounded-lg flex items-center justify-center p-4 text-center">
               <span className="text-[9px] text-[#7C756C] font-bold uppercase tracking-wider">
-                Preview shows bilingual output with hashtags.<br/>
-                Actual formatting may vary by platform.
+                {currentLanguage === 'th' ? (
+                  <>
+                    ส่วนพรีวิวแสดงตัวอย่างผลลัพธ์สองภาษาและแฮชแท็ก<br/>
+                    การจัดวางรูปแบบจริงอาจแตกต่างตามแพลตฟอร์ม
+                  </>
+                ) : (
+                  <>
+                    Preview shows bilingual output with hashtags.<br/>
+                    Actual formatting may vary by platform.
+                  </>
+                )}
               </span>
             </div>
 
             <div className="grid grid-cols-4 p-0.5 border-t border-[#E6DFD5]/50 dark:border-slate-800/80 pt-2 bg-slate-50/50 rounded-lg">
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><ThumbsUp className="w-3 h-3" /> Like</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><MessageSquare className="w-3 h-3" /> Comment</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Share2 className="w-3 h-3" /> Share</button>
-              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Send className="w-3 h-3" /> Send</button>
+              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><ThumbsUp className="w-3 h-3" /> {currentLanguage === 'th' ? 'ถูกใจ' : 'Like'}</button>
+              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><MessageSquare className="w-3 h-3" /> {currentLanguage === 'th' ? 'แสดงความเห็น' : 'Comment'}</button>
+              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Share2 className="w-3 h-3" /> {currentLanguage === 'th' ? 'แชร์' : 'Share'}</button>
+              <button type="button" className="flex items-center justify-center gap-1 text-[#7C756C] text-[10px] font-bold hover:text-[#1E1D1B] py-1 transition-colors cursor-pointer"><Send className="w-3 h-3" /> {currentLanguage === 'th' ? 'ส่ง' : 'Send'}</button>
             </div>
           </div>
         </div>

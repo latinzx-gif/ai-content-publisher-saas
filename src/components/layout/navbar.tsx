@@ -27,14 +27,14 @@ export function Navbar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
     router.push('/auth/login');
   }
 
-  const pageTitle = currentNav ? currentNav.title : 'Dashboard';
+  const pageTitle = currentNav ? t(currentNav.titleKey) : t('navbar.dashboard');
 
   return (
     <header className="h-14 border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/85 dark:bg-slate-950/85 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-8 select-none">
       <div className="flex items-center gap-2 text-[11px] font-medium tracking-wider text-[#7C756C]">
-        <span className="hover:text-[#1E1D1B] transition-colors">Workspace</span>
+        <span className="hover:text-[#1E1D1B] transition-colors">{t('navbar.workspace')}</span>
         <span>/</span>
-        <span className="hover:text-[#1E1D1B] transition-colors">Content Operations</span>
+        <span className="hover:text-[#1E1D1B] transition-colors">{t('navbar.operations')}</span>
         <span>/</span>
         <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-semibold">{pageTitle}</span>
       </div>
@@ -51,7 +51,7 @@ export function Navbar({ isSingleOwner = false }: { isSingleOwner?: boolean }) {
             onClick={handleSignOut}
             className="text-[10px] tracking-widest text-[#7C756C] hover:text-[#1E1D1B] dark:hover:text-[#EBE7E0] font-bold transition-colors uppercase cursor-pointer"
           >
-            Sign Out
+            {t('navbar.signout')}
           </button>
         </div>
       </div>

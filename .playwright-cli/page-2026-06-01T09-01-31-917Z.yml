@@ -1,0 +1,246 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Content OS Studio
+        - generic [ref=e8]: Production Workspace
+      - img [ref=e9]
+    - navigation [ref=e11]:
+      - generic [ref=e13]:
+        - link "Operations Dashboard" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img
+          - generic [ref=e15]: Operations Dashboard
+        - link "Editor Canvas" [ref=e16] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - generic [ref=e17]: Editor Canvas
+        - link "Review Board" [ref=e18] [cursor=pointer]:
+          - /url: /drafts
+          - img
+          - generic [ref=e19]: Review Board
+        - link "Calendar & Publishing" [ref=e20] [cursor=pointer]:
+          - /url: /calendar
+          - img
+          - generic [ref=e21]: Calendar & Publishing
+        - link "Asset Composer" [ref=e22] [cursor=pointer]:
+          - /url: /asset-composer
+          - img
+          - generic [ref=e23]: Asset Composer
+      - generic [ref=e26]:
+        - link "Brand & Voice" [ref=e27] [cursor=pointer]:
+          - /url: /profile
+          - img
+          - generic [ref=e28]: Brand & Voice
+        - link "Integrations" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e30]: Integrations
+        - link "Settings" [ref=e31] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e32]: Settings
+    - generic [ref=e33]:
+      - generic [ref=e36]: Content Pipeline Live
+      - generic [ref=e37]: All systems operational
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: Workspace
+        - generic [ref=e42]: /
+        - generic [ref=e43]: Content Operations
+        - generic [ref=e44]: /
+        - generic [ref=e45]: Operations Dashboard
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - button "TH" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]: /
+          - button "EN" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: OS
+          - button "Sign Out" [ref=e53] [cursor=pointer]
+    - main [ref=e54]:
+      - generic [ref=e57]:
+        - generic [ref=e59]:
+          - heading "Content Operations" [level=1] [ref=e60]
+          - paragraph [ref=e61]: Oversee bilingual content, review flow, and publishing from one workspace.
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - generic [ref=e64]: Briefs
+            - generic [ref=e65]: "7"
+            - generic [ref=e66]: Open
+          - generic [ref=e68]:
+            - generic [ref=e69]: Drafts
+            - generic [ref=e70]: "12"
+            - generic [ref=e71]: In progress
+          - generic [ref=e73]:
+            - generic [ref=e74]: Review
+            - generic [ref=e75]: "5"
+            - generic [ref=e76]: In review
+          - generic [ref=e78]:
+            - generic [ref=e79]: Scheduled
+            - generic [ref=e80]: "8"
+            - generic [ref=e81]: Upcoming
+          - generic [ref=e83]:
+            - generic [ref=e84]: Published
+            - generic [ref=e85]: "46"
+            - generic [ref=e86]: This month
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - heading "Campaign Snapshot" [level=3] [ref=e91]
+                - link "View all" [ref=e92] [cursor=pointer]:
+                  - /url: /drafts
+                  - text: View all
+                  - img [ref=e93]
+              - table [ref=e96]:
+                - rowgroup [ref=e97]:
+                  - row "Campaign Language Status Next Milestone Owner" [ref=e98]:
+                    - columnheader "Campaign" [ref=e99]
+                    - columnheader "Language" [ref=e100]
+                    - columnheader "Status" [ref=e101]
+                    - columnheader "Next Milestone" [ref=e102]
+                    - columnheader "Owner" [ref=e103]
+                    - columnheader [ref=e104]
+                - rowgroup [ref=e105]:
+                  - row "Q2 Tax Advisory Series ชุดความรู้ภาษีสำหรับธุรกิจ Q2 TH EN In Review Legal Review NK" [ref=e106]:
+                    - cell "Q2 Tax Advisory Series ชุดความรู้ภาษีสำหรับธุรกิจ Q2" [ref=e107]:
+                      - generic [ref=e110]:
+                        - paragraph [ref=e111]: Q2 Tax Advisory Series
+                        - paragraph [ref=e112]: ชุดความรู้ภาษีสำหรับธุรกิจ Q2
+                    - cell "TH EN" [ref=e113]:
+                      - generic [ref=e114]:
+                        - generic [ref=e115]: TH
+                        - generic [ref=e116]: EN
+                    - cell "In Review" [ref=e117]:
+                      - generic [ref=e118]: In Review
+                    - cell "Legal Review" [ref=e120]
+                    - cell "NK" [ref=e121]:
+                      - generic [ref=e122]: NK
+                    - cell [ref=e123]:
+                      - img [ref=e124] [cursor=pointer]
+                  - row "Labor Law Updates อัปเดตใหม่กฎหมายแรงงาน 2025 TH EN Drafting Content Draft PP" [ref=e128]:
+                    - cell "Labor Law Updates อัปเดตใหม่กฎหมายแรงงาน 2025" [ref=e129]:
+                      - generic [ref=e132]:
+                        - paragraph [ref=e133]: Labor Law Updates
+                        - paragraph [ref=e134]: อัปเดตใหม่กฎหมายแรงงาน 2025
+                    - cell "TH EN" [ref=e135]:
+                      - generic [ref=e136]:
+                        - generic [ref=e137]: TH
+                        - generic [ref=e138]: EN
+                    - cell "Drafting" [ref=e139]:
+                      - generic [ref=e140]: Drafting
+                    - cell "Content Draft" [ref=e142]
+                    - cell "PP" [ref=e143]:
+                      - generic [ref=e144]: PP
+                    - cell [ref=e145]:
+                      - img [ref=e146] [cursor=pointer]
+                  - row "PDPA Compliance Hub แนวปฏิบัติการคุ้มครองข้อมูลส่วนบุคคล TH EN Scheduled Publish Queue OS" [ref=e150]:
+                    - cell "PDPA Compliance Hub แนวปฏิบัติการคุ้มครองข้อมูลส่วนบุคคล" [ref=e151]:
+                      - generic [ref=e154]:
+                        - paragraph [ref=e155]: PDPA Compliance Hub
+                        - paragraph [ref=e156]: แนวปฏิบัติการคุ้มครองข้อมูลส่วนบุคคล
+                    - cell "TH EN" [ref=e157]:
+                      - generic [ref=e158]:
+                        - generic [ref=e159]: TH
+                        - generic [ref=e160]: EN
+                    - cell "Scheduled" [ref=e161]:
+                      - generic [ref=e162]: Scheduled
+                    - cell "Publish Queue" [ref=e164]
+                    - cell "OS" [ref=e165]:
+                      - generic [ref=e166]: OS
+                    - cell [ref=e167]:
+                      - img [ref=e168] [cursor=pointer]
+                  - row "Corporate Restructuring FAQ คู่มือการควบรวมและปรับโครงสร้างธุรกิจ TH EN Published Done JS" [ref=e172]:
+                    - cell "Corporate Restructuring FAQ คู่มือการควบรวมและปรับโครงสร้างธุรกิจ" [ref=e173]:
+                      - generic [ref=e176]:
+                        - paragraph [ref=e177]: Corporate Restructuring FAQ
+                        - paragraph [ref=e178]: คู่มือการควบรวมและปรับโครงสร้างธุรกิจ
+                    - cell "TH EN" [ref=e179]:
+                      - generic [ref=e180]:
+                        - generic [ref=e181]: TH
+                        - generic [ref=e182]: EN
+                    - cell "Published" [ref=e183]:
+                      - generic [ref=e184]: Published
+                    - cell "Done" [ref=e186]
+                    - cell "JS" [ref=e187]:
+                      - generic [ref=e188]: JS
+                    - cell [ref=e189]:
+                      - img [ref=e190] [cursor=pointer]
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - img [ref=e197]
+                - generic [ref=e199]:
+                  - heading "Smart Input Pattern" [level=4] [ref=e200]
+                  - paragraph [ref=e201]: "Every selectable field follows the system rule: Preset, Other, Custom."
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - text: "Example: Audience"
+                  - combobox [ref=e204]:
+                    - option "General Business" [selected]
+                    - option "Legal Professionals"
+                    - option "SME Owners"
+                - generic [ref=e205]:
+                  - checkbox "Other / Custom" [ref=e206]
+                  - generic [ref=e207] [cursor=pointer]: Other / Custom
+                - generic [ref=e208]:
+                  - text: Enter Custom Audience...
+                  - textbox "Describe custom target..." [disabled] [ref=e209]
+              - button "Apply Pattern" [ref=e211]:
+                - text: Apply Pattern
+                - img
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - generic [ref=e214]: Brand Context
+              - generic [ref=e215]:
+                - generic [ref=e216]: OS
+                - generic [ref=e217]:
+                  - heading "Smoke Legal Advisory" [level=4] [ref=e218]
+                  - paragraph [ref=e219]: น่าเชื่อถือ
+            - generic [ref=e220]:
+              - generic [ref=e222]: System Rules
+              - generic [ref=e223]:
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Bilingual output enabled
+                  - generic [ref=e226]: TH / EN
+                - generic [ref=e227]:
+                  - generic [ref=e228]: Hashtag support enabled
+                  - generic [ref=e229]: "On"
+                - generic [ref=e230]:
+                  - generic [ref=e231]: Approved sources only
+                  - generic [ref=e232]: Enforced
+              - link "Manage rules →" [ref=e234] [cursor=pointer]:
+                - /url: /profile
+            - generic [ref=e235]:
+              - generic [ref=e236]:
+                - generic [ref=e237]: Channel Health
+                - generic [ref=e238]: View
+              - generic [ref=e239]:
+                - generic [ref=e241]:
+                  - generic [ref=e242]: Website
+                  - generic [ref=e243]: 88%
+                - generic [ref=e247]:
+                  - generic [ref=e248]: LinkedIn
+                  - generic [ref=e249]: 76%
+                - generic [ref=e253]:
+                  - generic [ref=e254]: YouTube
+                  - generic [ref=e255]: 62%
+              - paragraph [ref=e258]: Health score is updated daily.
+            - generic [ref=e259]:
+              - generic [ref=e260]:
+                - generic [ref=e261]: Upcoming Queue
+                - link "View" [ref=e262] [cursor=pointer]:
+                  - /url: /calendar
+              - generic [ref=e263]:
+                - generic [ref=e264]:
+                  - generic [ref=e265]: MAY 20
+                  - generic [ref=e266]: "Tax Insight: Q2 Planning"
+                - generic [ref=e267]:
+                  - generic [ref=e268]: MAY 22
+                  - generic [ref=e269]: Labor Law Update
+                - generic [ref=e270]:
+                  - generic [ref=e271]: MAY 23
+                  - generic [ref=e272]: Compliance Checklist
+              - link "See full calendar →" [ref=e274] [cursor=pointer]:
+                - /url: /calendar

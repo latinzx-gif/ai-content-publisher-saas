@@ -1,12 +1,16 @@
-import { RegisterForm } from '@/components/auth/register-form'
-import type { Metadata } from 'next'
+'use client';
 
-export const metadata: Metadata = {
-  title: 'สมัครสมาชิก | AI Content Publisher',
-  description: 'สร้างบัญชีใหม่เพื่อเริ่มใช้งาน',
-}
+import { useEffect } from 'react'
+import { RegisterForm } from '@/components/auth/register-form'
+import { useLanguage } from '@/components/providers/language-provider'
 
 export default function RegisterPage() {
+  const { t } = useLanguage()
+
+  useEffect(() => {
+    document.title = t('auth.register.title')
+  }, [t])
+
   return (
     <div className="flex h-screen w-full items-center justify-center bg-[#F8F9FA] dark:bg-[#0F172A]">
       <div className="w-full max-w-md px-4">
@@ -21,7 +25,7 @@ export default function RegisterPage() {
             AI Content OS
           </h1>
           <p className="mt-1.5 text-sm font-semibold text-slate-400 dark:text-slate-500">
-            สร้างบัญชีใหม่เพื่อเริ่มสร้างคอนเทนต์ด้วย AI
+            {t('auth.register.subtitle')}
           </p>
         </div>
 
@@ -29,9 +33,9 @@ export default function RegisterPage() {
         <div className="rounded-3xl bg-white dark:bg-[#1E293B] border border-slate-100 dark:border-slate-800 shadow-[0_4px_24px_-2px_rgba(15,23,42,0.06)] p-8">
           <RegisterForm />
           <div className="mt-6 text-center text-xs font-semibold text-slate-400 dark:text-slate-500">
-            มีบัญชีอยู่แล้วใช่ไหม?{' '}
+            {t('auth.register.hasAccount')}{' '}
             <a href="/auth/login" className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-              เข้าสู่ระบบที่นี่
+              {t('auth.register.loginLink')}
             </a>
           </div>
         </div>

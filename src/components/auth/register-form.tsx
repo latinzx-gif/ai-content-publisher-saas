@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
+import { useLanguage } from '@/components/providers/language-provider'
 
 export function RegisterForm() {
+  const { t } = useLanguage()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -21,11 +23,11 @@ export function RegisterForm() {
     const password = formData.get('password') as string
     const confirmPassword = formData.get('confirmPassword') as string
     if (password !== confirmPassword) {
-      setError('รหัสผ่านไม่ตรงกัน กรุณาลองใหม่อีกครั้ง')
+      setError(t('auth.register.errorMismatch'))
       return
     }
     if (password.length < 6) {
-      setError('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร')
+      setError(t('auth.register.errorLength'))
       return
     }
 
@@ -50,18 +52,17 @@ export function RegisterForm() {
         </div>
         <div className="space-y-1">
           <h2 className="font-heading font-black text-lg text-slate-900 dark:text-slate-50">
-            ยืนยันอีเมลของคุณ
+            {t('auth.register.successTitle')}
           </h2>
           <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
-            เราส่งลิงก์ยืนยันไปยังอีเมลของคุณแล้ว<br />
-            กรุณาตรวจสอบกล่องจดหมายและคลิกลิงก์เพื่อเริ่มใช้งาน
+            {t('auth.register.successDesc')}
           </p>
         </div>
         <a
           href="/auth/login"
           className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors underline underline-offset-4"
         >
-          กลับไปหน้าเข้าสู่ระบบ
+          {t('auth.register.backToLogin')}
         </a>
       </div>
     )
@@ -80,7 +81,7 @@ export function RegisterForm() {
       {/* Email */}
       <div className="space-y-1.5">
         <Label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          อีเมล
+          {t('auth.login.email')}
         </Label>
         <Input
           id="email"
@@ -96,7 +97,7 @@ export function RegisterForm() {
       {/* Password */}
       <div className="space-y-1.5">
         <Label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          รหัสผ่าน
+          {t('auth.login.password')}
         </Label>
         <div className="relative">
           <Input
@@ -105,7 +106,7 @@ export function RegisterForm() {
             type={showPassword ? 'text' : 'password'}
             required
             autoComplete="new-password"
-            placeholder="อย่างน้อย 6 ตัวอักษร"
+            placeholder={t('auth.register.placeholderPassword')}
             className="h-11 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-sm font-medium focus:border-indigo-400 focus:ring-indigo-300/40 placeholder:text-slate-300 dark:placeholder:text-slate-600 pr-10 transition-all"
           />
           <button
@@ -122,7 +123,7 @@ export function RegisterForm() {
       {/* Confirm Password */}
       <div className="space-y-1.5">
         <Label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-          ยืนยันรหัสผ่าน
+          {t('auth.register.confirmPassword')}
         </Label>
         <div className="relative">
           <Input
@@ -131,7 +132,7 @@ export function RegisterForm() {
             type={showConfirm ? 'text' : 'password'}
             required
             autoComplete="new-password"
-            placeholder="กรอกรหัสผ่านอีกครั้ง"
+            placeholder={t('auth.register.placeholderConfirm')}
             className="h-11 rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-sm font-medium focus:border-indigo-400 focus:ring-indigo-300/40 placeholder:text-slate-300 dark:placeholder:text-slate-600 pr-10 transition-all"
           />
           <button
@@ -154,10 +155,10 @@ export function RegisterForm() {
         {loading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            กำลังสร้างบัญชี...
+            {t('auth.register.loading')}
           </span>
         ) : (
-          'สร้างบัญชีใหม่'
+          t('auth.register.submit')
         )}
       </Button>
     </form>

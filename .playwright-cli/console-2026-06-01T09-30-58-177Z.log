@@ -1,0 +1,5 @@
+[     922ms] [ERROR] [hCaptcha] There was an error in your callback. @ https://js.hcaptcha.com/1/api.js?onload=onLoad:3
+[     922ms] [ERROR] Sn @ https://js.hcaptcha.com/1/api.js?onload=onLoad:3
+[    1345ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ https://login.buffer.com/login?redirect=https%3A%2F%2Fpublish.buffer.com%2Fmock:0
+[    1385ms] [ERROR] Access to font at 'https://buffer.com/static/fonts/stolzl/stolzl-regular.woff2' from origin 'https://login.buffer.com' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://login.buffer.com/login?redirect=https%3A%2F%2Fpublish.buffer.com%2Fmock:0
+[    1385ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://buffer.com/static/fonts/stolzl/stolzl-regular.woff2:0

@@ -1,0 +1,229 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e5] [cursor=pointer]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: Content OS Studio
+        - generic [ref=e8]: Production Workspace
+      - img [ref=e9]
+    - navigation [ref=e11]:
+      - generic [ref=e13]:
+        - link "Operations Dashboard" [ref=e14] [cursor=pointer]:
+          - /url: /
+          - img
+          - generic [ref=e15]: Operations Dashboard
+        - link "Editor Canvas" [ref=e16] [cursor=pointer]:
+          - /url: /generate
+          - img
+          - generic [ref=e17]: Editor Canvas
+        - link "Review Board" [ref=e18] [cursor=pointer]:
+          - /url: /drafts
+          - img
+          - generic [ref=e19]: Review Board
+        - link "Calendar & Publishing" [ref=e20] [cursor=pointer]:
+          - /url: /calendar
+          - img
+          - generic [ref=e21]: Calendar & Publishing
+        - link "Asset Composer" [ref=e22] [cursor=pointer]:
+          - /url: /asset-composer
+          - img
+          - generic [ref=e23]: Asset Composer
+      - generic [ref=e26]:
+        - link "Brand & Voice" [ref=e27] [cursor=pointer]:
+          - /url: /profile
+          - img
+          - generic [ref=e28]: Brand & Voice
+        - link "Integrations" [ref=e29] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e30]: Integrations
+        - link "Settings" [ref=e31] [cursor=pointer]:
+          - /url: /settings
+          - img
+          - generic [ref=e32]: Settings
+    - generic [ref=e33]:
+      - generic [ref=e36]: Content Pipeline Live
+      - generic [ref=e37]: All systems operational
+  - generic [ref=e38]:
+    - banner [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e41]: Workspace
+        - generic [ref=e42]: /
+        - generic [ref=e43]: Content Operations
+        - generic [ref=e44]: /
+        - generic [ref=e45]: Review Board
+      - generic [ref=e46]:
+        - generic [ref=e47]:
+          - button "TH" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]: /
+          - button "EN" [ref=e50] [cursor=pointer]
+        - generic [ref=e51]:
+          - generic [ref=e52]: OS
+          - button "Sign Out" [ref=e53] [cursor=pointer]
+    - main [ref=e54]:
+      - generic [ref=e57]:
+        - generic [ref=e58]:
+          - heading "Review Board" [level=2] [ref=e59]
+          - paragraph [ref=e60]: Move content through legal, brand, and publishing review with clarity.
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: Campaign
+            - generic [ref=e64] [cursor=pointer]:
+              - generic [ref=e65]: All
+              - img [ref=e66]
+          - generic [ref=e68]:
+            - generic [ref=e69]: Platform
+            - generic [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]: All
+              - img [ref=e72]
+          - generic [ref=e74]:
+            - generic [ref=e75]: Language
+            - generic [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]: All
+              - img [ref=e78]
+          - generic [ref=e80]:
+            - generic [ref=e81]: Status
+            - generic [ref=e82] [cursor=pointer]:
+              - generic [ref=e83]: All
+              - img [ref=e84]
+          - generic [ref=e86]:
+            - generic [ref=e87]: Priority
+            - generic [ref=e88] [cursor=pointer]:
+              - generic [ref=e89]: All
+              - img [ref=e90]
+          - button "More filters" [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]:
+              - generic [ref=e97]:
+                - generic [ref=e98]: Draft
+                - generic [ref=e99]: "2"
+              - generic [ref=e100]:
+                - generic [ref=e101] [cursor=pointer]:
+                  - generic [ref=e102]:
+                    - 'heading "Labor Law: 2025 Contract Checklist" [level=4] [ref=e103]'
+                    - img [ref=e104]
+                  - generic [ref=e108]:
+                    - generic [ref=e109]:
+                      - generic [ref=e110]: TH
+                      - generic [ref=e111]: EN
+                    - generic [ref=e112]: •
+                    - generic [ref=e113]: LinkedIn
+                  - generic [ref=e115]:
+                    - generic [ref=e116]: Legal
+                    - generic [ref=e118]: Accounting
+                    - generic [ref=e120]: Brand
+                - generic [ref=e122] [cursor=pointer]:
+                  - generic [ref=e123]:
+                    - 'heading "PDPA: 5 Core Customer Data Elements" [level=4] [ref=e124]'
+                    - img [ref=e125]
+                  - generic [ref=e129]:
+                    - generic [ref=e130]:
+                      - generic [ref=e131]: TH
+                      - generic [ref=e132]: EN
+                    - generic [ref=e133]: •
+                    - generic [ref=e134]: LinkedIn
+                  - generic [ref=e136]:
+                    - generic [ref=e137]: Legal
+                    - generic [ref=e139]: Accounting
+                    - generic [ref=e141]: Brand
+                - button "+ Add content" [ref=e143]
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e146]: In Review
+                - generic [ref=e147]: "2"
+              - generic [ref=e148]:
+                - generic [ref=e149] [cursor=pointer]:
+                  - generic [ref=e150]:
+                    - 'heading "Tax Strategy: Corporate Optimization" [level=4] [ref=e151]'
+                    - img [ref=e152]
+                  - generic [ref=e156]:
+                    - generic [ref=e157]:
+                      - generic [ref=e158]: TH
+                      - generic [ref=e159]: EN
+                    - generic [ref=e160]: •
+                    - generic [ref=e161]: Facebook
+                  - generic [ref=e163]:
+                    - generic [ref=e164]: Legal
+                    - generic [ref=e166]: Accounting
+                    - generic [ref=e168]: Brand
+                - generic [ref=e170] [cursor=pointer]:
+                  - generic [ref=e171]:
+                    - 'heading "IP Protection: Trademark Registration" [level=4] [ref=e172]'
+                    - img [ref=e173]
+                  - generic [ref=e177]:
+                    - generic [ref=e178]:
+                      - generic [ref=e179]: TH
+                      - generic [ref=e180]: EN
+                    - generic [ref=e181]: •
+                    - generic [ref=e182]: Instagram
+                  - generic [ref=e184]:
+                    - generic [ref=e185]: Legal
+                    - generic [ref=e187]: Accounting
+                    - generic [ref=e189]: Brand
+                - button "+ Add content" [ref=e191]
+            - generic [ref=e192]:
+              - generic [ref=e193]:
+                - generic [ref=e194]: Approved
+                - generic [ref=e195]: "1"
+              - generic [ref=e196]:
+                - generic [ref=e197] [cursor=pointer]:
+                  - generic [ref=e198]:
+                    - 'heading "Business Setup: NDA Agreements 101" [level=4] [ref=e199]'
+                    - img [ref=e200]
+                  - generic [ref=e204]:
+                    - generic [ref=e205]:
+                      - generic [ref=e206]: TH
+                      - generic [ref=e207]: EN
+                    - generic [ref=e208]: •
+                    - generic [ref=e209]: Website
+                  - generic [ref=e210]:
+                    - img [ref=e211]
+                    - generic [ref=e213]: Ready for publish
+                  - generic [ref=e215]:
+                    - generic [ref=e216]: Legal
+                    - generic [ref=e218]: Accounting
+                    - generic [ref=e220]: Brand
+                - button "+ Add content" [ref=e222]
+            - generic [ref=e223]:
+              - generic [ref=e224]:
+                - generic [ref=e225]: Scheduled
+                - generic [ref=e226]: "1"
+              - generic [ref=e227]:
+                - generic [ref=e228] [cursor=pointer]:
+                  - generic [ref=e229]:
+                    - 'heading "Compliance: Annual Board Resolutions" [level=4] [ref=e230]'
+                    - img [ref=e231]
+                  - generic [ref=e235]:
+                    - generic [ref=e236]:
+                      - generic [ref=e237]: TH
+                      - generic [ref=e238]: EN
+                    - generic [ref=e239]: •
+                    - generic [ref=e240]: LinkedIn
+                  - generic [ref=e241]:
+                    - img [ref=e242]
+                    - generic [ref=e244]: May 20, 2025 • 09:00
+                  - generic [ref=e246]:
+                    - generic [ref=e247]: Legal
+                    - generic [ref=e249]: Accounting
+                    - generic [ref=e251]: Brand
+                - button "+ Add content" [ref=e253]
+          - generic [ref=e254]:
+            - generic [ref=e255]:
+              - generic [ref=e256]: Review Notes
+              - textbox "Add a note for this board..." [ref=e257]
+              - button "Save note" [ref=e259]
+            - generic [ref=e260]:
+              - generic [ref=e261]: Approval Rules
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - img [ref=e265]
+                  - generic [ref=e267]: Bilingual output checked
+                - generic [ref=e268]:
+                  - img [ref=e270]
+                  - generic [ref=e272]: Hashtags reviewed
+                - generic [ref=e273]:
+                  - img [ref=e275]
+                  - generic [ref=e277]: Source verified
+                - generic [ref=e278]:
+                  - img [ref=e280]
+                  - generic [ref=e282]: Image template approved

@@ -27,17 +27,17 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
               Content OS Studio
             </span>
             <span className="block text-[9px] text-[#7C756C] dark:text-slate-400 font-bold uppercase tracking-[0.15em] mt-1 leading-none">
-              Production Workspace
+              {t('sidebar.workspace')}
             </span>
           </div>
           <ChevronDown className="w-3.5 h-3.5 text-[#7C756C] dark:text-slate-500 group-hover:text-slate-655 dark:group-hover:text-slate-400 transition-colors shrink-0" />
         </div>
-
+ 
         {/* Workspace Dropdown Panel */}
         {showWorkspaceMenu && (
           <div className="absolute top-16 left-4 right-4 bg-white dark:bg-slate-900 border border-[#E6DFD5] rounded-xl p-2 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="p-2 border-b border-slate-50 dark:border-slate-800 mb-1">
-              <p className="text-[9px] font-black text-slate-455 uppercase tracking-widest px-2 py-0.5">Active Workspace</p>
+              <p className="text-[9px] font-black text-slate-455 uppercase tracking-widest px-2 py-0.5">{t('sidebar.activeWorkspace')}</p>
             </div>
             <button 
               onClick={() => setShowWorkspaceMenu(false)}
@@ -52,7 +52,7 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
           </div>
         )}
       </div>
-
+ 
       {/* Directory Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navigationConfig.sections.map((section, sectionIdx) => (
@@ -64,7 +64,7 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
               {section.items.map((item) => {
                 const Icon = item.icon;
                 const isActive = pathname === item.href;
-
+ 
                 return (
                   <Link
                     key={`${section.label}-${item.title}-${item.href}`}
@@ -79,8 +79,8 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
                   >
                     <Icon className={cn("w-4 h-4 shrink-0", isActive ? "text-[#1E1D1B] dark:text-[#EBE7E0]" : "text-[#7C756C]/70 dark:text-slate-500")} />
                     <span className="text-xs font-medium tracking-tight">
-                      {/* Match exact mockup names fallback */}
-                      {item.title}
+                      {/* Resolve menu link text via translations key */}
+                      {t(item.titleKey)}
                     </span>
                   </Link>
                 );
@@ -89,14 +89,14 @@ export function Sidebar({ isSingleOwner = false }: { isSingleOwner?: boolean }) 
           </div>
         ))}
       </nav>
-
+ 
       {/* Connection status footer */}
       <div className="p-4 border-t border-[#E6DFD5] bg-[#EBE6DF]/35 dark:bg-slate-900/30 flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[9px] font-bold text-[#1E1D1B]/80 dark:text-slate-455 uppercase tracking-[0.1em]">Content Pipeline Live</span>
+          <span className="text-[9px] font-bold text-[#1E1D1B]/80 dark:text-slate-455 uppercase tracking-[0.1em]">{t('sidebar.pipelineLive')}</span>
         </div>
-        <span className="text-[9px] text-[#7C756C] dark:text-slate-500">All systems operational</span>
+        <span className="text-[9px] text-[#7C756C] dark:text-slate-500">{t('sidebar.allOperational')}</span>
       </div>
     </div>
   );

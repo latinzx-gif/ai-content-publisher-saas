@@ -5,7 +5,7 @@ export const GeneratedPostSchema = z.object({
   title: z.string(),
   caption: z.string(),
   hashtags: z.string(),
-  platform: z.literal('facebook'),
+  platform: z.string().default('facebook'),
   angle_type: z.enum([
     'Educational',
     'FAQ',

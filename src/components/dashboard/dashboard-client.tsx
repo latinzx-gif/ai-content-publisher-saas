@@ -48,67 +48,44 @@ export function DashboardClient({
   brandData,
   posts
 }: DashboardClientProps) {
-  const { currentLanguage } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
   
   // Smart Input Pattern State
   const [audiencePreset, setAudiencePreset] = useState('General Business');
   const [isPreset, setIsPreset] = useState(true);
   const [customAudience, setCustomAudience] = useState('');
 
-  // Sample static upcoming agenda dates (from Calendar)
-  const upcomingQueue = [
-    { date: 'MAY 20', title: 'Tax Insight: Q2 Planning' },
-    { date: 'MAY 22', title: 'Labor Law Update' },
-    { date: 'MAY 23', title: 'Compliance Checklist' }
-  ];
+  const snapshotPosts = posts.slice(0, 4);
+  const upcomingQueue = posts.filter((post) => post.status === 'approved').slice(0, 3);
 
-  // Rich mock campaigns data with preview images for SaaS presentation
-  const mockCampaigns = [
-    {
-      id: 'mock-1',
-      title: 'Q2 Tax Advisory Series',
-      topic: 'ชุดความรู้ภาษีสำหรับธุรกิจ Q2',
-      languages: ['TH', 'EN'],
-      statusLabel: 'In Review',
-      badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-      milestone: 'Legal Review',
-      owner: 'NK',
-      image: '/media_1.jpg'
-    },
-    {
-      id: 'mock-2',
-      title: 'Labor Law Updates',
-      topic: 'อัปเดตใหม่กฎหมายแรงงาน 2025',
-      languages: ['TH', 'EN'],
-      statusLabel: 'Drafting',
-      badgeColor: 'bg-blue-100 text-blue-850 dark:bg-blue-900/30 dark:text-blue-300',
-      milestone: 'Content Draft',
-      owner: 'PP',
-      image: '/media_2.jpg'
-    },
-    {
-      id: 'mock-3',
-      title: 'PDPA Compliance Hub',
-      topic: 'แนวปฏิบัติการคุ้มครองข้อมูลส่วนบุคคล',
-      languages: ['TH', 'EN'],
-      statusLabel: 'Scheduled',
-      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
-      milestone: 'Publish Queue',
-      owner: 'OS',
-      image: '/media_3.jpg'
-    },
-    {
-      id: 'mock-4',
-      title: 'Corporate Restructuring FAQ',
-      topic: 'คู่มือการควบรวมและปรับโครงสร้างธุรกิจ',
-      languages: ['TH', 'EN'],
-      statusLabel: 'Published',
-      badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
-      milestone: 'Done',
-      owner: 'JS',
-      image: '/media_4.jpg'
+  const getStatusView = (status: string) => {
+    if (status === 'approved') {
+      return {
+        label: 'Approved',
+        milestone: 'Publish Queue',
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+      };
     }
-  ];
+    if (status === 'published') {
+      return {
+        label: 'Published',
+        milestone: 'Done',
+        badgeColor: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300',
+      };
+    }
+    if (status === 'failed') {
+      return {
+        label: 'Failed',
+        milestone: 'Needs attention',
+        badgeColor: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+      };
+    }
+    return {
+      label: 'Draft',
+      milestone: 'Content Draft',
+      badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+    };
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-slate-950 min-h-screen text-[#1E1D1B] dark:text-[#EBE7E0] p-8 flex flex-col space-y-6">
@@ -116,12 +93,12 @@ export function DashboardClient({
         
         {/* Header Section */}
         <div className="flex justify-between items-start">
-          <div className="space-y-1">
+          <div className="space-y-1 text-left">
             <h1 className="text-3xl font-serif font-medium tracking-wide uppercase text-[#1E1D1B] dark:text-[#EBE7E0]">
-              Content Operations
+              {t('deck.title')}
             </h1>
             <p className="text-xs text-[#7C756C] dark:text-slate-400">
-              Oversee bilingual content, review flow, and publishing from one workspace.
+              {t('deck.subtitle')}
             </p>
           </div>
         </div>
@@ -129,11 +106,11 @@ export function DashboardClient({
         {/* Timeline Milestones Progression */}
         <div className="grid grid-cols-5 border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
           {[
-            { label: 'Briefs', count: 7, sub: 'Open' },
-            { label: 'Drafts', count: 12, sub: 'In progress' },
-            { label: 'Review', count: stats.draft || 5, sub: 'In review' },
-            { label: 'Scheduled', count: stats.approved || 8, sub: 'Upcoming' },
-            { label: 'Published', count: stats.published || 46, sub: 'This month' }
+            { label: t('deck.milestones.briefs'), count: stats.generated, sub: 'Generated' },
+            { label: t('deck.milestones.drafts'), count: stats.draft, sub: t('deck.milestones.inProgress') },
+            { label: t('deck.milestones.review'), count: stats.approved, sub: 'Approved' },
+            { label: t('deck.milestones.scheduled'), count: 0, sub: t('deck.milestones.upcoming') },
+            { label: t('deck.milestones.published'), count: stats.published, sub: t('deck.milestones.thisMonth') }
           ].map((item, idx) => (
             <div 
               key={idx} 
@@ -163,10 +140,10 @@ export function DashboardClient({
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
               <div className="p-5 border-b border-[#E6DFD5] dark:border-slate-800 flex justify-between items-center">
                 <h3 className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
-                  Campaign Snapshot
+                  {t('deck.snapshot.title')}
                 </h3>
                 <Link href="/drafts" className="text-[10px] font-bold text-[#967F5C] hover:underline flex items-center gap-1">
-                  View all <ChevronRight className="w-3 h-3" />
+                  {t('deck.snapshot.viewAll')} <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
               
@@ -174,26 +151,28 @@ export function DashboardClient({
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-[#E6DFD5] dark:border-slate-800 bg-[#FAF8F5]/50 dark:bg-slate-900 text-[#7C756C] font-bold">
-                      <th className="p-4 font-semibold uppercase tracking-wider">Campaign</th>
-                      <th className="p-4 font-semibold uppercase tracking-wider text-center">Language</th>
-                      <th className="p-4 font-semibold uppercase tracking-wider">Status</th>
-                      <th className="p-4 font-semibold uppercase tracking-wider">Next Milestone</th>
-                      <th className="p-4 font-semibold uppercase tracking-wider text-center">Owner</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider">{t('deck.snapshot.th')}</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider text-center">{t('deck.snapshot.thLang')}</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider">{t('deck.snapshot.thStatus')}</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider">{t('deck.snapshot.thMilestone')}</th>
+                      <th className="p-4 font-semibold uppercase tracking-wider text-center">{t('deck.snapshot.thOwner')}</th>
                       <th className="p-4 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E6DFD5]/50 dark:divide-slate-800">
-                    {mockCampaigns.map((campaign) => (
-                      <tr key={campaign.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                    {snapshotPosts.length > 0 ? snapshotPosts.map((post) => {
+                      const meta = post.metadata || {};
+                      const statusView = getStatusView(post.status);
+                      return (
+                      <tr key={post.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
                         <td className="p-4 font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">
                           <div className="flex items-center gap-3">
-                            <div 
-                              className="w-12 h-10 rounded-lg bg-cover bg-center border border-[#E6DFD5] dark:border-slate-800 shrink-0" 
-                              style={{ backgroundImage: `url(${campaign.image})` }}
-                            />
+                            <div className="w-12 h-10 rounded-lg border border-[#E6DFD5] dark:border-slate-800 shrink-0 bg-[#FAF8F5] dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-[#7C756C]">
+                              OS
+                            </div>
                             <div className="min-w-0">
-                              <p className="font-bold line-clamp-1 text-xs">{campaign.title}</p>
-                              <p className="text-[10px] text-[#7C756C] mt-0.5 line-clamp-1">{campaign.topic}</p>
+                              <p className="font-bold line-clamp-1 text-xs">{meta.title || post.content.split('\n')[0] || 'Untitled Draft'}</p>
+                              <p className="text-[10px] text-[#7C756C] mt-0.5 line-clamp-1">{meta.topic || post.status}</p>
                             </div>
                           </div>
                         </td>
@@ -204,22 +183,29 @@ export function DashboardClient({
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1.5", campaign.badgeColor)}>
+                          <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1.5", statusView.badgeColor)}>
                             <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                            {campaign.statusLabel}
+                            {statusView.label}
                           </span>
                         </td>
-                        <td className="p-4 font-semibold text-[#7C756C]">{campaign.milestone}</td>
+                        <td className="p-4 font-semibold text-[#7C756C]">{statusView.milestone}</td>
                         <td className="p-4 text-center">
                           <div className="w-6 h-6 rounded-full bg-[#EBE6DF] dark:bg-slate-800 text-[#1E1D1B] dark:text-[#EBE7E0] flex items-center justify-center font-bold text-[10px] mx-auto">
-                            {campaign.owner}
+                            OS
                           </div>
                         </td>
                         <td className="p-4 text-center">
                           <MoreHorizontal className="w-4 h-4 text-[#7C756C] cursor-pointer hover:text-[#1E1D1B]" />
                         </td>
                       </tr>
-                    ))}
+                      );
+                    }) : (
+                      <tr>
+                        <td colSpan={6} className="p-8 text-center text-xs font-semibold text-[#7C756C] dark:text-slate-400">
+                          No content posts yet.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -233,26 +219,26 @@ export function DashboardClient({
                 </div>
                 <div>
                   <h4 className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
-                    Smart Input Pattern
+                    {t('deck.smartInput.title')}
                   </h4>
                   <p className="text-[10px] text-[#7C756C] dark:text-slate-400 mt-0.5">
-                    Every selectable field follows the system rule: Preset, Other, Custom.
+                    {t('deck.smartInput.desc')}
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-end">
                 <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">Example: Audience</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">{t('deck.smartInput.example')}</span>
                   <select 
                     value={audiencePreset}
                     onChange={(e) => setAudiencePreset(e.target.value)}
                     disabled={!isPreset}
                     className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none"
                   >
-                    <option>General Business</option>
-                    <option>Legal Professionals</option>
-                    <option>SME Owners</option>
+                    <option value="General Business">{currentLanguage === 'th' ? 'ธุรกิจทั่วไป' : 'General Business'}</option>
+                    <option value="Legal Professionals">{currentLanguage === 'th' ? 'นักกฎหมาย / ผู้ตรวจสอบ' : 'Legal Professionals'}</option>
+                    <option value="SME Owners">{currentLanguage === 'th' ? 'ผู้ประกอบการ SME' : 'SME Owners'}</option>
                   </select>
                 </div>
 
@@ -265,19 +251,19 @@ export function DashboardClient({
                     className="w-3.5 h-3.5 rounded border-[#E6DFD5]"
                   />
                   <label htmlFor="customToggle" className="text-xs font-bold text-[#7C756C] uppercase tracking-wider cursor-pointer">
-                    Other / Custom
+                    {t('deck.smartInput.otherToggle')}
                   </label>
                 </div>
 
                 <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">Enter Custom Audience...</span>
+                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">{t('deck.smartInput.customPlaceholder')}</span>
                   <input 
                     type="text" 
-                    placeholder="Describe custom target..."
+                    placeholder={t('deck.smartInput.customPlaceholder')}
                     value={customAudience}
                     onChange={(e) => setCustomAudience(e.target.value)}
                     disabled={isPreset}
-                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none"
+                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none font-medium"
                   />
                 </div>
               </div>
@@ -285,9 +271,9 @@ export function DashboardClient({
               <div className="flex justify-end pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
                 <Button 
                   onClick={() => {}}
-                  className="bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm"
+                  className="bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm flex items-center gap-1.5"
                 >
-                  Apply Pattern <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                  {t('deck.smartInput.apply')} <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </div>
@@ -299,14 +285,14 @@ export function DashboardClient({
             
             {/* Brand Context */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
-              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">Brand Context</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('deck.sidebar.brandContext')}</span>
               <div className="flex items-center gap-3.5 pt-1">
                 <div className="w-10 h-10 rounded-full bg-[#F3EFEA] dark:bg-slate-800 flex items-center justify-center font-serif text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
                   OS
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
-                    {brandData?.name || "Your Workspace Brand"}
+                    {brandData?.name || (currentLanguage === 'th' ? 'แบรนด์ในพื้นที่ทำงานของคุณ' : 'Your Workspace Brand')}
                   </h4>
                   <p className="text-[10px] text-[#7C756C] mt-0.5 truncate uppercase tracking-wider">
                     {brandData?.personality || "Legal. Trusted. Precise."}
@@ -318,14 +304,14 @@ export function DashboardClient({
             {/* System Rules */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">System Rules</span>
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('deck.sidebar.systemRules')}</span>
               </div>
               
               <div className="space-y-3 pt-1 text-xs">
                 {[
-                  { label: 'Bilingual output enabled', sub: 'TH / EN' },
-                  { label: 'Hashtag support enabled', sub: 'On' },
-                  { label: 'Approved sources only', sub: 'Enforced' }
+                  { label: currentLanguage === 'th' ? 'เปิดใช้งานผลลัพธ์สองภาษา' : 'Bilingual output enabled', sub: 'TH / EN' },
+                  { label: currentLanguage === 'th' ? 'เปิดใช้งานการรองรับแฮชแท็ก' : 'Hashtag support enabled', sub: 'On' },
+                  { label: currentLanguage === 'th' ? 'บังคับใช้แหล่งข้อมูลที่อนุมัติแล้วเท่านั้น' : 'Approved sources only', sub: 'Enforced' }
                 ].map((rule, idx) => (
                   <div key={idx} className="flex justify-between items-center py-1">
                     <span className="text-[#1E1D1B] dark:text-[#EBE7E0] font-medium">{rule.label}</span>
@@ -336,7 +322,7 @@ export function DashboardClient({
               
               <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
                 <Link href="/profile" className="text-[10px] font-bold text-[#967F5C] hover:underline">
-                  Manage rules →
+                  {t('deck.sidebar.manageRules')}
                 </Link>
               </div>
             </div>
@@ -344,56 +330,60 @@ export function DashboardClient({
             {/* Channel Health */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Channel Health</span>
-                <span className="text-[10px] font-bold text-[#967F5C] hover:underline">View</span>
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('deck.sidebar.channelHealth')}</span>
+                <span className="text-[10px] font-bold text-[#967F5C] hover:underline">{t('deck.snapshot.viewAll')}</span>
               </div>
               
               <div className="space-y-4 pt-1">
                 {[
-                  { name: 'Website', percentage: 88 },
-                  { name: 'LinkedIn', percentage: 76 },
-                  { name: 'YouTube', percentage: 62 }
+                  { name: 'Draft', value: stats.draft },
+                  { name: 'Approved', value: stats.approved },
+                  { name: 'Published', value: stats.published }
                 ].map((chan, idx) => (
                   <div key={idx} className="space-y-1">
                     <div className="flex justify-between text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0]">
                       <span>{chan.name}</span>
-                      <span>{chan.percentage}%</span>
+                      <span>{chan.value}</span>
                     </div>
                     <div className="w-full bg-[#F3EFEA] dark:bg-slate-800 h-1 rounded-full overflow-hidden">
-                      <div className="bg-[#1E1D1B] dark:bg-[#EBE7E0] h-full" style={{ width: `${chan.percentage}%` }} />
+                      <div className="bg-[#1E1D1B] dark:bg-[#EBE7E0] h-full" style={{ width: `${stats.generated ? (chan.value / stats.generated) * 100 : 0}%` }} />
                     </div>
                   </div>
                 ))}
               </div>
               
               <p className="text-[10px] text-[#7C756C] italic pt-1">
-                Health score is updated daily.
+                Live status mix from Supabase content rows.
               </p>
             </div>
 
             {/* Upcoming Queue */}
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
               <div className="flex justify-between items-center">
-                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">Upcoming Queue</span>
-                <Link href="/calendar" className="text-[10px] font-bold text-[#967F5C] hover:underline">View</Link>
+                <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('deck.sidebar.upcomingQueue')}</span>
+                <Link href="/calendar" className="text-[10px] font-bold text-[#967F5C] hover:underline">{t('deck.snapshot.viewAll')}</Link>
               </div>
 
               <div className="space-y-3 pt-1">
-                {upcomingQueue.map((item, idx) => (
-                  <div key={idx} className="flex gap-4 items-center">
+                {upcomingQueue.length > 0 ? upcomingQueue.map((post) => (
+                  <div key={post.id} className="flex gap-4 items-center">
                     <div className="text-[10px] font-bold text-[#7C756C] w-12 tracking-wide shrink-0">
-                      {item.date}
+                      {new Date(post.updated_at || post.created_at).toLocaleDateString(currentLanguage === 'th' ? 'th-TH' : 'en-US', { month: 'short', day: 'numeric' })}
                     </div>
                     <div className="text-xs font-bold text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
-                      {item.title}
+                      {post.metadata?.title || post.content.split('\n')[0] || 'Approved post'}
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-xs font-semibold text-[#7C756C]">
+                    No approved posts queued.
+                  </p>
+                )}
               </div>
 
               <div className="pt-2 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
                 <Link href="/calendar" className="text-[10px] font-bold text-[#967F5C] hover:underline">
-                  See full calendar →
+                  {t('deck.sidebar.seeFull')}
                 </Link>
               </div>
             </div>
