@@ -24,6 +24,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
+import { useRouter } from 'next/navigation';
 
 interface GeneratedPost {
   title?: string;
@@ -50,6 +51,7 @@ interface GenerateFormProps {
 
 type ContentLanguage = 'TH' | 'EN' | 'CN' | 'JP';
 type PostCountOption = 1 | 3 | 5 | 10;
+type PlatformFormat = 'text_only' | 'facebook_post' | 'instagram_4_5' | 'instagram_square';
 
 const LANGUAGE_OPTIONS: Array<{ value: ContentLanguage; label: string }> = [
   { value: 'TH', label: 'Thai / ภาษาไทย' },
@@ -106,6 +108,13 @@ const CONTENT_FORMATS = [
 
 const POST_COUNT_OPTIONS: PostCountOption[] = [1, 3, 5, 10];
 
+const PLATFORM_FORMATS: Array<{ value: PlatformFormat; label: string; description: string }> = [
+  { value: 'text_only', label: 'Text Only', description: 'Publish without image review' },
+  { value: 'facebook_post', label: 'Facebook Post', description: 'Manual image or placeholder required' },
+  { value: 'instagram_4_5', label: 'Instagram 4:5', description: 'Portrait feed creative' },
+  { value: 'instagram_square', label: 'Instagram Square', description: 'Square feed creative' },
+];
+
 const CONTENT_TEMPLATES = [
   {
     id: 'labour-law',
@@ -155,6 +164,7 @@ const CONTENT_TEMPLATES = [
 
 export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) {
   const { currentLanguage } = useLanguage();
+  const router = useRouter();
 
   // Workspace Level States
   const [activeTab, setActiveTab] = useState<'manual' | 'quick'>('manual');
@@ -174,7 +184,8 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   const [customOutputMode, setCustomOutputMode] = useState<string>('');
   const [showCustomOutput, setShowCustomOutput] = useState(false);
 
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('LinkedIn');
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('Facebook');
+  const [platformFormat, setPlatformFormat] = useState<PlatformFormat>('facebook_post');
 
   const [audience, setAudience] = useState<string>('Legal & Compliance Professionals');
   const [customAudienceText, setCustomAudienceText] = useState<string>('');
@@ -283,6 +294,11 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     }
 
     try {
+      const finalOutputMode = outputMode === 'custom' ? customOutputMode : outputMode;
+      const finalAudience = audience === 'custom' ? customAudienceText : audience;
+      const finalObjective = objective === 'custom' ? customGoal : objective;
+      const finalFormat = format === 'custom' ? customFormat : format;
+
       const result = await generatePosts({
         topic: finalTopic,
         tone: tone === 'custom' ? customTone : tone,
@@ -291,6 +307,14 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         urls: urls,
         manualContext: finalManualContext || undefined,
         language: primaryLang,
+        secondaryLanguage: bothLanguages && secondaryLang !== primaryLang ? secondaryLang : undefined,
+        outputMode: finalOutputMode || undefined,
+        platform: selectedPlatform,
+        audience: finalAudience || undefined,
+        objective: finalObjective || undefined,
+        format: finalFormat || undefined,
+        platformFormat,
+        wordCount: wordCount || undefined,
         hashtagCount: (hashtags.length === 0 ? 0 : hashtags.length <= 5 ? 5 : hashtags.length <= 10 ? 10 : 15) as 0 | 5 | 10 | 15,
         manualHashtags: hashtags.length > 0 ? hashtags : undefined
       });
@@ -306,6 +330,11 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       const generatedCount = result.count ?? postCount;
       setGenerationSummary({ count: generatedCount, topic: finalTopic });
       toast.success(currentLanguage === 'th' ? `สร้างโพสต์สำเร็จ ${generatedCount} รายการ!` : `Successfully generated ${generatedCount} posts!`);
+      
+      // Auto-redirect to drafts after a short delay so they see the success state
+      setTimeout(() => {
+        router.push('/drafts');
+      }, 2000);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error generating content';
       toast.error(message);
@@ -785,6 +814,34 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   >
                     {p.icon()}
                     {p.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 4B. PLATFORM FORMAT */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">4B. Platform Format</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {PLATFORM_FORMATS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setPlatformFormat(option.value)}
+                    className={cn(
+                      "rounded-xl border p-3 text-left transition-all",
+                      platformFormat === option.value
+                        ? "border-[#1E1D1B] bg-[#1E1D1B] text-white"
+                        : "border-slate-200/80 bg-white text-slate-600 hover:border-slate-350"
+                    )}
+                  >
+                    <span className="block text-xs font-black">{option.label}</span>
+                    <span className={cn(
+                      "mt-1 block text-[10px] font-semibold leading-tight",
+                      platformFormat === option.value ? "text-white/70" : "text-slate-400"
+                    )}>
+                      {option.description}
+                    </span>
                   </button>
                 ))}
               </div>

@@ -38,13 +38,19 @@ export async function sendPostToBuffer(postId: string) {
 
   const accessToken = decrypt(integration.encrypted_value)
   const metadata = post.metadata as PostMetadata
+  const isTextOnly = !metadata.platform_format || metadata.platform_format === 'text_only'
+  const isCreativeApproved = metadata.creative_status === 'approved'
+  if (!isTextOnly && !isCreativeApproved) {
+    throw new Error('Creative review must be approved before publishing image-format posts.')
+  }
+
   const adapter = getPublishingAdapter('buffer')
 
   const publishInput: PublishInput = {
     title: metadata.title,
     caption: metadata.caption,
     hashtags: metadata.hashtags,
-    platform: 'facebook' // Default for MVP
+    platform: 'facebook' // Buffer adapter currently only supports facebook channel
   }
 
   // 3. Send to Buffer
