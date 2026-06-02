@@ -156,13 +156,65 @@ export async function testBufferConnection() {
   const accessToken = decrypt(data.encrypted_value)
 
   try {
-    const response = await fetch(`https://api.bufferapp.com/1/profiles.json?access_token=${accessToken}`)
+    const accountResponse = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        query: `query BufferAccount {
+          account {
+            organizations {
+              id
+              name
+            }
+          }
+        }`,
+      }),
+    })
 
-    if (response.ok) {
-      return { success: true, message: 'Connection successful' }
-    } else {
-      return { success: false, message: 'Invalid Access Token' }
+    const accountResult = await accountResponse.json()
+    const accountError = accountResult.errors?.map((error: { message?: string }) => error.message).filter(Boolean).join('; ')
+    if (!accountResponse.ok || accountError) {
+      return { success: false, message: accountError || 'Invalid Buffer GraphQL API key' }
     }
+
+    const organizationId = accountResult.data?.account?.organizations?.[0]?.id
+    if (!organizationId) {
+      return { success: false, message: 'No Buffer organization found for this API key' }
+    }
+
+    const channelsResponse = await fetch('https://api.buffer.com', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        query: `query BufferChannels($organizationId: OrganizationId!) {
+          channels(input: { organizationId: $organizationId }) {
+            id
+            name
+            service
+          }
+        }`,
+        variables: { organizationId },
+      }),
+    })
+
+    const channelsResult = await channelsResponse.json()
+    const channelsError = channelsResult.errors?.map((error: { message?: string }) => error.message).filter(Boolean).join('; ')
+    if (!channelsResponse.ok || channelsError) {
+      return { success: false, message: channelsError || 'Failed to load Buffer channels' }
+    }
+
+    const hasFacebookChannel = channelsResult.data?.channels?.some((channel: { service?: string }) => channel.service === 'facebook')
+    if (!hasFacebookChannel) {
+      return { success: false, message: 'Buffer connected, but no Facebook channel was found' }
+    }
+
+    return { success: true, message: 'Buffer GraphQL connection successful' }
   } catch {
     return { success: false, message: 'Network error' }
   }

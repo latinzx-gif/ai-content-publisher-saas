@@ -20,7 +20,8 @@ import {
   Target,
   Laptop,
   Smartphone,
-  X
+  X,
+  CheckCircle2
 } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
 
@@ -48,6 +49,7 @@ interface GenerateFormProps {
 }
 
 type ContentLanguage = 'TH' | 'EN' | 'CN' | 'JP';
+type PostCountOption = 1 | 3 | 5 | 10;
 
 const LANGUAGE_OPTIONS: Array<{ value: ContentLanguage; label: string }> = [
   { value: 'TH', label: 'Thai / ภาษาไทย' },
@@ -101,6 +103,8 @@ const CONTENT_FORMATS = [
   { value: 'Q&A', label: 'Q&A' },
   { value: 'custom', label: 'กำหนดเอง (Custom)' }
 ];
+
+const POST_COUNT_OPTIONS: PostCountOption[] = [1, 3, 5, 10];
 
 const CONTENT_TEMPLATES = [
   {
@@ -195,12 +199,14 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   const [currentUrl, setCurrentUrl] = useState<string>('');
 
   const [wordCount, setWordCount] = useState<string>('500');
+  const [postCount, setPostCount] = useState<PostCountOption>(5);
   const [manualContext, setManualContext] = useState<string>('');
 
   // Processing & Output states
   const [loading, setLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
   const [generatedPosts, setGeneratedPosts] = useState<GeneratedPost[]>([]);
+  const [generationSummary, setGenerationSummary] = useState<{ count: number; topic: string } | null>(null);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
 
@@ -263,6 +269,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
     setLoading(true);
     setLoadingStage(0);
+    setGenerationSummary(null);
 
     const intervalId = setInterval(() => {
       setLoadingStage(prev => (prev < 4 ? prev + 1 : prev));
@@ -280,7 +287,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         topic: finalTopic,
         tone: tone === 'custom' ? customTone : tone,
         personality: initialBrand?.personality || 'น่าเชื่อถือ',
-        postCount: 5,
+        postCount,
         urls: urls,
         manualContext: finalManualContext || undefined,
         language: primaryLang,
@@ -296,7 +303,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       if (result.posts && result.posts.length > 0) {
         setGeneratedPosts(result.posts);
       }
-      toast.success(currentLanguage === 'th' ? `สร้างโพสต์สำเร็จ ${result.count} รายการ!` : `Successfully generated ${result.count} posts!`);
+      const generatedCount = result.count ?? postCount;
+      setGenerationSummary({ count: generatedCount, topic: finalTopic });
+      toast.success(currentLanguage === 'th' ? `สร้างโพสต์สำเร็จ ${generatedCount} รายการ!` : `Successfully generated ${generatedCount} posts!`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error generating content';
       toast.error(message);
@@ -1086,7 +1095,32 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 12. NOTES / CONSTRAINTS (OPTIONAL) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">12. Notes / Constraints (Optional)</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">12. Number of Posts</label>
+              <div className="grid grid-cols-4 gap-2">
+                {POST_COUNT_OPTIONS.map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => setPostCount(count)}
+                    className={cn(
+                      "h-9 rounded-xl border text-xs font-black transition-all",
+                      postCount === count
+                        ? "border-[#1E1D1B] bg-[#1E1D1B] text-white"
+                        : "border-slate-200/80 bg-white text-slate-500 hover:border-slate-350"
+                    )}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] font-semibold text-slate-400">
+                Generated posts are saved automatically to the Review Board as drafts.
+              </p>
+            </div>
+
+            {/* 13. NOTES / CONSTRAINTS (OPTIONAL) */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">13. Notes / Constraints (Optional)</label>
               <textarea 
                 value={manualContext}
                 onChange={(e) => setManualContext(e.target.value)}
@@ -1115,6 +1149,33 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                   </>
                 )}
               </Button>
+              {generationSummary && (
+                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-left">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div>
+                        <p className="text-xs font-black text-emerald-900">
+                          {currentLanguage === 'th'
+                            ? `สร้างโพสต์สำเร็จ ${generationSummary.count} รายการ`
+                            : `Generated ${generationSummary.count} post${generationSummary.count === 1 ? '' : 's'} successfully`}
+                        </p>
+                        <p className="mt-1 text-[10px] font-semibold text-emerald-700">
+                          {currentLanguage === 'th'
+                            ? `บันทึกหัวข้อ "${generationSummary.topic}" เป็นแบบร่างในบอร์ดตรวจสอบแล้ว`
+                            : `Saved "${generationSummary.topic}" to Review Board drafts.`}
+                        </p>
+                      </div>
+                      <Link
+                        href="/drafts"
+                        className="inline-flex h-8 items-center rounded-lg bg-emerald-700 px-3 text-[10px] font-black uppercase tracking-wider text-white hover:bg-emerald-800"
+                      >
+                        {currentLanguage === 'th' ? 'ไปที่บอร์ดตรวจสอบ' : 'Review Drafts'}
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>

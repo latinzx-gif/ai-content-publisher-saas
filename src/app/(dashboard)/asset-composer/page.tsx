@@ -19,6 +19,7 @@ function FacebookIcon({ className }: { className?: string }) {
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/components/providers/language-provider';
 
 // Unsplash premium neutral warm-toned photography URLs matching the mockup
 const MOCK_IMAGES = {
@@ -96,6 +97,22 @@ const LAYOUT_PRESETS = [
 ];
 
 export default function AssetComposerPage() {
+  const { t, currentLanguage } = useLanguage();
+  const composerLabels = {
+    title: t('composer.title'),
+    subtitle: t('composer.subtitle'),
+    goal: t('composer.goal.label'),
+    mode: t('composer.mode.label'),
+    count: t('composer.count.label'),
+    layout: t('composer.layout.label'),
+    ratio: t('composer.ratio.label'),
+    lang: t('composer.lang.label'),
+    density: t('composer.density.label'),
+    preset: t('composer.preset.label'),
+    ref: t('composer.ref.label'),
+    action: t('composer.action.generate'),
+  };
+
   const [manualSettings, setManualSettings] = useState(false);
   const [activeTab, setActiveTab] = useState<'quick' | 'manual'>('quick');
   const [topic, setTopic] = useState('');
@@ -154,26 +171,7 @@ export default function AssetComposerPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-[#FAF9F6] text-slate-800 p-6 sm:p-8 flex flex-col space-y-6 select-none font-sans min-h-screen">
       
-      {/* Top Workspace Header Breadcrumbs */}
-      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-        <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold tracking-tight">
-          <span>Workspace</span>
-          <span>/</span>
-          <span>Content Operations</span>
-          <span>/</span>
-          <span className="text-slate-800 font-bold">Asset Composer</span>
-        </div>
-        <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
-          <div className="flex gap-2">
-            <span className="cursor-pointer hover:text-slate-800">TH</span>
-            <span className="text-slate-800 underline">EN</span>
-          </div>
-          <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
-            OS
-          </div>
-          <span className="cursor-pointer hover:text-slate-850">SIGN OUT</span>
-        </div>
-      </div>
+
 
       {/* Main Container */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start max-w-7xl mx-auto w-full">
@@ -184,17 +182,22 @@ export default function AssetComposerPage() {
           {/* Header Title Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 uppercase">
-                Asset Composer
-              </h1>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 uppercase">
+                  {composerLabels.title}
+                </h1>
+                <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-amber-700">
+                  {currentLanguage === 'th' ? 'ตัวอย่าง / ยังไม่เชื่อมต่อจริง' : 'Preview / Mock'}
+                </span>
+              </div>
               <p className="text-xs text-slate-450 font-medium">
-                One-click visual generation using your saved brand rules and Facebook layout presets.
+                {composerLabels.subtitle}
               </p>
             </div>
             
             {/* Manual settings switch */}
             <div className="flex items-center gap-2 bg-white/40 px-3 py-1.5 rounded-xl border border-slate-200/50 shrink-0 self-start sm:self-center">
-              <span className="text-[10px] font-bold text-slate-550">Manual settings</span>
+              <span className="text-[10px] font-bold text-slate-550">{currentLanguage === 'th' ? 'การตั้งค่าแบบปรับเอง' : 'Manual settings'}</span>
               <button 
                 onClick={() => setManualSettings(!manualSettings)}
                 className={cn(
@@ -210,7 +213,7 @@ export default function AssetComposerPage() {
                   )}
                 />
               </button>
-              <span className="text-[10px] font-black uppercase text-slate-400">{manualSettings ? 'On' : 'Off'}</span>
+              <span className="text-[10px] font-black uppercase text-slate-400">{manualSettings ? (currentLanguage === 'th' ? 'เปิด' : 'On') : (currentLanguage === 'th' ? 'ปิด' : 'Off')}</span>
               <Info className="w-3.5 h-3.5 text-slate-400 cursor-pointer hover:text-slate-600" />
             </div>
           </div>
@@ -221,10 +224,10 @@ export default function AssetComposerPage() {
               onClick={() => setActiveTab('quick')}
               className={cn(
                 "pb-3 font-black tracking-wider uppercase transition-all duration-200 border-b-2 px-1",
-                activeTab === 'quick' ? "border-amber-600 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
+                activeTab === 'quick' ? "border-slate-800 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
               )}
             >
-              Quick Mode
+              {currentLanguage === 'th' ? 'โหมดด่วน' : 'Quick Mode'}
             </button>
             <button 
               onClick={() => setActiveTab('manual')}
@@ -233,20 +236,20 @@ export default function AssetComposerPage() {
                 activeTab === 'manual' ? "border-amber-600 text-slate-900" : "border-transparent text-slate-400 hover:text-slate-600"
               )}
             >
-              Manual
+              {currentLanguage === 'th' ? 'ปรับแต่งเอง' : 'Manual'}
             </button>
           </div>
 
           {/* Input campaign card */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-[0_2px_12px_rgba(15,23,42,0.01)] space-y-2">
             <div className="flex justify-between items-center">
-              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-450">Campaign / Visual Topic</Label>
+              <Label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{currentLanguage === 'th' ? 'หัวข้อแคมเปญ / หัวข้อภาพ' : 'Campaign / Visual Topic'}</Label>
               <span className="text-[9px] text-slate-400 font-bold">{topic.length}/150</span>
             </div>
             <textarea 
               value={topic}
               onChange={(e) => setTopic(e.target.value.slice(0, 150))}
-              placeholder="Enter campaign name, product, message or visual topic..."
+              placeholder={currentLanguage === 'th' ? 'ระบุชื่อแคมเปญ, สินค้า, ข้อความ หรือแนวคิดรูปภาพ...' : 'Enter campaign name, product, message or visual topic...'}
               className="w-full h-24 text-xs font-semibold text-slate-800 placeholder-slate-400 border-none outline-none resize-none p-0 focus:ring-0 bg-transparent"
             />
           </div>

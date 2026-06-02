@@ -12,7 +12,7 @@ const GeneratePostsSchema = z.object({
   topic: z.string().min(1, 'Topic is required'),
   tone: z.string().min(1, 'Tone is required'),
   personality: z.string().min(1, 'Personality is required'),
-  postCount: z.union([z.literal(5), z.literal(10)]),
+  postCount: z.union([z.literal(1), z.literal(3), z.literal(5), z.literal(10)]),
   urls: z.array(z.string().url()).max(5).optional(),
   manualContext: z.string().max(10000).optional(),
   language: z.enum(['TH', 'EN', 'CN', 'JP']).default('TH'),

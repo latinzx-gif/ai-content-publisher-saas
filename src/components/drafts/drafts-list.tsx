@@ -208,11 +208,12 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   const draftPosts = posts.filter((p) => p.status === 'draft');
   const inReviewPosts: Post[] = [];
   const approvedPosts = posts.filter((p) => p.status === 'approved');
-  const scheduledPosts = posts.filter((p) => p.status === 'published');
+  const publishedPosts = posts.filter((p) => p.status === 'published');
 
-  const renderCard = (post: Post, isScheduled = false) => {
+  const renderCard = (post: Post, isPublished = false) => {
     const meta = post.metadata || {};
     const isSelected = selectedIds.has(post.id);
+    const publishedAt = meta.published_at || post.updated_at;
     return (
       <div 
         key={post.id}
@@ -252,16 +253,24 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           <span className="text-[#7C756C] capitalize truncate max-w-[80px]">{meta.platform || 'LinkedIn'}</span>
         </div>
 
-        {/* Scheduled date rendering if column is Scheduled */}
-        {isScheduled && (
+        {/* Published date rendering */}
+        {isPublished && (
           <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#967F5C] bg-[#FAF8F5] p-1.5 rounded-lg border border-[#E6DFD5]/50">
             <CalendarIcon className="w-3 h-3" />
-            <span>{currentLanguage === 'th' ? '20 พ.ค. 2025 • 09:00' : 'May 20, 2025 • 09:00'}</span>
+            <span>
+              {currentLanguage === 'th' ? 'เผยแพร่แล้ว ' : 'Published '}
+              {new Date(publishedAt).toLocaleString(currentLanguage === 'th' ? 'th-TH' : 'en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
           </div>
         )}
 
         {/* Ready for publish indicator if approved */}
-        {post.status === 'approved' && !isScheduled && (
+        {post.status === 'approved' && !isPublished && (
           <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
             <Check className="w-3 h-3" />
             <span>{currentLanguage === 'th' ? 'พร้อมสำหรับเผยแพร่' : 'Ready for publish'}</span>
@@ -461,16 +470,16 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
           </div>
 
-          {/* Column 4: SCHEDULED */}
+          {/* Column 4: PUBLISHED */}
           <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.scheduled')}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('status.published')}</span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
-                {scheduledPosts.length}
+                {publishedPosts.length}
               </span>
             </div>
             <div className="space-y-3">
-              {scheduledPosts.map(post => renderCard(post, true))}
+              {publishedPosts.map(post => renderCard(post, true))}
               <Button 
                 variant="outline" 
                 className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
