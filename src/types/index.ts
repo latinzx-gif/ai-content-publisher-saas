@@ -17,9 +17,16 @@ export interface PostMetadata {
   requested_word_count?: string
   actual_word_count?: number
   platform_format?: 'text_only' | 'facebook_post' | 'instagram_4_5' | 'instagram_square'
-  creative_status?: 'not_required' | 'needs_review' | 'approved'
+  creative_status?: 'not_required' | 'needs_review' | 'generating' | 'review_options' | 'approved'
+  image_prompt?: string
+  image_options?: Array<{
+    url: string;
+    source: 'openai' | 'placeholder';
+    prompt?: string;
+  }>;
+  selected_image_url?: string;
   image_url?: string | null
-  image_source?: 'manual_url' | 'placeholder' | null
+  image_source?: 'manual_url' | 'placeholder' | 'openai' | null
   external_id?: string
   external_url?: string
   last_error?: string
