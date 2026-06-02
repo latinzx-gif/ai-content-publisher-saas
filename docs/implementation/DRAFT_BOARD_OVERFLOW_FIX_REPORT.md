@@ -1,67 +1,34 @@
+# Executive Summary
+
+The Drafts / Review Board page no longer produces page-level horizontal overflow in the verified 1366x768 browser check. Horizontal scrolling is confined to the Kanban board container, which keeps the main page width stable while preserving the approved layout.
+
 # Root Cause
 
-The Drafts / Review Board had Kanban columns inside the same grid area as the right notes panel. The Kanban container used horizontal scrolling, but the columns only had `min-w` rules. In practice, column content could expand beyond the intended width, and the grid wrapper did not explicitly hide page-level horizontal overflow.
-
-This made the Scheduled column appear cut off and could create the impression of page-level horizontal scrolling instead of clearly contained Kanban scrolling.
+The Kanban row was allowed to expand to its intrinsic content width inside the board region, and the surrounding wrappers were not explicit enough about limiting horizontal overflow at the board boundary. The right notes panel also needed to remain constrained so it would not compete with the board for available width.
 
 # Files Modified
 
-- `src/app/(dashboard)/drafts/page.tsx`
 - `src/components/drafts/drafts-list.tsx`
+- `docs/implementation/DRAFT_BOARD_OVERFLOW_FIX_REPORT.md`
 
 # Fix Applied
 
-- Added page-level horizontal containment:
-  - `min-w-0`
-  - `overflow-x-hidden`
-- Changed the main Draft Board layout to use explicit grid tracks:
-  - `xl:grid-cols-[minmax(0,3fr)_minmax(260px,1fr)]`
-- Wrapped the Kanban board in a dedicated overflow boundary:
-  - Outer board wrapper: `min-w-0 overflow-hidden`
-  - Scroll viewport: `overflow-x-auto`
-  - Inner row: `flex flex-row flex-nowrap w-max min-w-full`
-- Locked each Kanban column to healthy widths:
-  - `w-[280px]`
-  - `min-w-[280px]`
-  - `md:w-[320px]`
-  - `md:min-w-[320px]`
-  - `max-w-[320px]`
-  - `flex-shrink-0`
-- Added `min-w-0` to the right notes panel so it cannot force the whole page wider.
-
-Visual design, workflow logic, database logic, sidebar, and navigation were not changed.
+- Strengthened overflow containment on the Drafts page workspace wrapper.
+- Added a clearer `max-w-full` / `overflow-x-auto` boundary around the Kanban board.
+- Kept the Kanban inner row as a non-wrapping flex row with stable column widths.
+- Prevented the notes panel from contributing to page-level horizontal growth by keeping it inside the available layout width.
 
 # Validation Results
 
-Commands:
-
-- `npm run typecheck`: Passed
-- `npm run build`: Passed
-
-Build notes:
-
-- The first sandboxed build hit the known Turbopack local port restriction.
-- A second build failed while the dev server was still using `.next`.
-- After stopping the dev server, `npm run build` passed.
-- Existing lint warnings remain for unrelated unused imports and variables.
-
-Browser verification at `/drafts` with viewport `1366x768`:
-
-- `document.body.scrollWidth`: `1366`
-- `document.documentElement.scrollWidth`: `1366`
-- `window.innerWidth`: `1366`
-- Page-level horizontal overflow: no
-- Kanban board client width: `762`
-- Kanban board scroll width: `1328`
-- Kanban internal horizontal scroll: yes
-- Kanban row display: `flex`
-- Kanban row wrap: `nowrap`
-- Column widths: `320, 320, 320, 320`
-- Scheduled column visible after internal board scroll: yes
-- Browser console errors: `0`
+- `document.body.scrollWidth <= window.innerWidth` at 1366x768: passed.
+- `document.documentElement.scrollWidth <= window.innerWidth` at 1366x768: passed.
+- Internal Kanban row still exceeds the visible board width as expected, so the board can scroll horizontally inside its own container.
+- All Drafts page buttons remained accessible in browser inspection.
+- `npm run typecheck`: passed.
+- `npm run build`: passed.
 
 # Remaining Risks
 
-- The Kanban board intentionally scrolls horizontally when four columns exceed the board area.
-- Existing lint warnings remain in unrelated files and were not addressed as part of this scoped overflow fix.
-- Very long unbroken content inside cards may still require future text wrapping hardening, but current generated draft content did not create page-level overflow.
+- The board still contains wide fixed-width columns by design, so any future content expansion will continue to rely on the internal horizontal scroller.
+- If the client wants the right notes panel and Kanban board to become fully visible without any internal scrolling, that would require a layout redesign and is outside this fix.
+- Existing unrelated lint warnings remain elsewhere in the repo, but they do not block typecheck or build.

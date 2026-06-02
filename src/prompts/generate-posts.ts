@@ -15,9 +15,16 @@ export type HashtagCount = 0 | 5 | 10 | 15
 
 interface GeneratePromptOptions {
   language: ContentLanguage
+  secondaryLanguage?: ContentLanguage
+  outputMode?: string
   hashtagCount: HashtagCount
   manualHashtags?: string[]
   knowledgeContext?: string
+  platform?: string
+  audience?: string
+  objective?: string
+  format?: string
+  wordCount?: string
 }
 
 const LANGUAGE_LABELS: Record<ContentLanguage, string> = {
@@ -63,12 +70,25 @@ export function getGeneratePostsPrompt(
     ? 'Set hashtags to an empty string. Do not generate hashtags.'
     : `Generate up to ${options.hashtagCount} relevant hashtags. Include these manual hashtags if relevant, but do not exceed ${options.hashtagCount} total: ${manualTags.map(tag => `#${tag}`).join(' ') || 'none'}.`
 
+  const audienceTarget = options.audience ? `- Target Audience: ${options.audience}` : `- Default Audience: ${brand.target_audience}`
+  const platformTarget = options.platform || 'Facebook'
+  const objectiveTarget = options.objective || 'Not specified'
+  const formatTarget = options.format || 'Educational Post'
+  const wordCountTarget = options.wordCount ? `Aim for approximately ${options.wordCount} words per post.` : ''
+
+  let languageInstruction = `Write the title, caption, and hashtags entirely in ${outputLanguage}. Do not mix languages unless a brand rule explicitly requires a proper noun.`
+  
+  if (options.outputMode && options.outputMode.toLowerCase().includes('bilingual') && options.secondaryLanguage) {
+    const secondaryLabel = LANGUAGE_LABELS[options.secondaryLanguage] || options.secondaryLanguage
+    languageInstruction = `Write the title, caption, and hashtags bilingually. Provide the primary version in ${outputLanguage}, followed immediately by the secondary version in ${secondaryLabel} within the same caption string.`
+  }
+
   return `You are an expert social media content creator. Generate ${count} social media posts for the following brand and topic.
 
 Brand Context:
 - Name: ${brand.name}
 - Business Type: ${brand.business_type}
-- Target Audience: ${brand.target_audience}
+${audienceTarget}
 - Default Tone: ${brand.tone}
 - Default Personality: ${brand.personality}
 ${memorySection}
@@ -77,10 +97,14 @@ Current Task:
 - Topic: ${topic}
 - Requested Tone: ${tone}
 - Requested Personality: ${personality}
+- Selected Platform: ${platformTarget}
+- Objective: ${objectiveTarget}
+- Format: ${formatTarget}
+- Word Count: ${wordCountTarget}
 - Selected Language: ${outputLanguage}
 
 Requirements:
-1. Language: Write the title, caption, and hashtags entirely in ${outputLanguage}. Do not mix languages unless a brand rule explicitly requires a proper noun.
+1. Language: ${languageInstruction}
 2. Format: Strictly JSON output.
 3. Brand Memory: Follow Brand Description, Brand Instructions, Content Rules, Image Rules, Knowledge Sources, and Current Topic. Image Rules are guidance only; do not generate image prompts or image assets.
 4. Hashtags: ${hashtagInstruction}
@@ -93,7 +117,7 @@ Requirements:
    - Case Study
    - Common Mistake
    - Action Plan
-6. Platform: Facebook (but adaptable).
+6. Platform Style: Adapt the formatting, spacing, and tone specifically for ${platformTarget}.
 
 JSON Structure:
 {

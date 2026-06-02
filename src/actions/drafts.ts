@@ -11,6 +11,11 @@ const UpdatePostSchema = z.object({
   hashtags: z.string()
 })
 
+const ReviewBoardNoteSchema = z.object({
+  boardKey: z.string().min(1).max(80).default('drafts'),
+  note: z.string().max(10000)
+})
+
 export async function getPosts(status?: string) {
   const supabase = await getDbClient()
   const user = await requireOwner()
@@ -28,6 +33,52 @@ export async function getPosts(status?: string) {
   const { data, error } = await query
   if (error) throw new Error(error.message)
   return data
+}
+
+export async function getReviewBoardNote(boardKey = 'drafts') {
+  const supabase = await getDbClient()
+  const user = await requireOwner()
+
+  const { data, error } = await supabase
+    .from('review_board_notes')
+    .select('note')
+    .eq('user_id', user.id)
+    .eq('board_key', boardKey)
+    .maybeSingle()
+
+  if (error && error.code === 'PGRST205') return ''
+  if (error) throw new Error(error.message)
+  return data?.note || ''
+}
+
+export async function saveReviewBoardNote(input: z.infer<typeof ReviewBoardNoteSchema>) {
+  const supabase = await getDbClient()
+  const user = await requireOwner()
+  const validated = ReviewBoardNoteSchema.parse(input)
+
+  const { error } = await supabase
+    .from('review_board_notes')
+    .upsert({
+      user_id: user.id,
+      board_key: validated.boardKey,
+      note: validated.note,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id, board_key' })
+
+  if (error && error.code === 'PGRST205') {
+    throw new Error('Review notes table is not deployed. Run migration 0005_review_board_notes.sql first.')
+  }
+  if (error) throw new Error(error.message)
+
+  await supabase.from('workflow_logs').insert({
+    user_id: user.id,
+    action: 'review_note_saved',
+    topic: validated.boardKey,
+    status: 'completed'
+  })
+
+  revalidatePath('/drafts')
+  return { success: true }
 }
 
 export async function updatePost(input: z.infer<typeof UpdatePostSchema>) {
