@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Post } from '@/types';
 import { cn } from '@/lib/utils';
 import { 
@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { approvePost, rejectPost, approveAllDrafts, saveReviewBoardNote } from '@/actions/drafts';
+import { approvePost, rejectPost, approveAllDrafts, saveReviewBoardNote, generateImageOptions } from '@/actions/drafts';
 import { sendPostToBuffer } from '@/actions/publish';
 import { toast } from 'sonner';
 import { EditModal } from '@/components/drafts/edit-modal';
@@ -52,6 +52,8 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   const [languageFilter, setLanguageFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
+  const [imageCount, setImageCount] = useState<1 | 2 | 3>(3);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setPosts(initialPosts || []);
@@ -274,6 +276,47 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
             <Check className="w-3 h-3" />
             <span>{currentLanguage === 'th' ? 'พร้อมสำหรับเผยแพร่' : 'Ready for publish'}</span>
+          </div>
+        )}
+
+        {post.status === 'approved' && (
+          <div className="mt-2 space-y-2 rounded-lg border border-[#E6DFD5] bg-[#FAF8F5] p-2">
+            <div className="flex h-16 items-center justify-center rounded-md border border-dashed border-[#D6CEC1] bg-white text-[10px] font-bold text-[#7C756C]">
+              Creative Review
+            </div>
+            <div className="flex items-center justify-between text-[10px] font-bold">
+              <span>Options:</span>
+              <div className="flex gap-1 rounded-md bg-white border border-[#E6DFD5] p-0.5">
+                {[1, 2, 3].map(c => (
+                  <button
+                    key={c}
+                    onClick={() => setImageCount(c as 1 | 2 | 3)}
+                    className={cn(
+                      "w-6 h-5 rounded transition-all",
+                      imageCount === c ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'
+                    )}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Button
+              disabled={isPending}
+              onClick={() => startTransition(async () => {
+                toast.info('Generating images...');
+                try {
+                  await generateImageOptions(post.id, imageCount);
+                  toast.success('Images generated! Refreshing...');
+                  // The backend uses revalidatePath, so we don't need to manually update state here.
+                } catch (e) {
+                  toast.error((e as Error).message);
+                }
+              })}
+              className="h-8 w-full rounded-md bg-slate-800 text-[10px] font-bold text-white hover:bg-slate-900 disabled:bg-slate-400"
+            >
+              {isPending ? 'Generating...' : 'Generate Images'}
+            </Button>
           </div>
         )}
 
