@@ -214,9 +214,11 @@ export const translations = {
     'nav.reviewBoard': 'บอร์ดตรวจสอบโพสต์',
     'nav.calendarPublishing': 'ปฏิทินและการเผยแพร่',
     'nav.assetComposer': 'เครื่องมือสร้างคอลลาจภาพ',
+    'nav.campaignFactory': 'Campaign Factory',
     'nav.brandVoice': 'น้ำเสียงและตัวตนแบรนด์',
     'nav.integrations': 'ช่องทางเผยแพร่และ API',
     'nav.settings': 'ตั้งค่าทั่วไป',
+    'campaignFactory.subtitle': 'ตัวอย่างฟีเจอร์พรีเมียมสำหรับวางแผน สร้าง และจัดคิวแคมเปญ',
 
     // Navbar
     'navbar.signout': 'ออกจากระบบ',
@@ -593,9 +595,11 @@ export const translations = {
     'nav.reviewBoard': 'Review Board',
     'nav.calendarPublishing': 'Calendar & Publishing',
     'nav.assetComposer': 'Asset Composer',
+    'nav.campaignFactory': 'Campaign Factory',
     'nav.brandVoice': 'Brand & Voice',
     'nav.integrations': 'Integrations',
     'nav.settings': 'Settings',
+    'campaignFactory.subtitle': 'Premium preview for planning, generating, and queueing campaigns.',
 
     // Navbar
     'navbar.signout': 'Sign Out',

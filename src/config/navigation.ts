@@ -4,6 +4,7 @@ import {
   CheckSquare, 
   Calendar as CalendarIcon, 
   Layers, 
+  LockKeyhole,
   ShieldCheck, 
   Link2, 
   Settings,
@@ -76,6 +77,15 @@ export const navigationConfig = {
           description: 'เครื่องมือสร้างและจัดการภาพเนื้อหา',
           subtitle: 'Configure visual layouts and typography templates.',
           subtitleKey: 'asset.subtitle'
+        },
+        {
+          title: 'Campaign Factory',
+          titleKey: 'nav.campaignFactory',
+          href: '/campaign-factory',
+          icon: LockKeyhole,
+          description: 'ตัวอย่างฟีเจอร์พรีเมียมสำหรับแคมเปญ 30 วัน',
+          subtitle: 'Preview automated planning, queueing, images, and scheduling.',
+          subtitleKey: 'campaignFactory.subtitle'
         }
       ]
     },
