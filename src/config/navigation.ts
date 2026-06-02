@@ -69,6 +69,7 @@ export const navigationConfig = {
           subtitle: 'Plan and schedule approved posts across visual slots.',
           subtitleKey: 'calendar.subtitle'
         },
+        /*
         {
           title: 'Asset Composer',
           titleKey: 'nav.assetComposer',
@@ -78,6 +79,7 @@ export const navigationConfig = {
           subtitle: 'Configure visual layouts and typography templates.',
           subtitleKey: 'asset.subtitle'
         },
+        */
         {
           title: 'Campaign Factory',
           titleKey: 'nav.campaignFactory',
