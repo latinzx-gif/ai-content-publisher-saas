@@ -38,6 +38,15 @@ function compact(value?: string | null, maxLength = 1200) {
   return value?.trim().replace(/\s+/g, ' ').slice(0, maxLength) || ''
 }
 
+function getWordCountInstruction(wordCount?: string) {
+  const parsed = Number.parseInt(wordCount || '', 10)
+  if (!Number.isFinite(parsed) || parsed <= 0) return ''
+
+  const minimum = Math.max(1, Math.round(parsed * 0.9))
+  const maximum = Math.max(minimum, Math.round(parsed * 1.1))
+  return `Target ${parsed} words per post caption. Keep each caption between ${minimum} and ${maximum} words. If the language does not use spaces naturally, keep the caption at a comparable reading length.`
+}
+
 export function getGeneratePostsPrompt(
   brand: BrandProfile,
   topic: string,
@@ -74,7 +83,7 @@ export function getGeneratePostsPrompt(
   const platformTarget = options.platform || 'Facebook'
   const objectiveTarget = options.objective || 'Not specified'
   const formatTarget = options.format || 'Educational Post'
-  const wordCountTarget = options.wordCount ? `Aim for approximately ${options.wordCount} words per post.` : ''
+  const wordCountTarget = getWordCountInstruction(options.wordCount)
 
   let languageInstruction = `Write the title, caption, and hashtags entirely in ${outputLanguage}. Do not mix languages unless a brand rule explicitly requires a proper noun.`
   
@@ -118,6 +127,7 @@ Requirements:
    - Common Mistake
    - Action Plan
 6. Platform Style: Adapt the formatting, spacing, and tone specifically for ${platformTarget}.
+7. Length Control: ${wordCountTarget || 'Use a concise social-media length appropriate for the selected platform.'}
 
 JSON Structure:
 {

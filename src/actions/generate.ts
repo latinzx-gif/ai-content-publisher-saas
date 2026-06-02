@@ -22,6 +22,7 @@ const GeneratePostsSchema = z.object({
   audience: z.string().optional(),
   objective: z.string().optional(),
   format: z.string().optional(),
+  platformFormat: z.enum(['text_only', 'facebook_post', 'instagram_4_5', 'instagram_square']).default('text_only'),
   wordCount: z.string().optional(),
   hashtagCount: z.union([z.literal(0), z.literal(5), z.literal(10), z.literal(15)]).default(5),
   manualHashtags: z.array(z.string().max(60)).max(15).optional()
@@ -61,6 +62,17 @@ function cleanHtml(html: string): string {
   // Replace multiple spaces/newlines with single space
   text = text.replace(/\s+/g, ' ').trim();
   return text;
+}
+
+function countApproxWords(text: string): number {
+  const normalized = text.replace(/\s+/g, ' ').trim()
+  if (!normalized) return 0
+
+  const spacedWords = normalized.match(/[\p{L}\p{N}]+/gu) || []
+  if (spacedWords.length > 1) return spacedWords.length
+
+  const nonWhitespaceChars = normalized.replace(/\s/g, '').length
+  return Math.max(1, Math.round(nonWhitespaceChars / 5))
 }
 
 async function fetchUrlContent(url: string): Promise<string> {
@@ -209,12 +221,15 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
   if (logError) throw new Error('Failed to create workflow log')
 
   // 7. Save Posts as Drafts
-  const postsToInsert = normalizedPosts.map(post => ({
-    user_id: user.id,
-    workflow_id: log.id,
-    content: `${post.title}\n\n${post.caption}\n\n${post.hashtags}`,
-    status: 'draft',
-    metadata: {
+  const postsToInsert = normalizedPosts.map(post => {
+    const creativeStatus = validated.platformFormat === 'text_only' ? 'not_required' : 'needs_review'
+
+    return {
+      user_id: user.id,
+      workflow_id: log.id,
+      content: `${post.title}\n\n${post.caption}\n\n${post.hashtags}`,
+      status: 'draft',
+      metadata: {
         topic: validated.topic,
         tone: validated.tone,
         personality: validated.personality,
@@ -223,15 +238,24 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
         audience: validated.audience,
         objective: validated.objective,
         format: validated.format,
+        output_mode: validated.outputMode,
+        secondary_language: validated.secondaryLanguage,
+        requested_word_count: validated.wordCount,
+        actual_word_count: countApproxWords(post.caption),
         wordCount: validated.wordCount,
+        platform_format: validated.platformFormat,
+        creative_status: creativeStatus,
+        image_url: null,
+        image_source: null,
         title: post.title,
         caption: post.caption,
         hashtags: post.hashtags,
         language: validated.language,
         hashtag_count: validated.hashtagCount,
         manual_hashtags: validated.manualHashtags || []
+      }
     }
-  }))
+  })
 
   const { error: insertError } = await supabase
     .from('content_posts')
