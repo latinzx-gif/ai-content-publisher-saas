@@ -1,4 +1,12 @@
-export type PostStatus = 'draft' | 'approved' | 'rejected' | 'published' | 'failed'
+export type PostStatus =
+  | 'draft'
+  | 'text_approved'
+  | 'images_pending'
+  | 'images_ready'
+  | 'creative_approved'
+  | 'published'
+  | 'failed'
+  | 'rejected'
 
 export interface PostMetadata {
   title: string
@@ -17,13 +25,22 @@ export interface PostMetadata {
   requested_word_count?: string
   actual_word_count?: number
   platform_format?: 'text_only' | 'facebook_post' | 'instagram_4_5' | 'instagram_square'
-  creative_status?: 'not_required' | 'needs_review' | 'generating' | 'review_options' | 'approved'
+  creative_status?: 'not_required' | 'pending' | 'generating' | 'images_ready' | 'approved'
   image_prompt?: string
   image_options?: Array<{
+    id: string;
     url: string;
     source: 'openai' | 'placeholder';
     prompt?: string;
+    warning?: string;
   }>;
+  selected_image?: {
+    id: string;
+    url: string;
+    source: 'openai' | 'placeholder';
+    prompt?: string;
+    warning?: string;
+  } | null
   selected_image_url?: string;
   image_url?: string | null
   image_source?: 'manual_url' | 'placeholder' | 'openai' | null

@@ -8,8 +8,20 @@ const statusConfig: Record<PostStatus, { label: string; className: string }> = {
     label: "ร่าง",
     className: DESIGN_SYSTEM.badges.draft,
   },
-  approved: {
-    label: "อนุมัติแล้ว",
+  text_approved: {
+    label: "อนุมัติข้อความ",
+    className: DESIGN_SYSTEM.badges.success,
+  },
+  images_pending: {
+    label: "กำลังสร้างรูป",
+    className: DESIGN_SYSTEM.badges.warning,
+  },
+  images_ready: {
+    label: "พร้อมเลือกรูป",
+    className: DESIGN_SYSTEM.badges.info,
+  },
+  creative_approved: {
+    label: "อนุมัติครีเอทีฟ",
     className: DESIGN_SYSTEM.badges.success,
   },
   rejected: {

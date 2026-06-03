@@ -3,7 +3,7 @@
 import { getDbClient, requireOwner } from '@/lib/owner-context'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { Post, PostMetadata } from '@/types'
+import { PostMetadata } from '@/types'
 import { decrypt } from '@/lib/encryption'
 import OpenAI from 'openai'
 
@@ -26,6 +26,8 @@ const CreativeReviewSchema = z.object({
   approveCreative: z.boolean().optional()
 })
 
+const ImageCountSchema = z.union([z.literal(1), z.literal(2), z.literal(3)])
+
 const PLACEHOLDER_IMAGE_URL = 'https://placehold.co/1200x630/faf8f5/1e1d1b?text=Creative+Placeholder'
 
 function countApproxWords(text: string): number {
@@ -37,6 +39,34 @@ function countApproxWords(text: string): number {
 
   const nonWhitespaceChars = normalized.replace(/\s/g, '').length
   return Math.max(1, Math.round(nonWhitespaceChars / 5))
+}
+
+function getImageSize(platformFormat?: string) {
+  if (platformFormat === 'instagram_4_5') return '1024x1536'
+  if (platformFormat === 'facebook_post') return '1536x1024'
+  return '1024x1024'
+}
+
+function buildImagePrompt(metadata: PostMetadata, imageRules?: string | null) {
+  const platformFormat = metadata.platform_format || 'facebook_post'
+  return [
+    'Create a polished social media image for a professional content post.',
+    `Platform format: ${platformFormat.replace(/_/g, ' ')}.`,
+    `Topic: ${metadata.topic || metadata.title}.`,
+    `Caption context: ${metadata.caption?.slice(0, 900) || metadata.title}.`,
+    imageRules ? `Brand image rules: ${imageRules}` : 'Visual style: clean, professional, trustworthy, business-friendly.',
+    'Avoid small unreadable text. Do not include legal claims not present in the caption.'
+  ].join('\n')
+}
+
+function placeholderOption(index: number, prompt: string, warning?: string): NonNullable<PostMetadata['image_options']>[number] {
+  return {
+    id: `placeholder-${Date.now()}-${index}`,
+    url: `https://placehold.co/1024x1024/EBE7E0/1E1D1B?text=Image+Option+${index}`,
+    source: 'placeholder',
+    prompt,
+    warning: warning || 'OpenAI image generation fallback placeholder.'
+  }
 }
 
 export async function getPosts(status?: string) {
@@ -127,7 +157,12 @@ export async function updatePost(input: z.infer<typeof UpdatePostSchema>) {
     caption: validated.caption,
     hashtags: validated.hashtags,
     actual_word_count: countApproxWords(validated.caption),
-    creative_status: (post.metadata as { platform_format?: string })?.platform_format === 'text_only' ? 'not_required' : 'needs_review'
+    creative_status: (post.metadata as { platform_format?: string })?.platform_format === 'text_only' ? 'not_required' : 'pending',
+    image_options: [],
+    selected_image: null,
+    selected_image_url: undefined,
+    image_url: null,
+    image_source: null
   }
 
   const { error: updateError } = await supabase
@@ -159,15 +194,21 @@ ${validated.hashtags}`,
 export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
   const supabase = await getDbClient()
   const user = await requireOwner()
+  const validatedCount = ImageCountSchema.parse(count)
 
   // 1. Get Post and Brand
   const { data: post, error: postError } = await supabase
     .from('content_posts')
-    .select('metadata')
+    .select('status, metadata')
     .eq('id', postId)
     .eq('user_id', user.id)
     .single()
   if (postError || !post) throw new Error('Post not found.')
+
+  const currentStatus = String(post.status)
+  if (!['text_approved', 'images_ready'].includes(currentStatus)) {
+    throw new Error('Images can only be generated after text approval.')
+  }
 
   const { data: brand, error: brandError } = await supabase
     .from('brands')
@@ -176,12 +217,26 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
     .single()
   if (brandError || !brand) throw new Error('Brand profile not found.')
 
-  // 2. Set status to 'generating'
   const initialMetadata = post.metadata as PostMetadata
+  if (initialMetadata.platform_format === 'text_only') {
+    throw new Error('Text-only posts do not require image generation.')
+  }
+
+  // 2. Set status to images_pending while generation runs.
   await supabase
     .from('content_posts')
     .update({
-      metadata: { ...initialMetadata, creative_status: 'generating' },
+      status: 'images_pending',
+      metadata: {
+        ...initialMetadata,
+        creative_status: 'generating',
+        image_count: validatedCount,
+        image_options: [],
+        selected_image: null,
+        selected_image_url: undefined,
+        image_url: null,
+        image_source: null
+      },
       updated_at: new Date().toISOString()
     })
     .eq('id', postId)
@@ -198,33 +253,32 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
   const apiKey = decrypt(integration.encrypted_value)
   const openai = new OpenAI({ apiKey })
 
-  // 4. Generate prompt and images
-  const imagePrompt = `Digital art, ${brand.image_rules || ''}. The content is about: ${initialMetadata.topic || initialMetadata.title}.`
+  // 4. Generate prompt and images.
+  const imagePrompt = buildImagePrompt(initialMetadata, brand.image_rules)
   const imageOptions: PostMetadata['image_options'] = []
 
-  for (let i = 0; i < count; i++) {
+  for (let i = 0; i < validatedCount; i++) {
     try {
       const response = await openai.images.generate({
-        model: 'dall-e-3',
+        model: 'gpt-image-1-mini',
         prompt: imagePrompt,
         n: 1,
-        quality: 'standard',
-        size: '1024x1024',
-        response_format: 'url'
+        quality: 'low',
+        size: getImageSize(initialMetadata.platform_format),
+        output_format: 'webp',
+        output_compression: 80
       })
-      const url = response.data?.[0]?.url
+      const image = response.data?.[0]
+      const url = image?.b64_json ? `data:image/webp;base64,${image.b64_json}` : image?.url
       if (url) {
-        imageOptions.push({ url, source: 'openai', prompt: imagePrompt })
+        imageOptions.push({ id: `openai-${Date.now()}-${i + 1}`, url, source: 'openai', prompt: imagePrompt })
       } else {
         throw new Error('No URL returned from OpenAI')
       }
     } catch (error) {
       console.error(`OpenAI image generation failed (iteration ${i + 1}):`, error)
-      imageOptions.push({
-        url: `https://placehold.co/1024x1024/EBE7E0/1E1D1B?text=Fallback+Option+${i + 1}`,
-        source: 'placeholder',
-        prompt: 'Placeholder due to generation error.'
-      })
+      const warning = error instanceof Error ? error.message : 'OpenAI image generation failed.'
+      imageOptions.push(placeholderOption(i + 1, imagePrompt, warning))
     }
   }
 
@@ -233,37 +287,44 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
     ...initialMetadata,
     image_prompt: imagePrompt,
     image_options: imageOptions,
-    creative_status: 'review_options'
+    selected_image: null,
+    selected_image_url: undefined,
+    image_url: null,
+    image_source: null,
+    creative_status: 'images_ready'
   }
   await supabase
     .from('content_posts')
-    .update({ metadata: finalMetadata, updated_at: new Date().toISOString() })
+    .update({ status: 'images_ready', metadata: finalMetadata, updated_at: new Date().toISOString() })
     .eq('id', postId)
 
   revalidatePath('/drafts')
-  return { success: true, options: imageOptions }
+  return { success: true, options: imageOptions, metadata: finalMetadata }
 }
 
-export async function selectImageOption(postId: string, imageUrl: string) {
+export async function selectImageOption(postId: string, imageId: string) {
   const supabase = await getDbClient()
   const user = await requireOwner()
 
   const { data: post, error: fetchError } = await supabase
     .from('content_posts')
-    .select('metadata')
+    .select('status, metadata')
     .eq('id', postId)
     .eq('user_id', user.id)
     .single()
   if (fetchError || !post) throw new Error('Post not found.')
+  if (post.status !== 'images_ready') throw new Error('Image selection is only available after images are ready.')
 
   const metadata = post.metadata as PostMetadata
-  const selectedOption = metadata.image_options?.find(opt => opt.url === imageUrl)
+  const selectedOption = metadata.image_options?.find(opt => opt.id === imageId)
+  if (!selectedOption) throw new Error('Selected image option was not found.')
 
   const updatedMetadata: PostMetadata = {
     ...metadata,
-    selected_image_url: imageUrl,
-    image_url: imageUrl, // also update the main image_url
-    image_source: selectedOption?.source || 'openai'
+    selected_image: selectedOption,
+    selected_image_url: selectedOption.url,
+    image_url: selectedOption.url,
+    image_source: selectedOption.source
   }
 
   const { error } = await supabase
@@ -290,20 +351,27 @@ export async function saveCreativeReview(input: z.infer<typeof CreativeReviewSch
     .single()
 
   if (fetchError || !post) throw new Error('Post not found')
-  if (post.status !== 'approved') throw new Error('Creative review is available after text approval.')
+  if (post.status !== 'images_ready') throw new Error('Creative approval is available after images are ready.')
 
   const metadata = (post.metadata || {}) as PostMetadata
   const isTextOnly = metadata.platform_format === 'text_only'
   
   // Use selected_image_url if available, otherwise fallback to existing logic
-  const finalImageUrl = metadata.selected_image_url || (validated.usePlaceholder ? PLACEHOLDER_IMAGE_URL : validated.imageUrl || metadata.image_url || null)
+  const fallbackImageUrl = validated.usePlaceholder ? PLACEHOLDER_IMAGE_URL : validated.imageUrl || metadata.image_url || null
+  const finalImageUrl = metadata.selected_image?.url || metadata.selected_image_url || fallbackImageUrl
 
   if (!isTextOnly && validated.approveCreative && !finalImageUrl) {
-    throw new Error('An image must be generated and selected, or a placeholder used, before approving.')
+    throw new Error('Select an image before approving creative.')
   }
 
   const updatedMetadata: PostMetadata = {
     ...metadata,
+    selected_image: metadata.selected_image || (finalImageUrl ? {
+      id: 'manual-fallback',
+      url: finalImageUrl,
+      source: validated.usePlaceholder ? 'placeholder' : 'openai'
+    } : null),
+    selected_image_url: finalImageUrl || undefined,
     image_url: finalImageUrl,
     creative_status: isTextOnly ? 'not_required' : validated.approveCreative ? 'approved' : metadata.creative_status,
     // creative_reviewed_at: validated.approveCreative ? new Date().toISOString() : undefined
@@ -312,6 +380,7 @@ export async function saveCreativeReview(input: z.infer<typeof CreativeReviewSch
   const { error } = await supabase
     .from('content_posts')
     .update({
+      status: validated.approveCreative && !isTextOnly ? 'creative_approved' : post.status,
       metadata: updatedMetadata,
       updated_at: new Date().toISOString()
     })
@@ -344,15 +413,20 @@ export async function approvePost(id: string) {
   if (fetchError || !post) throw new Error('Post not found')
 
   const metadata = (post.metadata || {}) as PostMetadata
-  const creativeStatus = metadata.platform_format === 'text_only' || !metadata.platform_format ? 'not_required' : 'needs_review'
+  const creativeStatus = metadata.platform_format === 'text_only' || !metadata.platform_format ? 'not_required' : 'pending'
 
   const { error } = await supabase
     .from('content_posts')
     .update({
-      status: 'approved',
+      status: 'text_approved',
       metadata: {
         ...metadata,
-        creative_status: creativeStatus
+        creative_status: creativeStatus,
+        image_options: [],
+        selected_image: null,
+        selected_image_url: undefined,
+        image_url: null,
+        image_source: null
       },
       updated_at: new Date().toISOString()
     })
@@ -363,7 +437,7 @@ export async function approvePost(id: string) {
 
   await supabase.from('workflow_logs').insert({
     user_id: user.id,
-    action: 'draft_approved',
+    action: 'text_approved',
     status: 'completed'
   })
 
@@ -410,7 +484,7 @@ export async function approveAllDrafts() {
 
   const { error: updateError } = await supabase
     .from('content_posts')
-    .update({ status: 'approved', updated_at: new Date().toISOString() })
+    .update({ status: 'text_approved', updated_at: new Date().toISOString() })
     .in('id', ids)
 
   if (updateError) throw new Error(updateError.message)

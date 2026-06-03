@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useTransition } from 'react';
+import { useState, useEffect } from 'react';
 import { Post } from '@/types';
 import { cn } from '@/lib/utils';
 import { 
@@ -16,11 +16,12 @@ import {
   MoreHorizontal,
   ChevronDown,
   Download,
-  FileText
+  FileText,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { approvePost, rejectPost, approveAllDrafts, saveReviewBoardNote, generateImageOptions } from '@/actions/drafts';
+import { approvePost, rejectPost, saveReviewBoardNote, generateImageOptions, selectImageOption, saveCreativeReview } from '@/actions/drafts';
 import { sendPostToBuffer } from '@/actions/publish';
 import { toast } from 'sonner';
 import { EditModal } from '@/components/drafts/edit-modal';
@@ -53,7 +54,6 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [imageCount, setImageCount] = useState<1 | 2 | 3>(3);
-  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setPosts(initialPosts || []);
@@ -179,8 +179,20 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
     try {
       if (action === 'approve') {
         await approvePost(id);
-        setPosts(posts.map(p => p.id === id ? { ...p, status: 'approved' } : p));
-        toast.success(currentLanguage === 'th' ? 'อนุมัติเรียบร้อยแล้ว' : 'Approved successfully');
+        setPosts(posts.map(p => p.id === id ? {
+          ...p,
+          status: 'text_approved',
+          metadata: {
+            ...p.metadata,
+            creative_status: p.metadata?.platform_format === 'text_only' ? 'not_required' : 'pending',
+            image_options: [],
+            selected_image: null,
+            selected_image_url: undefined,
+            image_url: null,
+            image_source: null
+          }
+        } : p));
+        toast.success(currentLanguage === 'th' ? 'อนุมัติข้อความแล้ว' : 'Text approved successfully');
       } else {
         await rejectPost(id);
         setPosts(posts.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
@@ -188,6 +200,86 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
       }
     } catch {
       toast.error(currentLanguage === 'th' ? 'ไม่สามารถอัปเดตสถานะได้' : 'Failed to update status');
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function handleGenerateImages(postId: string, count: 1 | 2 | 3) {
+    setLoadingId(postId);
+    setPosts(posts.map(p => p.id === postId ? {
+      ...p,
+      status: 'images_pending',
+      metadata: {
+        ...p.metadata,
+        creative_status: 'generating',
+        image_options: [],
+        selected_image: null,
+        selected_image_url: undefined,
+        image_url: null,
+        image_source: null
+      }
+    } : p));
+
+    try {
+      const result = await generateImageOptions(postId, count);
+      setPosts(current => current.map(p => p.id === postId ? {
+        ...p,
+        status: 'images_ready',
+        metadata: {
+          ...p.metadata,
+          ...result.metadata
+        }
+      } : p));
+      const fallbackCount = result.options.filter(option => option.source === 'placeholder').length;
+      if (fallbackCount > 0) {
+        toast.warning(currentLanguage === 'th' ? `สร้างรูปภาพเสร็จ แต่มี ${fallbackCount} รูปเป็นภาพสำรอง` : `Images ready, with ${fallbackCount} placeholder fallback${fallbackCount === 1 ? '' : 's'}`);
+      } else {
+        toast.success(currentLanguage === 'th' ? 'สร้างรูปภาพเรียบร้อยแล้ว' : 'Images generated successfully');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to generate images';
+      toast.error(message);
+      setPosts(current => current.map(p => p.id === postId ? {
+        ...p,
+        status: 'text_approved',
+        metadata: {
+          ...p.metadata,
+          creative_status: 'pending'
+        }
+      } : p));
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function handleSelectImage(postId: string, imageId: string) {
+    setLoadingId(postId);
+    try {
+      const result = await selectImageOption(postId, imageId);
+      setPosts(posts.map(p => p.id === postId ? { ...p, metadata: { ...p.metadata, ...result.metadata } } : p));
+      toast.success(currentLanguage === 'th' ? 'เลือกรูปภาพแล้ว' : 'Image selected');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to select image';
+      toast.error(message);
+    } finally {
+      setLoadingId(null);
+    }
+  }
+
+  async function handleApproveCreative(postId: string) {
+    setLoadingId(postId);
+    try {
+      const result = await saveCreativeReview({ id: postId, approveCreative: true });
+      setPosts(posts.map(p => p.id === postId ? {
+        ...p,
+        status: 'creative_approved',
+        metadata: { ...p.metadata, ...result.metadata }
+      } : p));
+      toast.success(currentLanguage === 'th' ? 'อนุมัติครีเอทีฟแล้ว' : 'Creative approved');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to approve creative';
+      toast.error(message);
     } finally {
       setLoadingId(null);
     }
@@ -208,14 +300,22 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   }
 
   const draftPosts = posts.filter((p) => p.status === 'draft');
-  const inReviewPosts: Post[] = [];
-  const approvedPosts = posts.filter((p) => p.status === 'approved');
+  const textApprovedPosts = posts.filter((p) => ['text_approved', 'images_pending', 'images_ready'].includes(String(p.status)));
+  const creativeApprovedPosts = posts.filter((p) => p.status === 'creative_approved');
+  const approvedPosts = [...textApprovedPosts, ...creativeApprovedPosts];
   const publishedPosts = posts.filter((p) => p.status === 'published');
 
   const renderCard = (post: Post, isPublished = false) => {
     const meta = post.metadata || {};
     const isSelected = selectedIds.has(post.id);
     const publishedAt = meta.published_at || post.updated_at;
+    const status = String(post.status);
+    const platformFormat = meta.platform_format || 'text_only';
+    const isTextOnly = platformFormat === 'text_only';
+    const canGenerateImages = !isTextOnly && ['text_approved', 'images_ready'].includes(status);
+    const isGeneratingImages = status === 'images_pending' || (loadingId === post.id && meta.creative_status === 'generating');
+    const canPublish = (isTextOnly && status === 'text_approved') || status === 'creative_approved';
+    const selectedImageId = meta.selected_image?.id;
     return (
       <div 
         key={post.id}
@@ -255,6 +355,17 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           <span className="text-[#7C756C] capitalize truncate max-w-[80px]">{meta.platform || 'LinkedIn'}</span>
         </div>
 
+        <div className="flex flex-wrap gap-1.5 text-[9px] font-bold text-[#7C756C]">
+          <span className="rounded bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.5">
+            {platformFormat.replace(/_/g, ' ')}
+          </span>
+          {meta.requested_word_count && (
+            <span className="rounded bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.5">
+              {meta.actual_word_count || 0}/{meta.requested_word_count} words
+            </span>
+          )}
+        </div>
+
         {/* Published date rendering */}
         {isPublished && (
           <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#967F5C] bg-[#FAF8F5] p-1.5 rounded-lg border border-[#E6DFD5]/50">
@@ -271,28 +382,57 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           </div>
         )}
 
-        {/* Ready for publish indicator if approved */}
-        {post.status === 'approved' && !isPublished && (
+        {!isPublished && status !== 'draft' && (
           <div className="flex items-center gap-1.5 text-[9px] font-bold text-emerald-700 bg-emerald-50 p-1.5 rounded-lg border border-emerald-100">
             <Check className="w-3 h-3" />
-            <span>{currentLanguage === 'th' ? 'พร้อมสำหรับเผยแพร่' : 'Ready for publish'}</span>
+            <span>
+              {status === 'text_approved' && isTextOnly
+                ? (currentLanguage === 'th' ? 'ข้อความอนุมัติแล้ว - พร้อมเผยแพร่' : 'Text approved - ready to publish')
+                : status === 'text_approved'
+                  ? (currentLanguage === 'th' ? 'ข้อความอนุมัติแล้ว - รอสร้างรูปภาพ' : 'Text approved - images required')
+                  : status === 'images_pending'
+                    ? (currentLanguage === 'th' ? 'กำลังสร้างรูปภาพ' : 'Generating images')
+                    : status === 'images_ready'
+                      ? (currentLanguage === 'th' ? 'เลือกรูปภาพและอนุมัติครีเอทีฟ' : 'Select image and approve creative')
+                      : status === 'creative_approved'
+                        ? (currentLanguage === 'th' ? 'ครีเอทีฟอนุมัติแล้ว - พร้อมเผยแพร่' : 'Creative approved - ready to publish')
+                        : (currentLanguage === 'th' ? 'พร้อมสำหรับขั้นตอนถัดไป' : 'Ready for next step')}
+            </span>
           </div>
         )}
 
-        {post.status === 'approved' && (
-          <div className="mt-2 space-y-2 rounded-lg border border-[#E6DFD5] bg-[#FAF8F5] p-2">
-            <div className="flex h-16 items-center justify-center rounded-md border border-dashed border-[#D6CEC1] bg-white text-[10px] font-bold text-[#7C756C]">
-              Creative Review
-            </div>
+        {!isTextOnly && ['text_approved', 'images_pending', 'images_ready', 'creative_approved'].includes(status) && (
+          <div
+            className="mt-2 space-y-3 rounded-lg border border-[#E6DFD5] bg-[#FAF8F5] p-2"
+            onClick={(event) => event.stopPropagation()}
+          >
+            {meta.selected_image?.url ? (
+              <div className="space-y-1">
+                <img src={meta.selected_image.url} alt="Selected creative" className="h-28 w-full rounded-md border border-[#E6DFD5] bg-white object-cover" />
+                <div className="text-[9px] font-bold uppercase tracking-wide text-emerald-700">
+                  {currentLanguage === 'th' ? 'รูปที่เลือกแล้ว' : 'Selected image'}
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-16 items-center justify-center rounded-md border border-dashed border-[#D6CEC1] bg-white text-[10px] font-bold text-[#7C756C]">
+                <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
+                {isGeneratingImages
+                  ? (currentLanguage === 'th' ? 'กำลังสร้างรูปภาพ...' : 'Generating images...')
+                  : (currentLanguage === 'th' ? 'ยังไม่ได้เลือกรูปภาพ' : 'No image selected')}
+              </div>
+            )}
+
             <div className="flex items-center justify-between text-[10px] font-bold">
               <span>Options:</span>
               <div className="flex gap-1 rounded-md bg-white border border-[#E6DFD5] p-0.5">
                 {[1, 2, 3].map(c => (
                   <button
                     key={c}
+                    type="button"
+                    disabled={isGeneratingImages}
                     onClick={() => setImageCount(c as 1 | 2 | 3)}
                     className={cn(
-                      "w-6 h-5 rounded transition-all",
+                      "w-6 h-5 rounded transition-all disabled:opacity-50",
                       imageCount === c ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'
                     )}
                   >
@@ -301,22 +441,61 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
                 ))}
               </div>
             </div>
+
             <Button
-              disabled={isPending}
-              onClick={() => startTransition(async () => {
-                toast.info('Generating images...');
-                try {
-                  await generateImageOptions(post.id, imageCount);
-                  toast.success('Images generated! Refreshing...');
-                  // The backend uses revalidatePath, so we don't need to manually update state here.
-                } catch (e) {
-                  toast.error((e as Error).message);
-                }
-              })}
+              type="button"
+              disabled={!canGenerateImages || isGeneratingImages || loadingId === post.id}
+              onClick={() => handleGenerateImages(post.id, imageCount)}
               className="h-8 w-full rounded-md bg-slate-800 text-[10px] font-bold text-white hover:bg-slate-900 disabled:bg-slate-400"
             >
-              {isPending ? 'Generating...' : 'Generate Images'}
+              {isGeneratingImages
+                ? (currentLanguage === 'th' ? 'กำลังสร้าง...' : 'Generating...')
+                : meta.image_options?.length
+                  ? (currentLanguage === 'th' ? `สร้างใหม่ ${imageCount} รูป` : `Regenerate ${imageCount}`)
+                  : (currentLanguage === 'th' ? `สร้าง ${imageCount} รูป` : `Generate ${imageCount} image${imageCount === 1 ? '' : 's'}`)}
             </Button>
+
+            {meta.image_options && meta.image_options.length > 0 && (
+              <div className="grid grid-cols-3 gap-1.5">
+                {meta.image_options.map((option, index) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => handleSelectImage(post.id, option.id)}
+                    disabled={loadingId === post.id || status !== 'images_ready'}
+                    className={cn(
+                      "overflow-hidden rounded-md border bg-white text-left transition-all disabled:opacity-60",
+                      selectedImageId === option.id ? 'border-emerald-600 ring-1 ring-emerald-500' : 'border-[#E6DFD5] hover:border-[#967F5C]'
+                    )}
+                    title={option.warning || option.prompt}
+                  >
+                    <img src={option.url} alt={`Image option ${index + 1}`} className="h-16 w-full object-cover" />
+                    <span className="block px-1 py-0.5 text-[8px] font-bold uppercase text-[#7C756C]">
+                      {option.source === 'placeholder' ? 'Fallback' : `Option ${index + 1}`}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {meta.image_options?.some(option => option.source === 'placeholder') && (
+              <p className="text-[9px] font-semibold text-amber-700">
+                {currentLanguage === 'th'
+                  ? 'มีรูปภาพสำรองเนื่องจาก OpenAI สร้างภาพไม่สำเร็จบางรายการ'
+                  : 'Some placeholder fallbacks were used because OpenAI image generation failed.'}
+              </p>
+            )}
+
+            {status === 'images_ready' && (
+              <Button
+                type="button"
+                disabled={!meta.selected_image || loadingId === post.id}
+                onClick={() => handleApproveCreative(post.id)}
+                className="h-8 w-full rounded-md bg-emerald-600 text-[10px] font-bold text-white hover:bg-emerald-700 disabled:bg-emerald-300"
+              >
+                {currentLanguage === 'th' ? 'อนุมัติครีเอทีฟ' : 'Approve Creative'}
+              </Button>
+            )}
           </div>
         )}
 
@@ -345,7 +524,7 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
               {currentLanguage === 'th' ? 'อนุมัติ' : 'Approve'}
             </Button>
           )}
-          {post.status === 'approved' && (
+          {canPublish && (
             <Button
               type="button"
               size="sm"
@@ -475,16 +654,18 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
           </div>
 
-          {/* Column 2: IN REVIEW */}
+          {/* Column 2: TEXT APPROVED / IMAGE REVIEW */}
           <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.inReview')}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">
+                {currentLanguage === 'th' ? 'อนุมัติข้อความ / รูปภาพ' : 'Text + Images'}
+              </span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
-                {inReviewPosts.length}
+                {textApprovedPosts.length}
               </span>
             </div>
             <div className="space-y-3">
-              {inReviewPosts.map(post => renderCard(post))}
+              {textApprovedPosts.map(post => renderCard(post))}
               <Button 
                 variant="outline" 
                 className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
@@ -494,16 +675,18 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
           </div>
 
-          {/* Column 3: APPROVED */}
+          {/* Column 3: CREATIVE APPROVED */}
           <div className="bg-[#F3EFEA]/40 dark:bg-slate-900/40 border border-[#E6DFD5] dark:border-slate-800 rounded-xl p-3.5 space-y-3.5 min-h-[500px] w-[280px] min-w-[280px] md:w-[320px] md:min-w-[320px] max-w-[320px] flex-shrink-0 snap-start">
             <div className="flex items-center justify-between pb-1 border-b border-[#E6DFD5] dark:border-slate-800">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">{t('board.column.approved')}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0]">
+                {currentLanguage === 'th' ? 'อนุมัติครีเอทีฟ' : 'Creative Approved'}
+              </span>
               <span className="text-[9px] font-bold bg-[#FAF8F5] border border-[#E6DFD5] px-1.5 py-0.2 rounded-full text-[#7C756C]">
-                {approvedPosts.length}
+                {creativeApprovedPosts.length}
               </span>
             </div>
             <div className="space-y-3">
-              {approvedPosts.map(post => renderCard(post))}
+              {creativeApprovedPosts.map(post => renderCard(post))}
               <Button 
                 variant="outline" 
                 className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"

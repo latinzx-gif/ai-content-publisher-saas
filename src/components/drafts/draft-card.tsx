@@ -141,7 +141,7 @@ export function DraftCard({ post, onPreview, onEdit, hasBufferKey }: DraftCardPr
           <Edit2 className="w-3.5 h-3.5 mr-1.5" /> แก้ไข
         </Button>
         
-        {(post.status === 'approved' || post.status === 'failed') ? (
+        {(post.status === 'creative_approved' || (post.status === 'text_approved' && metadata.platform_format === 'text_only') || post.status === 'failed') ? (
           <Button 
             size="sm" 
             className="col-span-2 bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-100 rounded-lg font-bold h-10 transition-all hover:scale-[1.02]" 

@@ -56,14 +56,28 @@ export function DashboardClient({
   const [customAudience, setCustomAudience] = useState('');
 
   const snapshotPosts = posts.slice(0, 4);
-  const upcomingQueue = posts.filter((post) => post.status === 'approved').slice(0, 3);
+  const upcomingQueue = posts.filter((post) => post.status === 'text_approved' || post.status === 'creative_approved').slice(0, 3);
 
   const getStatusView = (status: string) => {
-    if (status === 'approved') {
+    if (status === 'text_approved') {
       return {
-        label: 'Approved',
+        label: 'Text Approved',
+        milestone: 'Creative Review',
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+      };
+    }
+    if (status === 'creative_approved') {
+      return {
+        label: 'Creative Approved',
         milestone: 'Publish Queue',
         badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+      };
+    }
+    if (status === 'images_pending' || status === 'images_ready') {
+      return {
+        label: status === 'images_pending' ? 'Images Pending' : 'Images Ready',
+        milestone: 'Creative Review',
+        badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
       };
     }
     if (status === 'published') {

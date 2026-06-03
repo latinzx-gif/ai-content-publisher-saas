@@ -20,8 +20,13 @@ export async function sendPostToBuffer(postId: string) {
     .single()
 
   if (postError || !post) throw new Error('Post not found')
-  if (post.status !== 'approved' && post.status !== 'failed') {
-    throw new Error('Only approved or failed posts can be published.')
+  const metadata = post.metadata as PostMetadata
+  const isTextOnly = !metadata.platform_format || metadata.platform_format === 'text_only'
+  const canPublishTextOnly = isTextOnly && post.status === 'text_approved'
+  const canPublishCreative = post.status === 'creative_approved'
+  const canRetryFailed = post.status === 'failed' && (isTextOnly || metadata.creative_status === 'approved')
+  if (!canPublishTextOnly && !canPublishCreative && !canRetryFailed) {
+    throw new Error('Publish is available only after text approval for text-only posts or creative approval for image-format posts.')
   }
 
   // 2. Get Buffer integration
@@ -37,12 +42,6 @@ export async function sendPostToBuffer(postId: string) {
   }
 
   const accessToken = decrypt(integration.encrypted_value)
-  const metadata = post.metadata as PostMetadata
-  const isTextOnly = !metadata.platform_format || metadata.platform_format === 'text_only'
-  const isCreativeApproved = metadata.creative_status === 'approved'
-  if (!isTextOnly && !isCreativeApproved) {
-    throw new Error('Creative review must be approved before publishing image-format posts.')
-  }
 
   const adapter = getPublishingAdapter('buffer')
 
@@ -118,9 +117,9 @@ export async function sendApprovedPostsToBuffer() {
 
     const { data: posts, error: fetchError } = await supabase
         .from('content_posts')
-        .select('id')
+        .select('id, metadata')
         .eq('user_id', user.id)
-        .eq('status', 'approved')
+        .in('status', ['text_approved', 'creative_approved'])
 
     if (fetchError) throw new Error(fetchError.message)
     if (!posts.length) return { success: true, count: 0 }
@@ -129,6 +128,10 @@ export async function sendApprovedPostsToBuffer() {
     let failCount = 0
 
     for (const post of posts) {
+        const metadata = post.metadata as PostMetadata
+        const isTextOnly = !metadata.platform_format || metadata.platform_format === 'text_only'
+        if (!isTextOnly && metadata.creative_status !== 'approved') continue
+
         try {
             await sendPostToBuffer(post.id)
             successCount++
