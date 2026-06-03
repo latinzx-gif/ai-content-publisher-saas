@@ -4,6 +4,7 @@ export type PostStatus =
   | 'images_pending'
   | 'images_ready'
   | 'creative_approved'
+  | 'scheduled'
   | 'published'
   | 'failed'
   | 'rejected'
@@ -48,6 +49,8 @@ export interface PostMetadata {
   external_url?: string
   last_error?: string
   published_at?: string
+  buffer_due_at?: string
+  language?: string
 }
 
 export interface Post {

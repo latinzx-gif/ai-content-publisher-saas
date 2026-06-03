@@ -24,6 +24,10 @@ const statusConfig: Record<PostStatus, { label: string; className: string }> = {
     label: "อนุมัติครีเอทีฟ",
     className: DESIGN_SYSTEM.badges.success,
   },
+  scheduled: {
+    label: "กำหนดเวลา",
+    className: DESIGN_SYSTEM.badges.info,
+  },
   rejected: {
     label: "ปฏิเสธ",
     className: DESIGN_SYSTEM.badges.error,
