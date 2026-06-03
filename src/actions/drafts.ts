@@ -69,6 +69,40 @@ function placeholderOption(index: number, prompt: string, warning?: string): Non
   }
 }
 
+/**
+ * Upload a base64-encoded image to Supabase Storage and return the public HTTPS URL.
+ * Uses the admin client (via getDbClient()) which has storage access in single-owner mode.
+ */
+async function uploadToStorage(
+  base64Data: string,
+  userId: string,
+  postId: string,
+  index: number
+): Promise<string> {
+  const supabase = await getDbClient()
+
+  // Strip data URI prefix if present (e.g. "data:image/webp;base64,...")
+  const base64 = base64Data.replace(/^data:image\/\w+;base64,/, '')
+  const buffer = Buffer.from(base64, 'base64')
+
+  const filename = `${userId}/${postId}/${Date.now()}_${index}.webp`
+
+  const { error: uploadError } = await supabase.storage
+    .from('post-images')
+    .upload(filename, buffer, {
+      contentType: 'image/webp',
+      upsert: false,
+    })
+
+  if (uploadError) throw new Error(`Storage upload failed: ${uploadError.message}`)
+
+  const { data: { publicUrl } } = supabase.storage
+    .from('post-images')
+    .getPublicUrl(filename)
+
+  return publicUrl
+}
+
 export async function getPosts(status?: string) {
   const supabase = await getDbClient()
   const user = await requireOwner()
@@ -269,7 +303,13 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
         output_compression: 80
       })
       const image = response.data?.[0]
-      const url = image?.b64_json ? `data:image/webp;base64,${image.b64_json}` : image?.url
+      let url: string | null = null
+      if (image?.b64_json) {
+        // Upload base64 to Supabase Storage and use the public HTTPS URL
+        url = await uploadToStorage(image.b64_json, user.id, postId, i + 1)
+      } else if (image?.url) {
+        url = image.url
+      }
       if (url) {
         imageOptions.push({ id: `openai-${Date.now()}-${i + 1}`, url, source: 'openai', prompt: imagePrompt })
       } else {
