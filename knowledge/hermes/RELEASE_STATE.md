@@ -12,11 +12,12 @@ Source: PROJECT_PLAN.md, WORKFLOW_MASTER.md, MILESTONE1_FINAL_VERIFICATION.md, F
 | Field | Value |
 | --- | --- |
 | Project | AI Content Publisher SaaS |
-| Version | Milestone 1 (MVP) |
-| Current Sprint | Day 7-8 (June 3-5, 2026) |
-| Target Release | 2026-06-05 |
+| Version | V1.0.0 (MVP) |
+| Current Sprint | — (V1.0 Released) |
+| Target Release | 2026-06-05 (shipped) |
 | Release Type | MVP — First client delivery |
 | Hermes OS Version | 1.1 (Research + Verification agents added to pipeline) |
+| Next Release | V1.1 — Planning phase (see V1_1_EXECUTION_PLAN.md) |
 
 ---
 
