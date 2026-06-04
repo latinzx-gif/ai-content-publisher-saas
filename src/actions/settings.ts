@@ -24,6 +24,7 @@ const BrandProfileSchema = z.object({
   brand_instructions: z.string().max(3000).optional().default(''),
   content_rules: z.string().max(3000).optional().default(''),
   image_rules: z.string().max(3000).optional().default(''),
+  template_key: z.enum(['legal-professional', 'accounting-professional']).optional().default('legal-professional'),
   reference_images: z.array(ReferenceImageSchema).max(5).optional().default([]),
 })
 

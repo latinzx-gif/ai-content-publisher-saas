@@ -25,6 +25,7 @@ interface BrandProfileFormProps {
     brand_instructions?: string | null
     content_rules?: string | null
     image_rules?: string | null
+    template_key?: string | null
     reference_images?: ReferenceImage[] | null
   } | null
 }
@@ -56,6 +57,11 @@ const PERSONALITY_OPTIONS = [
   { value: 'เน้นขาย', label: 'เน้นขาย (Sales-focused)' },
 ]
 
+const TEMPLATE_OPTIONS = [
+  { value: 'legal-professional', label: 'กฎหมายวิชาชีพ (Legal Professional) — Gold / Navy / Serif' },
+  { value: 'accounting-professional', label: 'บัญชีวิชาชีพ (Accounting Professional) — Green / White / Sans-serif' },
+]
+
 export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
   const router = useRouter()
   const { t } = useLanguage()
@@ -70,6 +76,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
     brand_instructions: initialData?.brand_instructions || '',
     content_rules: initialData?.content_rules || '',
     image_rules: initialData?.image_rules || '',
+    template_key: (initialData?.template_key || 'legal-professional') as 'legal-professional' | 'accounting-professional',
     reference_images: initialData?.reference_images || [],
   })
 
@@ -251,6 +258,33 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Template Theme Selector — V1.3 Dual Template System */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="template_key" className="text-sm font-bold text-gray-700">Template Theme (โทนภาพ)</Label>
+                <p className="text-xs text-gray-500">Choose the visual theme for generated images. Affects colors, fonts, and iconography.</p>
+                <Select
+                  value={formData.template_key}
+                  onValueChange={(val: string | null) => {
+                    if (val && (val === 'legal-professional' || val === 'accounting-professional')) {
+                      setFormData({ ...formData, template_key: val as 'legal-professional' | 'accounting-professional' })
+                    }
+                  }}
+                >
+                  <SelectTrigger id="template_key" className="h-11 rounded-xl border-gray-200">
+                    <SelectValue placeholder="Select a template theme" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TEMPLATE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 

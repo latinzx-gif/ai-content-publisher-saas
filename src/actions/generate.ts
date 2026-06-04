@@ -95,7 +95,7 @@ async function fetchUrlContent(url: string): Promise<string> {
 
 async function summarizeSources(apiKey: string, rawTexts: string[], language: ContentLanguage): Promise<string> {
   const combined = rawTexts.join('\n\n--- SOURCE BUNDLE ---\n\n');
-  const openai = new OpenAI({ apiKey });
+  const openai = new OpenAI({ apiKey, timeout: 45_000, maxRetries: 1 });
   const response = await openai.chat.completions.create({
     model: 'gpt-4o',
     messages: [
@@ -108,6 +108,32 @@ async function summarizeSources(apiKey: string, rawTexts: string[], language: Co
     temperature: 0.3
   });
   return response.choices[0].message.content || '';
+}
+
+function getGenerationErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error || '')
+
+  if (/api key|invalid_api_key|401/i.test(message)) {
+    return 'OpenAI API key is missing or invalid. Update the key in Settings and try again.'
+  }
+
+  if (/quota|rate limit|429|billing/i.test(message)) {
+    return 'OpenAI is rate limited or out of quota. Check OpenAI billing/usage, then try again.'
+  }
+
+  if (/timeout|timed out|AbortError|ETIMEDOUT/i.test(message)) {
+    return 'OpenAI request timed out. Try fewer posts, fewer URLs, or shorter source material.'
+  }
+
+  if (/context_length|maximum context|too long/i.test(message)) {
+    return 'The request is too large. Remove some URL/source material or generate fewer posts.'
+  }
+
+  if (/AI output format is invalid/i.test(message)) {
+    return message
+  }
+
+  return 'Content generation failed. Check OpenAI connection in Settings, then try again.'
 }
 
 export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) {
@@ -156,7 +182,12 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
 
   let summarizedContext = ''
   if (fetchedContents.length > 0) {
-    summarizedContext = await summarizeSources(apiKey, fetchedContents, validated.language)
+    try {
+      summarizedContext = await summarizeSources(apiKey, fetchedContents, validated.language)
+    } catch (error) {
+      console.error('OpenAI source summary failed:', error)
+      return { success: false, error: getGenerationErrorMessage(error) }
+    }
   }
 
   // 5. Construct Prompt
@@ -193,8 +224,7 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
 
   // 6. Call OpenAI
   const result = await callOpenAI(apiKey, prompt).catch(error => {
-    const message = error instanceof Error ? error.message : 'Failed to generate content'
-    return { error: message }
+    return { error: getGenerationErrorMessage(error) }
   })
 
   if ('error' in result) {
