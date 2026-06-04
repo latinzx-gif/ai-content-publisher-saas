@@ -4,33 +4,45 @@ import { useState, useEffect } from 'react';
 import { Post } from '@/types';
 import { cn } from '@/lib/utils';
 import { 
-  Search, 
-  Filter, 
-  ChevronRight, 
-  Edit2, 
   Check, 
-  X, 
   Send, 
   Calendar as CalendarIcon,
-  MessageSquare,
   MoreHorizontal,
-  ChevronDown,
   Download,
   FileText,
   Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { approvePost, rejectPost, saveReviewBoardNote, generateImageOptions, selectImageOption, saveCreativeReview } from '@/actions/drafts';
 import { sendPostToBuffer } from '@/actions/publish';
 import { toast } from 'sonner';
 import { EditModal } from '@/components/drafts/edit-modal';
 import { useLanguage } from '@/components/providers/language-provider';
+import Link from 'next/link';
 
 interface DraftsListProps {
   initialPosts: Post[];
   hasBufferKey: boolean;
   initialBoardNote?: string;
+}
+
+function toActionableToast(error: unknown, fallback: string) {
+  const message = error instanceof Error ? error.message : String(error || '')
+
+  if (/OpenAI|api key|quota|rate limit|billing|timed out|timeout/i.test(message)) {
+    return message
+  }
+
+  if (/Buffer|Facebook channel|publish/i.test(message)) {
+    return message
+  }
+
+  if (/Storage|post-images|bucket/i.test(message)) {
+    return 'Image could not be saved. Check Supabase Storage setup for the post-images bucket.'
+  }
+
+  return fallback
 }
 
 export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }: DraftsListProps) {
@@ -52,7 +64,6 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   const [platformFilter, setPlatformFilter] = useState('All');
   const [languageFilter, setLanguageFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [priorityFilter, setPriorityFilter] = useState('All');
   const [imageCount, setImageCount] = useState<1 | 2 | 3>(3);
 
   useEffect(() => {
@@ -198,8 +209,8 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
         setPosts(posts.map(p => p.id === id ? { ...p, status: 'rejected' } : p));
         toast.success(currentLanguage === 'th' ? 'ปฏิเสธเรียบร้อยแล้ว' : 'Rejected successfully');
       }
-    } catch {
-      toast.error(currentLanguage === 'th' ? 'ไม่สามารถอัปเดตสถานะได้' : 'Failed to update status');
+    } catch (error) {
+      toast.error(toActionableToast(error, currentLanguage === 'th' ? 'ไม่สามารถอัปเดตสถานะได้' : 'Failed to update status'));
     } finally {
       setLoadingId(null);
     }
@@ -233,12 +244,16 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
       } : p));
       const fallbackCount = result.options.filter(option => option.source === 'placeholder').length;
       if (fallbackCount > 0) {
-        toast.warning(currentLanguage === 'th' ? `สร้างรูปภาพเสร็จ แต่มี ${fallbackCount} รูปเป็นภาพสำรอง` : `Images ready, with ${fallbackCount} placeholder fallback${fallbackCount === 1 ? '' : 's'}`);
+        toast.warning(
+          currentLanguage === 'th'
+            ? `สร้างรูปภาพเสร็จ แต่มี ${fallbackCount} รูปเป็นภาพสำรอง กรุณาตรวจ OpenAI key/billing ก่อนสร้างใหม่`
+            : `Images ready, with ${fallbackCount} fallback${fallbackCount === 1 ? '' : 's'}. Check OpenAI key/billing before regenerating.`
+        );
       } else {
         toast.success(currentLanguage === 'th' ? 'สร้างรูปภาพเรียบร้อยแล้ว' : 'Images generated successfully');
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to generate images';
+      const message = toActionableToast(error, currentLanguage === 'th' ? 'สร้างรูปภาพไม่สำเร็จ' : 'Failed to generate images');
       toast.error(message);
       setPosts(current => current.map(p => p.id === postId ? {
         ...p,
@@ -260,7 +275,7 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
       setPosts(posts.map(p => p.id === postId ? { ...p, metadata: { ...p.metadata, ...result.metadata } } : p));
       toast.success(currentLanguage === 'th' ? 'เลือกรูปภาพแล้ว' : 'Image selected');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to select image';
+      const message = toActionableToast(error, currentLanguage === 'th' ? 'เลือกรูปภาพไม่สำเร็จ' : 'Failed to select image');
       toast.error(message);
     } finally {
       setLoadingId(null);
@@ -278,7 +293,7 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
       } : p));
       toast.success(currentLanguage === 'th' ? 'อนุมัติครีเอทีฟแล้ว' : 'Creative approved');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to approve creative';
+      const message = toActionableToast(error, currentLanguage === 'th' ? 'อนุมัติครีเอทีฟไม่สำเร็จ' : 'Failed to approve creative');
       toast.error(message);
     } finally {
       setLoadingId(null);
@@ -289,21 +304,64 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
     setPublishing(true);
     try {
       const result = await sendPostToBuffer(id);
+      if (!result.success) {
+        toast.error(result.error || (currentLanguage === 'th' ? 'การเผยแพร่ล้มเหลว' : 'Failed to publish'));
+        return;
+      }
       setPosts(posts.map(p => p.id === id ? { ...p, status: 'published' } : p));
       toast.success(currentLanguage === 'th' ? 'ส่งไปยัง Buffer สำเร็จแล้ว!' : 'Dispatched to Buffer successfully!');
       if (result.externalUrl) window.open(result.externalUrl, '_blank');
-    } catch {
-      toast.error(currentLanguage === 'th' ? 'การเผยแพร่ล้มเหลว' : 'Failed to publish');
+    } catch (error) {
+      const message = toActionableToast(error, currentLanguage === 'th' ? 'การเผยแพร่ล้มเหลว' : 'Failed to publish');
+      toast.error(message);
     } finally {
       setPublishing(false);
     }
   }
 
-  const draftPosts = posts.filter((p) => p.status === 'draft');
-  const textApprovedPosts = posts.filter((p) => ['text_approved', 'images_pending', 'images_ready'].includes(String(p.status)));
-  const creativeApprovedPosts = posts.filter((p) => p.status === 'creative_approved');
+  const uniqueValues = (values: Array<string | undefined | null>) => Array.from(new Set(
+    values.map((value) => String(value || '').trim()).filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b));
+
+  const topicOptions = uniqueValues(posts.map((post) => post.metadata?.topic || post.metadata?.angle_type));
+  const platformOptions = uniqueValues(posts.map((post) => post.metadata?.platform));
+  const languageOptions = uniqueValues(posts.flatMap((post) => [post.metadata?.language, post.metadata?.secondary_language]));
+  const statusOptions = uniqueValues(posts.map((post) => String(post.status)));
+
+  const filteredPosts = posts.filter((post) => {
+    const meta = post.metadata || {};
+    const topic = meta.topic || meta.angle_type || '';
+    const platform = meta.platform || '';
+    const languages = [meta.language, meta.secondary_language].filter(Boolean).map(String);
+
+    return (
+      (campaignFilter === 'All' || topic === campaignFilter) &&
+      (platformFilter === 'All' || platform === platformFilter) &&
+      (languageFilter === 'All' || languages.includes(languageFilter)) &&
+      (statusFilter === 'All' || String(post.status) === statusFilter)
+    );
+  });
+
+  const draftPosts = filteredPosts.filter((p) => p.status === 'draft');
+  const textApprovedPosts = filteredPosts.filter((p) => ['text_approved', 'images_pending', 'images_ready'].includes(String(p.status)));
+  const creativeApprovedPosts = filteredPosts.filter((p) => p.status === 'creative_approved');
   const approvedPosts = [...textApprovedPosts, ...creativeApprovedPosts];
-  const publishedPosts = posts.filter((p) => p.status === 'published');
+  const publishedPosts = filteredPosts.filter((p) => p.status === 'published');
+
+  const renderColumnEmpty = (title: string, description: string, href?: string, action?: string) => (
+    <div className="rounded-lg border border-dashed border-[#D6CEC1] bg-white/70 p-4 text-center">
+      <p className="text-[11px] font-black text-[#1E1D1B]">{title}</p>
+      <p className="mt-1 text-[10px] font-semibold leading-relaxed text-[#7C756C]">{description}</p>
+      {href && action && (
+        <Link
+          href={href}
+          className="mt-3 inline-flex h-7 items-center rounded-md bg-[#1E1D1B] px-3 text-[9px] font-black uppercase tracking-wider text-white hover:bg-[#2D2A26]"
+        >
+          {action}
+        </Link>
+      )}
+    </div>
+  );
 
   const renderCard = (post: Post, isPublished = false) => {
     const meta = post.metadata || {};
@@ -499,12 +557,25 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           </div>
         )}
 
-        {/* Checklist Dots (Legal, Accounting, Brand) */}
+        {/* Draft context tags */}
         <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
-          <div className="flex items-center gap-2.5 text-[9px] font-semibold text-[#7C756C]">
-            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {currentLanguage === 'th' ? 'กฎหมาย' : 'Legal'}</span>
-            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> {currentLanguage === 'th' ? 'บัญชี' : 'Accounting'}</span>
-            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> {currentLanguage === 'th' ? 'แบรนด์' : 'Brand'}</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-2.5 text-[9px] font-semibold text-[#7C756C]">
+            {meta.topic && (
+              <span className="flex min-w-0 items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span className="max-w-[110px] truncate">{meta.topic}</span>
+              </span>
+            )}
+            {meta.audience && (
+              <span className="flex min-w-0 items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                <span className="max-w-[110px] truncate">{meta.audience}</span>
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              {currentLanguage === 'th' ? 'แบรนด์' : 'Brand'}
+            </span>
           </div>
         </div>
 
@@ -540,6 +611,11 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </Button>
           )}
         </div>
+        {canPublish && !hasBufferKey && (
+          <p className="text-[9px] font-semibold text-amber-700">
+            {currentLanguage === 'th' ? 'เชื่อมต่อ Buffer ใน Settings ก่อนเผยแพร่' : 'Connect Buffer in Settings before publishing.'}
+          </p>
+        )}
       </div>
     );
   };
@@ -571,20 +647,26 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
       {/* Filters Row */}
       <div className="flex flex-wrap items-center gap-3.5 bg-white dark:bg-slate-900 border border-[#E6DFD5] dark:border-slate-800 p-3 rounded-xl text-xs shadow-[0_2px_6px_rgba(30,29,27,0.01)] text-left">
         {[
-          { label: 'Campaign', val: campaignFilter, set: setCampaignFilter },
-          { label: 'Platform', val: platformFilter, set: setPlatformFilter },
-          { label: 'Language', val: languageFilter, set: setLanguageFilter },
-          { label: 'Status', val: statusFilter, set: setStatusFilter },
-          { label: 'Priority', val: priorityFilter, set: setPriorityFilter }
+          { label: 'Campaign', val: campaignFilter, set: setCampaignFilter, options: topicOptions },
+          { label: 'Platform', val: platformFilter, set: setPlatformFilter, options: platformOptions },
+          { label: 'Language', val: languageFilter, set: setLanguageFilter, options: languageOptions },
+          { label: 'Status', val: statusFilter, set: setStatusFilter, options: statusOptions }
         ].map((f) => (
           <div key={f.label} className="flex flex-col gap-1 min-w-[100px]">
             <span className="text-[9px] uppercase tracking-wider font-bold text-[#7C756C]">{getFilterLabel(f.label)}</span>
-            <div className="h-8 border border-[#E6DFD5] rounded px-2 flex items-center justify-between cursor-pointer hover:bg-slate-50/50">
-              <span className="font-semibold text-[11px]">
-                {f.val === 'All' ? (currentLanguage === 'th' ? 'ทั้งหมด' : 'All') : f.val}
-              </span>
-              <ChevronDown className="w-3 h-3 text-[#7C756C]" />
-            </div>
+            <Select value={f.val} onValueChange={(value) => {
+              if (value) f.set(value);
+            }}>
+              <SelectTrigger className="h-8 rounded border-[#E6DFD5] bg-white px-2 text-[11px] font-semibold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">{currentLanguage === 'th' ? 'ทั้งหมด' : 'All'}</SelectItem>
+                {f.options.map((option) => (
+                  <SelectItem key={option} value={option}>{option.replace(/_/g, ' ')}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         ))}
         
@@ -619,11 +701,23 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
           <span className="pb-2 text-[10px] font-semibold text-[#7C756C]">
             {selectedIds.size > 0
               ? (currentLanguage === 'th' ? `เลือก ${selectedIds.size}` : `${selectedIds.size} selected`)
-              : (currentLanguage === 'th' ? `ใช้อนุมัติแล้ว ${approvedPosts.length}` : `${approvedPosts.length} approved fallback`)}
+              : (currentLanguage === 'th' ? `มีโพสต์อนุมัติ ${approvedPosts.length}` : `${approvedPosts.length} approved posts available`)}
           </span>
-          <Button variant="outline" className="h-8 text-[10px] font-bold border-[#E6DFD5]">
-            {t('board.filters.more')}
-          </Button>
+          {(campaignFilter !== 'All' || platformFilter !== 'All' || languageFilter !== 'All' || statusFilter !== 'All') && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setCampaignFilter('All');
+                setPlatformFilter('All');
+                setLanguageFilter('All');
+                setStatusFilter('All');
+              }}
+              className="h-8 text-[10px] font-bold border-[#E6DFD5]"
+            >
+              {currentLanguage === 'th' ? 'ล้างตัวกรอง' : 'Clear filters'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -645,12 +739,12 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
             <div className="space-y-3">
               {draftPosts.map(post => renderCard(post))}
-              <Button 
-                variant="outline" 
-                className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
-              >
-                {t('board.action.add')}
-              </Button>
+              {draftPosts.length === 0 && renderColumnEmpty(
+                currentLanguage === 'th' ? 'ยังไม่มีแบบร่าง' : 'No drafts yet',
+                currentLanguage === 'th' ? 'สร้างโพสต์แรกจาก Content Generator เพื่อเริ่มกระบวนการตรวจสอบ' : 'Generate your first post to start the review workflow.',
+                '/generate',
+                currentLanguage === 'th' ? 'สร้างโพสต์' : 'Generate'
+              )}
             </div>
           </div>
 
@@ -666,12 +760,10 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
             <div className="space-y-3">
               {textApprovedPosts.map(post => renderCard(post))}
-              <Button 
-                variant="outline" 
-                className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
-              >
-                {t('board.action.add')}
-              </Button>
+              {textApprovedPosts.length === 0 && renderColumnEmpty(
+                currentLanguage === 'th' ? 'รออนุมัติข้อความ' : 'Waiting for text approval',
+                currentLanguage === 'th' ? 'อนุมัติแบบร่างแล้วโพสต์จะย้ายมาที่ขั้นตอนสร้างรูปภาพ' : 'Approve a draft and it will move here for image review.',
+              )}
             </div>
           </div>
 
@@ -687,12 +779,10 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
             <div className="space-y-3">
               {creativeApprovedPosts.map(post => renderCard(post))}
-              <Button 
-                variant="outline" 
-                className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
-              >
-                {t('board.action.add')}
-              </Button>
+              {creativeApprovedPosts.length === 0 && renderColumnEmpty(
+                currentLanguage === 'th' ? 'ยังไม่มีครีเอทีฟที่อนุมัติ' : 'No approved creatives',
+                currentLanguage === 'th' ? 'เลือกภาพและอนุมัติครีเอทีฟก่อนส่งไปเผยแพร่' : 'Select an image and approve creative before publishing.',
+              )}
             </div>
           </div>
 
@@ -706,12 +796,12 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
             </div>
             <div className="space-y-3">
               {publishedPosts.map(post => renderCard(post, true))}
-              <Button 
-                variant="outline" 
-                className="w-full text-center border-dashed border-[#E6DFD5] text-[10px] font-bold h-9 hover:bg-white rounded-lg"
-              >
-                {t('board.action.add')}
-              </Button>
+              {publishedPosts.length === 0 && renderColumnEmpty(
+                currentLanguage === 'th' ? 'ยังไม่มีโพสต์เผยแพร่' : 'No published posts',
+                currentLanguage === 'th' ? 'เชื่อมต่อ Buffer แล้วเผยแพร่โพสต์ที่อนุมัติจากบอร์ดนี้' : 'Connect Buffer and publish approved posts from this board.',
+                hasBufferKey ? undefined : '/settings',
+                hasBufferKey ? undefined : (currentLanguage === 'th' ? 'ตั้งค่า Buffer' : 'Set up Buffer')
+              )}
             </div>
           </div>
 

@@ -21,7 +21,8 @@ import {
   Laptop,
   Smartphone,
   X,
-  CheckCircle2
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { useLanguage } from '@/components/providers/language-provider';
 import { useRouter } from 'next/navigation';
@@ -45,6 +46,7 @@ interface GenerateFormProps {
     brand_instructions?: string | null;
     content_rules?: string | null;
     image_rules?: string | null;
+    template_key?: string | null;
   } | null;
   hasOpenAIKey: boolean;
 }
@@ -115,6 +117,19 @@ const PLATFORM_FORMATS: Array<{ value: PlatformFormat; label: string; descriptio
   { value: 'instagram_square', label: 'Instagram Square', description: 'Square feed creative' },
 ];
 
+const TEMPLATE_DISPLAY: Record<string, { label: string; tone: string; dot: string }> = {
+  'legal-professional': {
+    label: 'Legal Professional',
+    tone: 'Navy / Gold / Formal',
+    dot: 'bg-[#C6A15B]',
+  },
+  'accounting-professional': {
+    label: 'Accounting Professional',
+    tone: 'Green / White / Clear',
+    dot: 'bg-emerald-600',
+  },
+};
+
 const CONTENT_TEMPLATES = [
   {
     id: 'labour-law',
@@ -141,7 +156,7 @@ const CONTENT_TEMPLATES = [
   {
     id: 'service-biz-qa',
     title: 'Service Business Q&A',
-    desc: 'Client interview mock',
+    desc: 'Client question format',
     topic: 'Service Business Marketing',
     audience: 'SME Owners',
     tone: 'Friendly',
@@ -162,17 +177,56 @@ const CONTENT_TEMPLATES = [
   }
 ];
 
+function getInitials(name?: string | null) {
+  const cleaned = (name || '').trim();
+  if (!cleaned) return 'AI';
+
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  const firstTwo = parts.length > 1 ? [parts[0], parts[1]] : [cleaned.slice(0, 2)];
+  return firstTwo
+    .map((part) => part.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function normalizeGenerationToast(message?: string) {
+  const text = message || '';
+
+  if (/brand profile/i.test(text)) {
+    return 'Complete Brand Profile before generating content.';
+  }
+
+  if (/api key|OpenAI/i.test(text)) {
+    return text;
+  }
+
+  if (/timeout|timed out/i.test(text)) {
+    return 'Generation timed out. Try fewer posts, fewer URLs, or shorter source material.';
+  }
+
+  return text || 'Content generation failed. Check Settings and try again.';
+}
+
 export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) {
   const { currentLanguage } = useLanguage();
   const router = useRouter();
+  const brandInitials = getInitials(initialBrand?.name);
+  const activeBrandTemplate = TEMPLATE_DISPLAY[initialBrand?.template_key || 'legal-professional'] || TEMPLATE_DISPLAY['legal-professional'];
+  const hasBrandProfile = Boolean(
+    initialBrand?.name &&
+    initialBrand?.business_type &&
+    initialBrand?.target_audience &&
+    initialBrand?.tone &&
+    initialBrand?.personality
+  );
 
   // Workspace Level States
-  const [activeTab, setActiveTab] = useState<'manual' | 'quick'>('manual');
-  const [manualSettings, setManualSettings] = useState(true);
-  const [showManual, setShowManual] = useState(true);
+  const [activeTab, setActiveTab] = useState<'manual' | 'quick'>('quick');
+  const [showManual, setShowManual] = useState(false);
 
   // Form Field States
-  const [topicPreset, setTopicPreset] = useState<string>('PDPA Compliance Tips');
+  const [topicPreset, setTopicPreset] = useState<string>('Service Business Marketing');
   const [customTopic, setCustomTopic] = useState<string>('');
   const [showCustomTopicInput, setShowCustomTopicInput] = useState(false);
 
@@ -203,7 +257,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   const [customFormat, setCustomFormat] = useState<string>('');
   const [showCustomFormat, setShowCustomFormat] = useState(false);
 
-  const [hashtags, setHashtags] = useState<string[]>(['compliance', 'lawupdate', 'legalinsights']);
+  const [hashtags, setHashtags] = useState<string[]>(['compliance', 'business', 'advisory']);
   const [hashtagInput, setHashtagInput] = useState<string>('');
 
   const [urls, setUrls] = useState<string[]>([]);
@@ -272,6 +326,18 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   };
 
   async function handleSubmit() {
+    if (loading) return;
+
+    if (!hasBrandProfile) {
+      toast.error(currentLanguage === 'th' ? 'กรุณาตั้งค่า Brand Profile ก่อนสร้างคอนเทนต์' : 'Complete Brand Profile before generating content.');
+      return;
+    }
+
+    if (!hasOpenAIKey) {
+      toast.error(currentLanguage === 'th' ? 'กรุณาเพิ่ม OpenAI API key ใน Settings ก่อนสร้างคอนเทนต์' : 'Add an OpenAI API key in Settings before generating content.');
+      return;
+    }
+
     const finalTopic = topicPreset === 'custom' ? customTopic : topicPreset;
     if (!finalTopic.trim()) {
       toast.error(currentLanguage === 'th' ? 'กรุณาระบุหัวข้อคอนเทนต์' : 'Please enter a content topic');
@@ -320,7 +386,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       });
 
       if (!result.success) {
-        toast.error(result.error);
+        toast.error(normalizeGenerationToast(result.error));
         return;
       }
 
@@ -337,18 +403,21 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       }, 2000);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Error generating content';
-      toast.error(message);
+      toast.error(normalizeGenerationToast(message));
     } finally {
       clearInterval(intervalId);
       setLoading(false);
     }
   }
 
-  // Pre-filled dynamic preview texts matching mockup
   const activePost = generatedPosts[0] || null;
-  const previewTextPrimary = activePost?.caption || "กฎหมายคุ้มครองข้อมูลส่วนบุคคล (PDPA) ไม่ใช่ข้อบังคับ แต่คือความไว้วางใจที่ลูกค้ามีให้กับองค์กรของคุณ การปฏิบัติตามอย่างถูกต้อง คือการสร้างมาตรฐานที่ดีและลดความเสี่ยงในระยะยาว";
+  const previewTextPrimary = activePost?.caption || (
+    currentLanguage === 'th'
+      ? 'ตัวอย่างโพสต์ที่สร้างแล้วจะแสดงที่นี่หลังจากกด Generate'
+      : 'Generated content preview will appear here after generation.'
+  );
   const previewTextSecondary = bothLanguages && !activePost?.caption 
-    ? "PDPA is more than a regulation—it's the trust your customers place in your organization. Proper compliance builds a sustainable standard and reduces long-term risk." 
+    ? "" 
     : "";
 
   const previewHashtags = activePost?.hashtags || (hashtags.map(t => `#${t}`).join(' '));
@@ -365,7 +434,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             <span>/</span>
             <span>Content Operations</span>
             <span>/</span>
-            <span className="text-slate-800 font-bold">Editor Canvas</span>
+            <span className="text-slate-800 font-bold">Content Generator</span>
           </div>
           <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
             <div className="flex gap-2">
@@ -373,9 +442,8 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               <span className="text-slate-800 underline">EN</span>
             </div>
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
-              OS
+              {brandInitials}
             </div>
-            <span className="cursor-pointer hover:text-slate-850">SIGN OUT</span>
           </div>
         </div>
 
@@ -383,7 +451,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
           <div>
             <h1 className="text-3xl font-heading font-black tracking-tight text-slate-900 uppercase">
-              Editor Canvas
+              Content Generator
             </h1>
           </div>
 
@@ -392,16 +460,24 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             {/* Mode tabs */}
             <div className="flex bg-[#FAF8F5] border border-[#E6DFD5] rounded-xl p-1">
               <button
-                onClick={() => setActiveTab('manual')}
+                type="button"
+                onClick={() => {
+                  setActiveTab('manual');
+                  setShowManual(true);
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                   activeTab === 'manual' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
                 )}
               >
-                Manual
+                Advanced
               </button>
               <button
-                onClick={() => setActiveTab('quick')}
+                type="button"
+                onClick={() => {
+                  setActiveTab('quick');
+                  setShowManual(false);
+                }}
                 className={cn(
                   "px-4 py-1.5 rounded-lg text-xs font-bold transition-all",
                   activeTab === 'quick' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-600"
@@ -411,39 +487,23 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </button>
             </div>
 
-            {/* Toggle Manual Settings Switch */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-550">Manual settings:</span>
-              <button
-                onClick={() => setManualSettings(!manualSettings)}
-                className={cn(
-                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  manualSettings ? "bg-emerald-600" : "bg-slate-200"
-                )}
-              >
-                <span
-                  className={cn(
-                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                    manualSettings ? "translate-x-4" : "translate-x-0"
-                  )}
-                />
-              </button>
-              <span className="text-xs font-black uppercase text-slate-400">{manualSettings ? 'On' : 'Off'}</span>
-            </div>
-
             {/* Close/Open manual details */}
             <button
-              onClick={() => setShowManual(!showManual)}
+              type="button"
+              onClick={() => {
+                setShowManual(!showManual);
+                setActiveTab(showManual ? 'quick' : 'manual');
+              }}
               className="flex items-center gap-1.5 bg-[#FAF8F5] border border-[#E6DFD5] px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-[#FAF8F5]/80 transition-all shrink-0"
             >
               {showManual ? (
                 <>
-                  <span>Close Manual</span>
+                  <span>Quick View</span>
                   <X className="w-3.5 h-3.5" />
                 </>
               ) : (
                 <>
-                  <span>Open Manual</span>
+                  <span>Advanced Controls</span>
                   <Plus className="w-3.5 h-3.5" />
                 </>
               )}
@@ -451,9 +511,13 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
           </div>
         </div>
 
-        {showManual && (
+        {!showManual ? (
           <p className="text-xs font-medium text-slate-450 pt-1">
-            Manual precision for complete control over your content output.
+            Quick Mode uses your Brand Profile, active template, and recommended defaults. Open Advanced Controls for platform, audience, tone, URLs, hashtags, and word count.
+          </p>
+        ) : (
+          <p className="text-xs font-medium text-slate-450 pt-1">
+            Advanced controls for complete precision over platform, audience, tone, sources, hashtags, and output length.
           </p>
         )}
       </div>
@@ -478,21 +542,31 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#FAF8F5] border border-[#E6DFD5] flex items-center justify-center font-serif text-slate-900 font-bold text-sm">
-                    OS
+                    {brandInitials}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-xs text-slate-950 truncate">
-                      {initialBrand?.name || "Your Workspace Brand"}
-                    </p>
-                    <p className="text-[10px] text-slate-450 font-medium">
-                      {initialBrand?.business_type || "Legal. Trusted. Precise."}
-                    </p>
+	                    <p className="font-bold text-xs text-slate-950 truncate">
+	                      {initialBrand?.name || "Brand Profile not configured"}
+	                    </p>
+	                    <p className="text-[10px] text-slate-450 font-medium">
+	                      {initialBrand?.business_type || "Set up the business type before generating"}
+	                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-[#FAF8F5] px-3 py-2">
+                  <div>
+                    <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Active Template</span>
+                    <span className="text-[11px] font-bold text-slate-850">{activeBrandTemplate.label}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                    <span className={cn("h-2.5 w-2.5 rounded-full", activeBrandTemplate.dot)} />
+                    {activeBrandTemplate.tone}
                   </div>
                 </div>
                 
-                <div className="pt-3 border-t border-slate-50 text-[11px] text-slate-500 font-medium">
-                  Voice: <span className="text-slate-850 font-bold">Professional • Formal • Clear</span>
-                </div>
+	                <div className="pt-3 border-t border-slate-50 text-[11px] text-slate-500 font-medium">
+	                  Voice: <span className="text-slate-850 font-bold">{initialBrand?.tone || 'Not set'} / {initialBrand?.personality || 'Not set'}</span>
+	                </div>
               </div>
             </div>
 
@@ -501,10 +575,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Content Templates</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View all →</span>
-              </div>
+	                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Quick Presets</span>
+	                </div>
+	              </div>
 
               <div className="space-y-3.5">
                 {CONTENT_TEMPLATES.map((tmpl) => (
@@ -532,49 +605,34 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                     </div>
                   </button>
                 ))}
-                
-                <div className="pt-2 border-t border-slate-50">
-                  <span className="text-[10px] font-bold text-slate-400 hover:text-[#967F5C] cursor-pointer">
-                    Browse all templates →
-                  </span>
-                </div>
-              </div>
-            </div>
+	              </div>
+	            </div>
 
-            {/* Active Content Angles */}
-            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Active Content Angles</span>
-                </div>
-                <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">Manage →</span>
-              </div>
+	            {/* Brand guidance */}
+	            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+	              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+	                <div className="flex items-center gap-2">
+	                  <div className="w-1.5 h-1.5 rounded-full bg-[#967F5C]" />
+	                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-800">Brand Guidance</span>
+	                </div>
+	              </div>
 
-              <div className="flex flex-wrap gap-1.5">
-                {['Educate & Convert', 'Myth Busting', 'Compliance Alert', 'Interactive Q&A'].map((angle, idx) => (
-                  <span key={idx} className="text-[9.5px] font-bold text-slate-550 bg-slate-50 border border-slate-150 px-2 py-0.5 rounded-md">
-                    {angle}
-                  </span>
-                ))}
-              </div>
+	              <div className="flex flex-wrap gap-1.5">
+	                {[initialBrand?.target_audience, initialBrand?.tone, initialBrand?.personality].filter(Boolean).map((angle, idx) => (
+	                  <span key={idx} className="text-[9.5px] font-bold text-slate-550 bg-slate-50 border border-slate-150 px-2 py-0.5 rounded-md">
+	                    {angle}
+	                  </span>
+	                ))}
+	              </div>
 
-              <div className="pt-3 border-t border-slate-50 space-y-2">
-                <span className="block text-[9px] uppercase tracking-wider font-bold text-slate-400">Suggested Angle</span>
-                <div className="p-3 bg-[#FAF8F5] border border-slate-200/60 rounded-xl text-left space-y-1.5">
-                  <h4 className="font-bold text-xs text-slate-900 leading-tight">Q2 Compliance Series</h4>
-                  <p className="text-[10px] text-slate-400 font-semibold leading-tight">Increase awareness and trust</p>
-                  <button
-                    onClick={() => {
-                      setTopicPreset('PDPA Compliance Tips');
-                      setCustomTopic('Q2 Compliance Series: Data Privacy Auditing');
-                    }}
-                    className="text-[10px] font-bold text-[#967F5C] hover:underline mt-1.5 block"
-                  >
-                    Use this angle →
-                  </button>
-                </div>
-              </div>
+	              <div className="pt-3 border-t border-slate-50 space-y-2">
+	                <span className="block text-[9px] uppercase tracking-wider font-bold text-slate-400">Current Rules</span>
+	                <div className="p-3 bg-[#FAF8F5] border border-slate-200/60 rounded-xl text-left space-y-1.5">
+	                  <p className="text-[10px] text-slate-500 font-semibold leading-snug">
+	                    {initialBrand?.content_rules || initialBrand?.brand_instructions || 'No saved brand rules yet.'}
+	                  </p>
+	                </div>
+	              </div>
             </div>
 
           </div>
@@ -592,22 +650,22 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             {/* SAVED CONTENT RULES */}
             <div className="bg-white border border-[#E6DFD5] rounded-2xl p-4 flex justify-between items-center shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
               <div className="space-y-1.5">
-                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Content Rules</span>
-                <p className="text-xs font-bold text-slate-800">Labor Law • Legal & Compliance Pros</p>
-                <span className="block text-[9px] text-slate-400 font-semibold">Updated 2 days ago</span>
-              </div>
-              <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View →</span>
-            </div>
+	                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Content Rules</span>
+	                <p className="text-xs font-bold text-slate-800">
+	                  {initialBrand?.content_rules ? 'Configured in Brand Profile' : 'No content rules saved'}
+	                </p>
+	              </div>
+	            </div>
 
             {/* SAVED IMAGE RULES */}
             <div className="bg-white border border-[#E6DFD5] rounded-2xl p-4 flex justify-between items-center shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
               <div className="space-y-1.5">
-                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Image Rules</span>
-                <p className="text-xs font-bold text-slate-800">Professional • Minimal • Ivory Palette</p>
-                <span className="block text-[9px] text-slate-400 font-semibold">Updated 2 days ago</span>
-              </div>
-              <span className="text-[10px] font-bold text-[#967F5C] cursor-pointer hover:underline">View →</span>
-            </div>
+	                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Image Rules</span>
+	                <p className="text-xs font-bold text-slate-800">
+	                  {initialBrand?.image_rules ? 'Configured in Brand Profile' : 'No image rules saved'}
+	                </p>
+	              </div>
+	            </div>
 
           </div>
 
@@ -716,6 +774,8 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </div>
             </div>
 
+            {showManual && (
+            <>
             {/* 3. OUTPUT MODE */}
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">3. Output Mode</label>
@@ -1149,10 +1209,12 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 </div>
               </div>
             </div>
+            </>
+            )}
 
             {/* 12. NOTES / CONSTRAINTS (OPTIONAL) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">12. Number of Posts</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '12.' : '3.'} Number of Posts</label>
               <div className="grid grid-cols-4 gap-2">
                 {POST_COUNT_OPTIONS.map((count) => (
                   <button
@@ -1177,7 +1239,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 13. NOTES / CONSTRAINTS (OPTIONAL) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">13. Notes / Constraints (Optional)</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '13.' : '4.'} Notes / Constraints (Optional)</label>
               <textarea 
                 value={manualContext}
                 onChange={(e) => setManualContext(e.target.value)}
@@ -1187,13 +1249,33 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               />
             </div>
 
-            {/* Submit Action Button */}
-            <div className="pt-2">
-              <Button
-                onClick={handleSubmit}
-                disabled={loading || !hasOpenAIKey}
-                className="w-full bg-[#0B1E33] hover:bg-[#071322] text-white font-black text-xs h-11 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md uppercase tracking-wider"
-              >
+	            {/* Submit Action Button */}
+	            <div className="pt-2">
+	              {(!hasBrandProfile || !hasOpenAIKey) && (
+	                <div className="mb-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-[11px] font-semibold text-amber-800">
+	                  <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+	                  <div className="space-y-1">
+	                    {!hasBrandProfile && (
+	                      <p>
+	                        {currentLanguage === 'th' ? 'ต้องตั้งค่า Brand Profile ก่อนสร้างคอนเทนต์' : 'Complete Brand Profile before generating content.'}{' '}
+	                        <Link href="/profile" className="underline">Profile</Link>
+	                      </p>
+	                    )}
+	                    {!hasOpenAIKey && (
+	                      <p>
+	                        {currentLanguage === 'th' ? 'ต้องเพิ่ม OpenAI API key ก่อนสร้างคอนเทนต์' : 'Add an OpenAI API key before generating content.'}{' '}
+	                        <Link href="/settings" className="underline">Settings</Link>
+	                      </p>
+	                    )}
+	                  </div>
+	                </div>
+	              )}
+	              <Button
+	                type="button"
+	                onClick={handleSubmit}
+	                disabled={loading || !hasOpenAIKey || !hasBrandProfile}
+	                className="w-full bg-[#0B1E33] hover:bg-[#071322] text-white font-black text-xs h-11 px-8 rounded-xl flex items-center justify-center gap-2 shadow-md uppercase tracking-wider"
+	              >
                 {loading ? (
                   <>
                     <span className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -1281,8 +1363,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 Platform Preview Feed
               </span>
               <div className="flex gap-2 bg-[#FAF8F5] border border-slate-150 rounded-lg p-0.5">
-                <button
-                  onClick={() => setPreviewDevice('desktop')}
+	                <button
+	                  type="button"
+	                  onClick={() => setPreviewDevice('desktop')}
                   className={cn(
                     "p-1 rounded transition-colors",
                     previewDevice === 'desktop' ? "bg-white shadow-xs text-slate-800" : "text-slate-400"
@@ -1290,8 +1373,9 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 >
                   <Laptop className="w-3.5 h-3.5" />
                 </button>
-                <button
-                  onClick={() => setPreviewDevice('mobile')}
+	                <button
+	                  type="button"
+	                  onClick={() => setPreviewDevice('mobile')}
                   className={cn(
                     "p-1 rounded transition-colors",
                     previewDevice === 'mobile' ? "bg-white shadow-xs text-slate-800" : "text-slate-400"
@@ -1302,19 +1386,19 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               </div>
             </div>
 
-            {/* Social Post Mockup Card */}
+	            {/* Social post preview */}
             <div className={cn(
               "border border-slate-200/80 rounded-2xl p-4 bg-white shadow-[0_2px_10px_rgba(15,23,42,0.01)] text-left space-y-3.5 transition-all",
               previewDevice === 'mobile' ? "max-w-[290px] mx-auto" : "w-full"
             )}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-slate-200 flex items-center justify-center font-serif font-bold text-xs text-slate-800">
-                    OS
-                  </div>
+	                  <div className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-slate-200 flex items-center justify-center font-serif font-bold text-xs text-slate-800">
+	                    {brandInitials}
+	                  </div>
                   <div>
                     <h5 className="text-[11px] font-bold text-slate-900 leading-tight">
-                      {initialBrand?.name || "Your Workspace Brand"}
+	                      {initialBrand?.name || "Brand Profile"}
                     </h5>
                     <div className="flex items-center gap-1.5 text-[9px] text-slate-400 font-semibold mt-0.5">
                       <span>2m</span>

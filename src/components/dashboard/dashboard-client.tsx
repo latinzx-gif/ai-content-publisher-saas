@@ -3,20 +3,11 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
-  Plus, 
-  Settings, 
-  Check, 
   MoreHorizontal,
   ChevronRight,
-  Shield,
-  Heart,
-  Globe,
-  MessageSquare,
-  ThumbsUp,
-  Share2
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Post } from '@/types';
 import { useLanguage } from '@/components/providers/language-provider';
 
@@ -42,13 +33,26 @@ interface DashboardClientProps {
   posts: Post[];
 }
 
+function getInitials(name?: string | null) {
+  const cleaned = (name || '').trim();
+  if (!cleaned) return 'AI';
+
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  const firstTwo = parts.length > 1 ? [parts[0], parts[1]] : [cleaned.slice(0, 2)];
+  return firstTwo
+    .map((part) => part.charAt(0))
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export function DashboardClient({ 
-  userEmail, 
   stats, 
   brandData,
   posts
 }: DashboardClientProps) {
   const { t, currentLanguage } = useLanguage();
+  const brandInitials = getInitials(brandData?.name);
   
   // Smart Input Pattern State
   const [audiencePreset, setAudiencePreset] = useState('General Business');
@@ -182,7 +186,7 @@ export function DashboardClient({
                         <td className="p-4 font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-10 rounded-lg border border-[#E6DFD5] dark:border-slate-800 shrink-0 bg-[#FAF8F5] dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-[#7C756C]">
-                              OS
+                              {brandInitials}
                             </div>
                             <div className="min-w-0">
                               <p className="font-bold line-clamp-1 text-xs">{meta.title || post.content.split('\n')[0] || 'Untitled Draft'}</p>
@@ -205,7 +209,7 @@ export function DashboardClient({
                         <td className="p-4 font-semibold text-[#7C756C]">{statusView.milestone}</td>
                         <td className="p-4 text-center">
                           <div className="w-6 h-6 rounded-full bg-[#EBE6DF] dark:bg-slate-800 text-[#1E1D1B] dark:text-[#EBE7E0] flex items-center justify-center font-bold text-[10px] mx-auto">
-                            OS
+                            {brandInitials}
                           </div>
                         </td>
                         <td className="p-4 text-center">
@@ -215,8 +219,25 @@ export function DashboardClient({
                       );
                     }) : (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-xs font-semibold text-[#7C756C] dark:text-slate-400">
-                          No content posts yet.
+                        <td colSpan={6} className="p-8 text-center">
+                          <div className="mx-auto max-w-sm space-y-3">
+                            <p className="text-sm font-black text-[#1E1D1B] dark:text-[#EBE7E0]">
+                              {currentLanguage === 'th' ? 'ยังไม่มีโพสต์ในระบบ' : 'No content posts yet'}
+                            </p>
+                            <p className="text-xs font-semibold leading-relaxed text-[#7C756C] dark:text-slate-400">
+                              {currentLanguage === 'th'
+                                ? 'เริ่มจากการตั้งค่า Brand Profile หรือสร้างโพสต์แรกด้วย Content Generator'
+                                : 'Start by completing Brand Profile or generate your first draft.'}
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-2">
+                              <Link href="/profile" className="inline-flex h-8 items-center rounded-lg border border-[#E6DFD5] px-3 text-[10px] font-black uppercase tracking-wider text-[#1E1D1B] hover:bg-[#FAF8F5]">
+                                {currentLanguage === 'th' ? 'ตั้งค่าแบรนด์' : 'Brand Profile'}
+                              </Link>
+                              <Link href="/generate" className="inline-flex h-8 items-center rounded-lg bg-[#1E1D1B] px-3 text-[10px] font-black uppercase tracking-wider text-white hover:bg-[#2D2A26]">
+                                {currentLanguage === 'th' ? 'สร้างโพสต์' : 'Generate'}
+                              </Link>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -283,12 +304,12 @@ export function DashboardClient({
               </div>
 
               <div className="flex justify-end pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
-                <Button 
-                  onClick={() => {}}
-                  className="bg-[#1E1D1B] hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:hover:bg-white text-white dark:text-[#1E1D1B] font-bold text-xs px-5 py-2.5 h-10 rounded-lg shadow-sm flex items-center gap-1.5"
+                <Link
+                  href="/generate"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#1E1D1B] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:text-[#1E1D1B] dark:hover:bg-white"
                 >
-                  {t('deck.smartInput.apply')} <ChevronRight className="w-3.5 h-3.5" />
-                </Button>
+                  {currentLanguage === 'th' ? 'เปิดตัวสร้างคอนเทนต์' : 'Open Generator'} <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
 
@@ -302,14 +323,14 @@ export function DashboardClient({
               <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold block">{t('deck.sidebar.brandContext')}</span>
               <div className="flex items-center gap-3.5 pt-1">
                 <div className="w-10 h-10 rounded-full bg-[#F3EFEA] dark:bg-slate-800 flex items-center justify-center font-serif text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
-                  OS
+                  {brandInitials}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-xs text-[#1E1D1B] dark:text-[#EBE7E0] truncate">
-                    {brandData?.name || (currentLanguage === 'th' ? 'แบรนด์ในพื้นที่ทำงานของคุณ' : 'Your Workspace Brand')}
+                    {brandData?.name || (currentLanguage === 'th' ? 'ยังไม่ได้ตั้งค่า Brand Profile' : 'Brand Profile not configured')}
                   </h4>
                   <p className="text-[10px] text-[#7C756C] mt-0.5 truncate uppercase tracking-wider">
-                    {brandData?.personality || "Legal. Trusted. Precise."}
+                    {brandData?.personality || (currentLanguage === 'th' ? 'ตั้งค่า tone และ personality ก่อนใช้งานจริง' : 'Set tone and personality before generating')}
                   </p>
                 </div>
               </div>
@@ -345,7 +366,6 @@ export function DashboardClient({
             <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-5 space-y-4 shadow-[0_2px_8px_rgba(30,29,27,0.02)]">
               <div className="flex justify-between items-center">
                 <span className="text-[9px] uppercase tracking-widest text-[#7C756C] font-bold">{t('deck.sidebar.channelHealth')}</span>
-                <span className="text-[10px] font-bold text-[#967F5C] hover:underline">{t('deck.snapshot.viewAll')}</span>
               </div>
               
               <div className="space-y-4 pt-1">
@@ -367,7 +387,7 @@ export function DashboardClient({
               </div>
               
               <p className="text-[10px] text-[#7C756C] italic pt-1">
-                Live status mix from Supabase content rows.
+                Current content pipeline status from your workspace.
               </p>
             </div>
 
@@ -389,9 +409,19 @@ export function DashboardClient({
                     </div>
                   </div>
                 )) : (
-                  <p className="text-xs font-semibold text-[#7C756C]">
-                    No approved posts queued.
-                  </p>
+                  <div className="rounded-lg border border-dashed border-[#D6CEC1] bg-[#FAF8F5] p-3">
+                    <p className="text-xs font-black text-[#1E1D1B] dark:text-[#EBE7E0]">
+                      {currentLanguage === 'th' ? 'ยังไม่มีโพสต์พร้อมเผยแพร่' : 'No approved posts queued'}
+                    </p>
+                    <p className="mt-1 text-[10px] font-semibold leading-relaxed text-[#7C756C]">
+                      {currentLanguage === 'th'
+                        ? 'อนุมัติโพสต์ใน Review Board เพื่อแสดงรายการเผยแพร่ถัดไป'
+                        : 'Approve drafts in the Review Board to build the publishing queue.'}
+                    </p>
+                    <Link href="/drafts" className="mt-3 inline-flex h-7 items-center rounded-md bg-[#1E1D1B] px-3 text-[9px] font-black uppercase tracking-wider text-white hover:bg-[#2D2A26]">
+                      {currentLanguage === 'th' ? 'ไปที่บอร์ด' : 'Review Board'}
+                    </Link>
+                  </div>
                 )}
               </div>
 

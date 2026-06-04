@@ -3,11 +3,8 @@ import {
   PenLine, 
   CheckSquare, 
   Calendar as CalendarIcon, 
-  Layers, 
-  LockKeyhole,
   ShieldCheck, 
   Link2, 
-  Settings,
   type LucideIcon 
 } from 'lucide-react';
 
@@ -69,26 +66,6 @@ export const navigationConfig = {
           subtitle: 'Plan and schedule approved posts across visual slots.',
           subtitleKey: 'calendar.subtitle'
         },
-        /*
-        {
-          title: 'Asset Composer',
-          titleKey: 'nav.assetComposer',
-          href: '/asset-composer',
-          icon: Layers,
-          description: 'เครื่องมือสร้างและจัดการภาพเนื้อหา',
-          subtitle: 'Configure visual layouts and typography templates.',
-          subtitleKey: 'asset.subtitle'
-        },
-        */
-        {
-          title: 'Campaign Factory',
-          titleKey: 'nav.campaignFactory',
-          href: '/campaign-factory',
-          icon: LockKeyhole,
-          description: 'ตัวอย่างฟีเจอร์พรีเมียมสำหรับแคมเปญ 30 วัน',
-          subtitle: 'Preview automated planning, queueing, images, and scheduling.',
-          subtitleKey: 'campaignFactory.subtitle'
-        }
       ]
     },
     {
@@ -110,15 +87,6 @@ export const navigationConfig = {
           href: '/settings',
           icon: Link2,
           description: 'จัดการการเชื่อมต่อ API และช่องทางโซเชียล',
-          subtitle: 'Manage secure API key vaults for OpenAI and Buffer.',
-          subtitleKey: 'settings.subtitle'
-        },
-        {
-          title: 'Settings',
-          titleKey: 'nav.settings',
-          href: '/settings',
-          icon: Settings,
-          description: 'การจัดการตั้งค่าทั่วไป',
           subtitle: 'Manage secure API key vaults for OpenAI and Buffer.',
           subtitleKey: 'settings.subtitle'
         }

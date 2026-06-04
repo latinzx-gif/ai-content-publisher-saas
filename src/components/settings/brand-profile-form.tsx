@@ -58,8 +58,20 @@ const PERSONALITY_OPTIONS = [
 ]
 
 const TEMPLATE_OPTIONS = [
-  { value: 'legal-professional', label: 'กฎหมายวิชาชีพ (Legal Professional) — Gold / Navy / Serif' },
-  { value: 'accounting-professional', label: 'บัญชีวิชาชีพ (Accounting Professional) — Green / White / Sans-serif' },
+  {
+    value: 'legal-professional',
+    label: 'กฎหมายวิชาชีพ (Legal Professional) — Gold / Navy / Serif',
+    title: 'Legal Professional',
+    description: 'Authority-first legal theme with navy structure, gold accents, and formal editorial tone.',
+    swatches: ['#0B1E33', '#C6A15B', '#F7F2E8'],
+  },
+  {
+    value: 'accounting-professional',
+    label: 'บัญชีวิชาชีพ (Accounting Professional) — Green / White / Sans-serif',
+    title: 'Accounting Professional',
+    description: 'Clear financial advisory theme with green accents, clean spacing, and modern business tone.',
+    swatches: ['#0F5E4A', '#E8F5EF', '#FFFFFF'],
+  },
 ]
 
 export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
@@ -79,6 +91,7 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
     template_key: (initialData?.template_key || 'legal-professional') as 'legal-professional' | 'accounting-professional',
     reference_images: initialData?.reference_images || [],
   })
+  const selectedTemplate = TEMPLATE_OPTIONS.find((option) => option.value === formData.template_key) || TEMPLATE_OPTIONS[0]
 
   function handleReferenceUpload(files: FileList | null) {
     if (!files?.length) return
@@ -284,6 +297,25 @@ export function BrandProfileForm({ initialData }: BrandProfileFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.16em] text-gray-500">Active Template</p>
+                    <h3 className="text-sm font-black text-gray-950">{selectedTemplate.title}</h3>
+                    <p className="max-w-xl text-xs font-medium leading-relaxed text-gray-600">{selectedTemplate.description}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {selectedTemplate.swatches.map((color) => (
+                      <span
+                        key={color}
+                        className="h-8 w-8 rounded-full border border-black/10 shadow-sm"
+                        style={{ backgroundColor: color }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

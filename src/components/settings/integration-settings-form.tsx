@@ -181,6 +181,31 @@ export function IntegrationSettingsForm({ openaiStatus, bufferStatus }: Integrat
         title={t('settings.title')} 
         subtitle={t('settings.subtitle')}
       />
+      <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-blue-900">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-blue-600">
+              {currentLanguage === 'th' ? 'ความพร้อมก่อนเดโม' : 'Demo readiness'}
+            </p>
+            <h3 className="text-sm font-black">
+              {currentLanguage === 'th' ? 'เชื่อมต่อบริการหลักก่อนสร้างและเผยแพร่คอนเทนต์' : 'Connect core services before generating and publishing content'}
+            </h3>
+            <p className="max-w-2xl text-xs font-semibold leading-relaxed text-blue-700">
+              {currentLanguage === 'th'
+                ? 'OpenAI ใช้สำหรับสร้างข้อความและรูปภาพ ส่วน Buffer ใช้ส่งโพสต์ที่อนุมัติแล้วไปยังช่องทางเผยแพร่'
+                : 'OpenAI powers text and image generation. Buffer sends approved posts to the connected publishing channel.'}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <span className={cn("rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider", openaiStatus ? "border-green-200 bg-white text-green-700" : "border-amber-200 bg-amber-50 text-amber-700")}>
+              OpenAI {openaiStatus ? 'Ready' : 'Needed'}
+            </span>
+            <span className={cn("rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-wider", bufferStatus ? "border-green-200 bg-white text-green-700" : "border-amber-200 bg-amber-50 text-amber-700")}>
+              Buffer {bufferStatus ? 'Ready' : 'Needed'}
+            </span>
+          </div>
+        </div>
+      </div>
       <div className="grid grid-cols-1 gap-10">
         <IntegrationCard 
           provider="openai"

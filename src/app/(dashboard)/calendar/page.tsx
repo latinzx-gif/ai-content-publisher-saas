@@ -3,6 +3,7 @@ import { getDefaultOwnerId } from '@/lib/owner-context'
 import { Post, PostMetadata, PostStatus } from '@/types'
 import { Calendar as CalendarIcon, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 // ── Types ──
 interface CalendarPost {
@@ -191,7 +192,7 @@ export default async function CalendarPage() {
           Calendar & Publishing
         </h1>
         <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-          {calendarPosts.length} real posts from Supabase
+          {calendarPosts.length} posts in your publishing pipeline
         </p>
       </div>
 
@@ -213,10 +214,20 @@ export default async function CalendarPage() {
       {/* Post List Grouped by Date */}
       <div className="space-y-4">
         {sortedGroups.length === 0 && unscheduled.length === 0 && (
-          <div className="text-center py-16">
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center dark:border-slate-800 dark:bg-slate-900">
             <CalendarIcon className="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
-            <p className="text-sm text-slate-400 dark:text-slate-500 font-medium">No published or scheduled posts yet.</p>
-            <p className="text-xs text-slate-300 dark:text-slate-600 mt-1">Generate and publish content to see it here.</p>
+            <p className="text-sm font-black text-slate-900 dark:text-slate-100">No published or scheduled posts yet.</p>
+            <p className="mx-auto mt-1 max-w-sm text-xs font-semibold leading-relaxed text-slate-400 dark:text-slate-500">
+              Generate drafts, approve creative, then publish through Buffer to build this queue.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <Link href="/generate" className="inline-flex h-9 items-center rounded-lg bg-slate-900 px-4 text-[10px] font-black uppercase tracking-wider text-white hover:bg-slate-800">
+                Generate Content
+              </Link>
+              <Link href="/drafts" className="inline-flex h-9 items-center rounded-lg border border-slate-200 px-4 text-[10px] font-black uppercase tracking-wider text-slate-800 hover:bg-slate-50">
+                Review Drafts
+              </Link>
+            </div>
           </div>
         )}
 
