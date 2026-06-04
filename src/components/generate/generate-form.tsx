@@ -12,12 +12,6 @@ import {
   Sparkle,
   Plus,
   Globe,
-  MoreHorizontal,
-  ThumbsUp,
-  MessageSquare,
-  Share2,
-  Send,
-  Target,
   Laptop,
   Smartphone,
   X,
@@ -437,10 +431,6 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             <span className="text-slate-800 font-bold">Content Generator</span>
           </div>
           <div className="flex items-center gap-4 text-xs font-bold text-slate-400">
-            <div className="flex gap-2">
-              <span className="cursor-pointer hover:text-slate-800">TH</span>
-              <span className="text-slate-800 underline">EN</span>
-            </div>
             <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
               {brandInitials}
             </div>
@@ -1326,35 +1316,6 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
           "space-y-6",
           showManual ? "col-span-12 lg:col-span-3" : "col-span-12 lg:col-span-4"
         )}>
-          
-          {/* Content Performance Score */}
-          <div className="bg-white border border-[#E6DFD5] rounded-3xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)] text-left">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <Target className="w-4 h-4 text-[#967F5C]" />
-              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold block">
-                Content Performance Score
-              </span>
-            </div>
-            
-            <div className="space-y-4 pt-1">
-              {[
-                { name: 'Hook Strength', score: '8.6/10', pct: 86 },
-                { name: 'Readability Meter', score: '9.0/10', pct: 90 },
-                { name: 'Engagement Potential', score: '7.4/10', pct: 74 },
-                { name: 'CTA Strength', score: '8.2/10', pct: 82 }
-              ].map((metric, idx) => (
-                <div key={idx} className="space-y-1.5">
-                  <div className="flex justify-between text-xs font-bold text-slate-800">
-                    <span className="font-semibold">{metric.name}</span>
-                    <span>{metric.score}</span>
-                  </div>
-                  <div className="w-full bg-[#FAF8F5] h-1.5 rounded-full overflow-hidden">
-                    <div className="bg-slate-800 h-full" style={{ width: `${metric.pct}%` }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Platform Preview Feed */}
           <div className="bg-white border border-[#E6DFD5] rounded-3xl p-5 space-y-4 shadow-[0_2px_12px_rgba(15,23,42,0.01)] text-left">
@@ -1407,7 +1368,6 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                     </div>
                   </div>
                 </div>
-                <MoreHorizontal className="w-4 h-4 text-slate-400 cursor-pointer" />
               </div>
               
               <div className="space-y-2 text-xs text-slate-700 font-medium leading-relaxed">
@@ -1416,20 +1376,10 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
                 <p className="text-[#967F5C] font-bold mt-1.5">{previewHashtags}</p>
               </div>
 
-              {/* Feed Actions */}
-              <div className="grid grid-cols-4 p-0.5 border-t border-slate-100 pt-2 text-center">
-                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
-                  <ThumbsUp className="w-3.5 h-3.5" /> Like
-                </button>
-                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
-                  <MessageSquare className="w-3.5 h-3.5" /> Comment
-                </button>
-                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
-                  <Share2 className="w-3.5 h-3.5" /> Share
-                </button>
-                <button type="button" className="flex items-center justify-center gap-1 text-slate-400 text-[10px] font-bold hover:text-slate-800 py-1 transition-colors">
-                  <Send className="w-3.5 h-3.5" /> Send
-                </button>
+              <div className="border-t border-slate-100 pt-2 text-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Preview only
+                </span>
               </div>
             </div>
 
