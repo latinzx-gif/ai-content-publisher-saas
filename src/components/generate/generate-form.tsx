@@ -46,6 +46,7 @@ interface GenerateFormProps {
 }
 
 type ContentLanguage = 'TH' | 'EN' | 'CN' | 'JP';
+type ActiveBrandKey = 'law' | 'accounting';
 type PostCountOption = 1 | 3 | 5 | 10;
 type PlatformFormat = 'text_only' | 'facebook_post' | 'instagram_4_5' | 'instagram_square';
 
@@ -54,6 +55,13 @@ const LANGUAGE_OPTIONS: Array<{ value: ContentLanguage; label: string }> = [
   { value: 'EN', label: 'English / ภาษาอังกฤษ' },
   { value: 'CN', label: 'Chinese / ภาษาจีน' },
   { value: 'JP', label: 'Japanese / ภาษาญี่ปุ่น' },
+];
+
+const LANGUAGE_CHIPS: Array<{ value: ContentLanguage; label: string }> = [
+  { value: 'TH', label: 'TH' },
+  { value: 'EN', label: 'EN' },
+  { value: 'CN', label: '中文' },
+  { value: 'JP', label: '日本語' },
 ];
 
 const TOPIC_PRESETS = [
@@ -119,6 +127,35 @@ const TEMPLATE_DISPLAY: Record<string, { label: string; tone: string; dot: strin
   },
   'accounting-professional': {
     label: 'Accounting Professional',
+    tone: 'Green / White / Clear',
+    dot: 'bg-emerald-600',
+  },
+};
+
+const ACTIVE_BRAND_OPTIONS: Record<ActiveBrandKey, {
+  label: string;
+  icon: string;
+  templateKey: 'legal-professional' | 'accounting-professional';
+  contentRulesLabel: string;
+  imageRulesLabel: string;
+  tone: string;
+  dot: string;
+}> = {
+  law: {
+    label: 'Law',
+    icon: '⚖️',
+    templateKey: 'legal-professional',
+    contentRulesLabel: 'Legal Professional Template',
+    imageRulesLabel: 'Professional Minimal',
+    tone: 'Navy / Gold / Formal',
+    dot: 'bg-[#C6A15B]',
+  },
+  accounting: {
+    label: 'Accounting',
+    icon: '📊',
+    templateKey: 'accounting-professional',
+    contentRulesLabel: 'Accounting Professional Template',
+    imageRulesLabel: 'Corporate Clean',
     tone: 'Green / White / Clear',
     dot: 'bg-emerald-600',
   },
@@ -202,11 +239,14 @@ function normalizeGenerationToast(message?: string) {
   return text || 'Content generation failed. Check Settings and try again.';
 }
 
+function getInitialActiveBrand(templateKey?: string | null): ActiveBrandKey {
+  return templateKey === 'accounting-professional' ? 'accounting' : 'law';
+}
+
 export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) {
   const { currentLanguage } = useLanguage();
   const router = useRouter();
   const brandInitials = getInitials(initialBrand?.name);
-  const activeBrandTemplate = TEMPLATE_DISPLAY[initialBrand?.template_key || 'legal-professional'] || TEMPLATE_DISPLAY['legal-professional'];
   const hasBrandProfile = Boolean(
     initialBrand?.name &&
     initialBrand?.business_type &&
@@ -218,15 +258,16 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
   // Workspace Level States
   const [activeTab, setActiveTab] = useState<'manual' | 'quick'>('quick');
   const [showManual, setShowManual] = useState(false);
+  const [activeBrand, setActiveBrand] = useState<ActiveBrandKey>(() => getInitialActiveBrand(initialBrand?.template_key));
+  const activeBrandContext = ACTIVE_BRAND_OPTIONS[activeBrand];
+  const activeBrandTemplate = TEMPLATE_DISPLAY[activeBrandContext.templateKey];
 
   // Form Field States
   const [topicPreset, setTopicPreset] = useState<string>('Service Business Marketing');
   const [customTopic, setCustomTopic] = useState<string>('');
   const [showCustomTopicInput, setShowCustomTopicInput] = useState(false);
 
-  const [primaryLang, setPrimaryLang] = useState<ContentLanguage>('TH');
-  const [secondaryLang, setSecondaryLang] = useState<ContentLanguage>('EN');
-  const [bothLanguages, setBothLanguages] = useState(true);
+  const [selectedLanguages, setSelectedLanguages] = useState<ContentLanguage[]>(['TH', 'EN']);
 
   const [outputMode, setOutputMode] = useState<string>('Main post + secondary in comment');
   const [customOutputMode, setCustomOutputMode] = useState<string>('');
@@ -319,6 +360,16 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
     setUrls(urls.filter((_, idx) => idx !== index));
   };
 
+  const handleToggleLanguage = (language: ContentLanguage) => {
+    setSelectedLanguages((current) => {
+      if (current.includes(language)) {
+        return current.length === 1 ? current : current.filter(item => item !== language);
+      }
+
+      return [...current, language];
+    });
+  };
+
   async function handleSubmit() {
     if (loading) return;
 
@@ -346,11 +397,15 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       setLoadingStage(prev => (prev < 4 ? prev + 1 : prev));
     }, 2000);
 
+    const primaryLang = selectedLanguages[0] || 'TH';
+    const secondaryLang = selectedLanguages.length > 1 ? selectedLanguages[1] : undefined;
+
     let finalManualContext = manualContext;
-    if (bothLanguages && secondaryLang !== primaryLang) {
-      const primaryLabel = LANGUAGE_OPTIONS.find(l => l.value === primaryLang)?.label || primaryLang;
-      const secondaryLabel = LANGUAGE_OPTIONS.find(l => l.value === secondaryLang)?.label || secondaryLang;
-      finalManualContext = `${manualContext || ''}\n\n[System Rule]: Please output the content bilingually: primary language in ${primaryLabel}, secondary language in ${secondaryLabel}. Provide both versions back-to-back inside the generated text.`.trim();
+    if (selectedLanguages.length > 1) {
+      const selectedLanguageLabels = selectedLanguages
+        .map(language => LANGUAGE_OPTIONS.find(option => option.value === language)?.label || language)
+        .join(', ');
+      finalManualContext = `${manualContext || ''}\n\n[System Rule]: Please output the content in these selected languages: ${selectedLanguageLabels}. Provide each selected language version back-to-back inside the generated text.`.trim();
     }
 
     try {
@@ -367,7 +422,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
         urls: urls,
         manualContext: finalManualContext || undefined,
         language: primaryLang,
-        secondaryLanguage: bothLanguages && secondaryLang !== primaryLang ? secondaryLang : undefined,
+        secondaryLanguage: secondaryLang && secondaryLang !== primaryLang ? secondaryLang : undefined,
         outputMode: finalOutputMode || undefined,
         platform: selectedPlatform,
         audience: finalAudience || undefined,
@@ -410,7 +465,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
       ? 'ตัวอย่างโพสต์ที่สร้างแล้วจะแสดงที่นี่หลังจากกด Generate'
       : 'Generated content preview will appear here after generation.'
   );
-  const previewTextSecondary = bothLanguages && !activePost?.caption 
+  const previewTextSecondary = selectedLanguages.length > 1 && !activePost?.caption
     ? "" 
     : "";
 
@@ -633,6 +688,42 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
           "space-y-6",
           showManual ? "col-span-12 lg:col-span-6" : "col-span-12 lg:col-span-8"
         )}>
+
+          {!showManual && (
+            <div className="bg-white border border-[#E6DFD5] rounded-2xl p-4 space-y-3 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+              <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Active Brand</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {(Object.entries(ACTIVE_BRAND_OPTIONS) as Array<[ActiveBrandKey, typeof ACTIVE_BRAND_OPTIONS[ActiveBrandKey]]>).map(([key, brand]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setActiveBrand(key)}
+                    aria-pressed={activeBrand === key}
+                    aria-label={`Use ${brand.label} brand context`}
+                    className={cn(
+                      "flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-all",
+                      activeBrand === key
+                        ? "border-[#0B1E33] bg-[#0B1E33] text-white shadow-sm"
+                        : "border-slate-200/80 bg-white text-slate-600 hover:border-slate-350 hover:bg-slate-50"
+                    )}
+                  >
+                    <span className="flex items-center gap-2 text-xs font-black">
+                      <span aria-hidden="true">{brand.icon}</span>
+                      {brand.label}
+                    </span>
+                    <span className={cn(
+                      "h-2.5 w-2.5 rounded-full",
+                      activeBrand === key ? "bg-white" : brand.dot
+                    )} />
+                  </button>
+                ))}
+              </div>
+              <div className="rounded-xl border border-slate-100 bg-[#FAF8F5] px-3 py-2">
+                <span className="block text-[9px] font-black uppercase tracking-wider text-slate-400">Active Template</span>
+                <span className="text-[11px] font-bold text-slate-850">{activeBrandContext.contentRulesLabel}</span>
+              </div>
+            </div>
+          )}
           
           {/* Rules Summaries Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -642,7 +733,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               <div className="space-y-1.5">
 	                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Content Rules</span>
 	                <p className="text-xs font-bold text-slate-800">
-	                  {initialBrand?.content_rules ? 'Configured in Brand Profile' : 'No content rules saved'}
+	                  {activeBrandContext.contentRulesLabel}
 	                </p>
 	              </div>
 	            </div>
@@ -652,7 +743,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
               <div className="space-y-1.5">
 	                <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold">Saved Image Rules</span>
 	                <p className="text-xs font-bold text-slate-800">
-	                  {initialBrand?.image_rules ? 'Configured in Brand Profile' : 'No image rules saved'}
+	                  {activeBrandContext.imageRulesLabel}
 	                </p>
 	              </div>
 	            </div>
@@ -661,10 +752,38 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
           {/* Form Composer Container */}
           <div className="bg-white border border-[#E6DFD5] rounded-3xl p-6 space-y-6 shadow-[0_2px_12px_rgba(15,23,42,0.01)]">
+
+            {!showManual && (
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">Language</label>
+                <div className="flex flex-wrap gap-2">
+                  {LANGUAGE_CHIPS.map((language) => {
+                    const isSelected = selectedLanguages.includes(language.value);
+
+                    return (
+                      <button
+                        key={language.value}
+                        type="button"
+                        onClick={() => handleToggleLanguage(language.value)}
+                        aria-pressed={isSelected}
+                        className={cn(
+                          "h-9 min-w-14 rounded-xl border px-4 text-xs font-black transition-all",
+                          isSelected
+                            ? "border-[#0B1E33] bg-[#0B1E33] text-white shadow-sm"
+                            : "border-slate-200/80 bg-white text-slate-500 hover:border-slate-350 hover:bg-slate-50"
+                        )}
+                      >
+                        {language.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             
             {/* 1. CONTENT TOPIC */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">1. Content Topic</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '1. Content Topic' : 'Content Topic'}</label>
               <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                 <div className="md:col-span-5">
                   <Select 
@@ -717,52 +836,33 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
             </div>
 
             {/* 2. LANGUAGES */}
+            {showManual && (
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">2. Languages</label>
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-                <div className="md:col-span-4">
-                  <Select value={primaryLang} onValueChange={(val) => setPrimaryLang(val as ContentLanguage)}>
-                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGE_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>Primary: {opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="md:col-span-4">
-                  <Select value={secondaryLang} onValueChange={(val) => setSecondaryLang(val as ContentLanguage)}>
-                    <SelectTrigger className="h-9.5 text-xs rounded-xl border-slate-200/80 bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGE_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>Secondary: {opt.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="md:col-span-4 flex items-center justify-between bg-slate-50/50 border border-slate-100 rounded-xl px-3 py-1.5 h-9.5">
-                  <span className="text-[10px] font-bold text-slate-500">Both versions</span>
-                  <button
-                    onClick={() => setBothLanguages(!bothLanguages)}
-                    className={cn(
-                      "relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                      bothLanguages ? "bg-indigo-600" : "bg-slate-200"
-                    )}
-                  >
-                    <span
+              <div className="flex flex-wrap gap-2">
+                {LANGUAGE_CHIPS.map((language) => {
+                  const isSelected = selectedLanguages.includes(language.value);
+
+                  return (
+                    <button
+                      key={language.value}
+                      type="button"
+                      onClick={() => handleToggleLanguage(language.value)}
+                      aria-pressed={isSelected}
                       className={cn(
-                        "pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                        bothLanguages ? "translate-x-3" : "translate-x-0"
+                        "h-9 min-w-14 rounded-xl border px-4 text-xs font-black transition-all",
+                        isSelected
+                          ? "border-[#0B1E33] bg-[#0B1E33] text-white shadow-sm"
+                          : "border-slate-200/80 bg-white text-slate-500 hover:border-slate-350 hover:bg-slate-50"
                       )}
-                    />
-                  </button>
-                </div>
+                    >
+                      {language.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
+            )}
 
             {showManual && (
             <>
@@ -1204,7 +1304,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 12. NOTES / CONSTRAINTS (OPTIONAL) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '12.' : '3.'} Number of Posts</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '12. Number of Posts' : 'Number of Posts'}</label>
               <div className="grid grid-cols-4 gap-2">
                 {POST_COUNT_OPTIONS.map((count) => (
                   <button
@@ -1229,7 +1329,7 @@ export function GenerateForm({ initialBrand, hasOpenAIKey }: GenerateFormProps) 
 
             {/* 13. NOTES / CONSTRAINTS (OPTIONAL) */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '13.' : '4.'} Notes / Constraints (Optional)</label>
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-450">{showManual ? '13. Notes / Constraints (Optional)' : 'Notes / Constraints (Optional)'}</label>
               <textarea 
                 value={manualContext}
                 onChange={(e) => setManualContext(e.target.value)}
