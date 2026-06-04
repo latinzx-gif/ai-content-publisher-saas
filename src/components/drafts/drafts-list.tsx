@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import { EditModal } from '@/components/drafts/edit-modal';
 import { useLanguage } from '@/components/providers/language-provider';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface DraftsListProps {
   initialPosts: Post[];
@@ -47,6 +48,8 @@ function toActionableToast(error: unknown, fallback: string) {
 
 export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }: DraftsListProps) {
   const { t, currentLanguage } = useLanguage();
+  const searchParams = useSearchParams();
+  const topicQuery = searchParams.get('topic') || '';
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [posts, setPosts] = useState<Post[]>(initialPosts || []);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -73,6 +76,10 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
   useEffect(() => {
     setBoardNote(initialBoardNote);
   }, [initialBoardNote]);
+
+  useEffect(() => {
+    setCampaignFilter(topicQuery || 'All');
+  }, [topicQuery]);
 
   function getExportPosts() {
     const selected = posts.filter((post) => selectedIds.has(post.id));
@@ -323,7 +330,7 @@ export function DraftsList({ initialPosts, hasBufferKey, initialBoardNote = '' }
     values.map((value) => String(value || '').trim()).filter(Boolean)
   )).sort((a, b) => a.localeCompare(b));
 
-  const topicOptions = uniqueValues(posts.map((post) => post.metadata?.topic || post.metadata?.angle_type));
+  const topicOptions = uniqueValues([...posts.map((post) => post.metadata?.topic || post.metadata?.angle_type), topicQuery]);
   const platformOptions = uniqueValues(posts.map((post) => post.metadata?.platform));
   const languageOptions = uniqueValues(posts.flatMap((post) => [post.metadata?.language, post.metadata?.secondary_language]));
   const statusOptions = uniqueValues(posts.map((post) => String(post.status)));

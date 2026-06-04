@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { 
   MoreHorizontal,
-  ChevronRight,
-  Shield
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Post } from '@/types';
@@ -53,11 +52,6 @@ export function DashboardClient({
 }: DashboardClientProps) {
   const { t, currentLanguage } = useLanguage();
   const brandInitials = getInitials(brandData?.name);
-  
-  // Smart Input Pattern State
-  const [audiencePreset, setAudiencePreset] = useState('General Business');
-  const [isPreset, setIsPreset] = useState(true);
-  const [customAudience, setCustomAudience] = useState('');
 
   const snapshotPosts = posts.slice(0, 4);
   const upcomingQueue = posts.filter((post) => post.status === 'text_approved' || post.status === 'creative_approved').slice(0, 3);
@@ -181,16 +175,31 @@ export function DashboardClient({
                     {snapshotPosts.length > 0 ? snapshotPosts.map((post) => {
                       const meta = post.metadata || {};
                       const statusView = getStatusView(post.status);
+                      const topic = meta.topic || meta.angle_type || '';
+                      const draftsHref = topic ? `/drafts?topic=${encodeURIComponent(topic)}` : '/drafts';
+                      const title = meta.title || post.content.split('\n')[0] || 'Untitled Draft';
                       return (
-                      <tr key={post.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                      <tr key={post.id} className="group hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="p-4 font-medium text-[#1E1D1B] dark:text-[#EBE7E0]">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-10 rounded-lg border border-[#E6DFD5] dark:border-slate-800 shrink-0 bg-[#FAF8F5] dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold text-[#7C756C]">
                               {brandInitials}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-bold line-clamp-1 text-xs">{meta.title || post.content.split('\n')[0] || 'Untitled Draft'}</p>
-                              <p className="text-[10px] text-[#7C756C] mt-0.5 line-clamp-1">{meta.topic || post.status}</p>
+                              <Link
+                                href={draftsHref}
+                                aria-label={topic ? `Open Review Board filtered by ${topic}` : `Open Review Board for ${title}`}
+                                className="line-clamp-1 text-xs font-bold underline-offset-2 transition-colors group-hover:text-[#967F5C] group-hover:underline"
+                              >
+                                {title}
+                              </Link>
+                              <Link
+                                href={draftsHref}
+                                aria-label={topic ? `Filter drafts by ${topic}` : `Open Review Board for ${title}`}
+                                className="mt-0.5 line-clamp-1 text-[10px] text-[#7C756C] underline-offset-2 transition-colors group-hover:text-[#967F5C] group-hover:underline"
+                              >
+                                {topic || post.status}
+                              </Link>
                             </div>
                           </div>
                         </td>
@@ -213,7 +222,13 @@ export function DashboardClient({
                           </div>
                         </td>
                         <td className="p-4 text-center">
-                          <MoreHorizontal className="w-4 h-4 text-[#7C756C] cursor-pointer hover:text-[#1E1D1B]" />
+                          <Link
+                            href={draftsHref}
+                            aria-label={topic ? `Open Review Board filtered by ${topic}` : `Open Review Board for ${title}`}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[#7C756C] transition-colors hover:bg-[#FAF8F5] hover:text-[#1E1D1B]"
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Link>
                         </td>
                       </tr>
                       );
@@ -243,73 +258,6 @@ export function DashboardClient({
                     )}
                   </tbody>
                 </table>
-              </div>
-            </div>
-
-            {/* Smart Input Pattern Section */}
-            <div className="border border-[#E6DFD5] dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-6 space-y-5 shadow-[0_2px_8px_rgba(30,29,27,0.02)] text-left">
-              <div className="flex items-start gap-2.5">
-                <div className="w-7 h-7 bg-[#FAF8F5] dark:bg-slate-800 border border-[#E6DFD5] dark:border-slate-700 rounded-lg flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-[#967F5C]" />
-                </div>
-                <div>
-                  <h4 className="text-xs uppercase tracking-wider text-[#1E1D1B] dark:text-[#EBE7E0] font-bold">
-                    {t('deck.smartInput.title')}
-                  </h4>
-                  <p className="text-[10px] text-[#7C756C] dark:text-slate-400 mt-0.5">
-                    {t('deck.smartInput.desc')}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 items-end">
-                <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">{t('deck.smartInput.example')}</span>
-                  <select 
-                    value={audiencePreset}
-                    onChange={(e) => setAudiencePreset(e.target.value)}
-                    disabled={!isPreset}
-                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none"
-                  >
-                    <option value="General Business">{currentLanguage === 'th' ? 'ธุรกิจทั่วไป' : 'General Business'}</option>
-                    <option value="Legal Professionals">{currentLanguage === 'th' ? 'นักกฎหมาย / ผู้ตรวจสอบ' : 'Legal Professionals'}</option>
-                    <option value="SME Owners">{currentLanguage === 'th' ? 'ผู้ประกอบการ SME' : 'SME Owners'}</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2 h-10 flex items-center gap-2 border border-[#E6DFD5] dark:border-slate-700 rounded-lg px-3 bg-[#FAF8F5] dark:bg-slate-900">
-                  <input 
-                    type="checkbox" 
-                    id="customToggle" 
-                    checked={!isPreset} 
-                    onChange={(e) => setIsPreset(!e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-[#E6DFD5]"
-                  />
-                  <label htmlFor="customToggle" className="text-xs font-bold text-[#7C756C] uppercase tracking-wider cursor-pointer">
-                    {t('deck.smartInput.otherToggle')}
-                  </label>
-                </div>
-
-                <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-[#7C756C] font-bold">{t('deck.smartInput.customPlaceholder')}</span>
-                  <input 
-                    type="text" 
-                    placeholder={t('deck.smartInput.customPlaceholder')}
-                    value={customAudience}
-                    onChange={(e) => setCustomAudience(e.target.value)}
-                    disabled={isPreset}
-                    className="w-full text-xs rounded-lg border border-[#E6DFD5] dark:border-slate-700 p-2.5 bg-white dark:bg-slate-900 text-[#1E1D1B] dark:text-[#EBE7E0] h-10 outline-none font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-3 border-t border-[#E6DFD5]/50 dark:border-slate-800/80">
-                <Link
-                  href="/generate"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-[#1E1D1B] px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#2D2A26] dark:bg-[#EBE7E0] dark:text-[#1E1D1B] dark:hover:bg-white"
-                >
-                  {currentLanguage === 'th' ? 'เปิดตัวสร้างคอนเทนต์' : 'Open Generator'} <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
               </div>
             </div>
 
