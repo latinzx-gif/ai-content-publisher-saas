@@ -4,9 +4,12 @@
  *
  * The AI model generates background/illustration ONLY — all body text
  * is rendered programmatically via SVG to ensure readability.
+ *
+ * V1.3: Accepts a ThemeConfig for dual-template system.
  */
 
 import sharp from 'sharp'
+import { ThemeConfig } from '@/config/templates'
 
 export interface TextOverlayInput {
   title: string
@@ -19,7 +22,8 @@ export interface RenderResult {
   buffer: Buffer
   width: number
   height: number
-  textCharsOverlaid: number  // QA metric: total characters rendered via SVG
+  textCharsOverlaid: number
+  themeKey: string
 }
 
 export interface QaInput {
@@ -44,35 +48,38 @@ function escapeXml(s: string): string {
 }
 
 /**
- * Build an SVG text overlay for a given canvas size.
+ * Build an SVG text overlay using the given theme.
  *
- * Layout (1536×1024 Facebook post reference):
+ * Layout (1536×1024 reference):
  * ┌─────────────────────────────────────┐
- * │   Brand Name                         │  y=60, small
+ * │   [accent bar] Brand Name            │  theme.layout.brandY
  * │                                     │
- * │   Title                              │  y=180, large bold
- * │   (multi-line)                       │
+ * │   Title (large, theme font)         │  theme.layout.titleY
  * │                                     │
- * │   Body text                          │  y=420, medium
- * │   (truncated, readable)              │
+ * │   Body text (theme bg + text)       │  theme.layout.bodyBgY
  * │                                     │
- * │   [ CTA Button ]                     │  y=780, highlighted
+ * │   [ CTA Button (theme colors) ]      │  bottom area
  * │                                     │
  * └─────────────────────────────────────┘
  */
-function buildSvg(width: number, height: number, input: TextOverlayInput): string {
+function buildSvg(width: number, height: number, input: TextOverlayInput, theme: ThemeConfig): string {
   const title = escapeXml(truncate(input.title, 120))
   const body = escapeXml(truncate(input.body, 300))
   const cta = escapeXml(truncate(input.cta, 60))
   const brand = escapeXml(truncate(input.brandName, 60))
 
-  // Semi-transparent overlay at bottom to ensure text readability
+  const ly = theme.layout
+
   const overlayGradient = `
     <linearGradient id="overlay" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgba(0,0,0,0)" />
-      <stop offset="60%" stop-color="rgba(0,0,0,0.35)" />
-      <stop offset="100%" stop-color="rgba(0,0,0,0.55)" />
+      <stop offset="0%" stop-color="${theme.colors.overlayStart}" />
+      <stop offset="60%" stop-color="${theme.colors.overlayEnd}" />
+      <stop offset="100%" stop-color="${theme.colors.overlayEnd}" />
     </linearGradient>`
+
+  const accentBar = theme.hasAccentBar && theme.accentSvg
+    ? theme.accentSvg
+    : ''
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
@@ -80,35 +87,39 @@ function buildSvg(width: number, height: number, input: TextOverlayInput): strin
     ${overlayGradient}
   </defs>
 
-  <!-- Semi-transparent overlay at bottom 40% for readability -->
-  <rect x="0" y="${Math.round(height * 0.55)}" width="${width}" height="${Math.round(height * 0.45)}" fill="url(#overlay)" />
+  <!-- Bottom gradient overlay for text readability -->
+  <rect x="0" y="${Math.round(height * 0.5)}" width="${width}" height="${Math.round(height * 0.5)}" fill="url(#overlay)" />
 
-  <!-- Brand name (top, small, subtle) -->
-  <text x="80" y="80" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="28" font-weight="600" fill="rgba(255,255,255,0.9)" letter-spacing="1.5">
+  ${accentBar}
+
+  <!-- Brand name (top-left, theme color + font) -->
+  <text x="96" y="${ly.brandY}" font-family="${theme.fonts.brand}"
+        font-size="28" font-weight="600" fill="${theme.colors.brand}" letter-spacing="1.5">
     ${brand}
   </text>
 
   <!-- Title (large, prominent) -->
-  <text x="80" y="200" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="56" font-weight="800" fill="white" letter-spacing="-0.5">
-    <tspan x="80" dy="0">${title.split('\n')[0]}</tspan>
-    ${title.includes('\n') ? `<tspan x="80" dy="68">${title.split('\n')[1] || ''}</tspan>` : ''}
+  <text x="96" y="${ly.titleY}" font-family="${theme.fonts.title}"
+        font-size="52" font-weight="700" fill="${theme.colors.title}" letter-spacing="-0.3">
+    <tspan x="96" dy="0">${title.split('\n')[0]}</tspan>
+    ${title.includes('\n') ? `<tspan x="96" dy="64">${title.split('\n')[1] || ''}</tspan>` : ''}
   </text>
 
-  <!-- Body text (truncated, readable, semi-transparent background for contrast) -->
-  <rect x="72" y="420" width="${Math.round(width * 0.85)}" height="320" rx="16" fill="rgba(0,0,0,0.5)" />
-  <text x="96" y="480" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="32" font-weight="400" fill="rgba(255,255,255,0.95)" line-height="1.5">
-    ${wrapText(body, 32, Math.round(width * 0.78)).map((line, i) =>
-      `<tspan x="96" dy="${i === 0 ? 0 : 48}">${line}</tspan>`
+  <!-- Body text background -->
+  <rect x="86" y="${ly.bodyBgY}" width="${Math.round(width * 0.86)}" height="300" rx="14" fill="${theme.colors.bodyBg}" />
+
+  <!-- Body text -->
+  <text x="110" y="${ly.bodyBgY + 56}" font-family="${theme.fonts.body}"
+        font-size="30" font-weight="400" fill="${theme.colors.bodyText}" line-height="1.45">
+    ${wrapText(body, 30, Math.round(width * 0.78)).map((line, i) =>
+      `<tspan x="110" dy="${i === 0 ? 0 : 44}">${line}</tspan>`
     ).join('')}
   </text>
 
-  <!-- CTA (bottom, highlighted) -->
-  <rect x="80" y="${height - 140}" width="340" height="64" rx="32" fill="rgba(255,255,255,0.9)" />
-  <text x="250" y="${height - 102}" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
-        font-size="28" font-weight="700" fill="#0B1E33" text-anchor="middle" letter-spacing="1">
+  <!-- CTA button -->
+  <rect x="86" y="${height + ly.ctaButtonY}" width="340" height="60" rx="30" fill="${theme.colors.ctaBg}" />
+  <text x="256" y="${height + ly.ctaButtonY + 36}" font-family="${theme.fonts.cta}"
+        font-size="26" font-weight="700" fill="${theme.colors.ctaText}" text-anchor="middle" letter-spacing="1">
     ${cta}
   </text>
 </svg>`
@@ -133,7 +144,7 @@ function wrapText(text: string, fontSize: number, maxWidth: number): string[] {
       if (currentLine) lines.push(currentLine)
       currentLine = word
     }
-    if (lines.length >= 6) break  // max 6 lines
+    if (lines.length >= 6) break
   }
   if (currentLine && lines.length < 6) lines.push(currentLine)
 
@@ -141,21 +152,16 @@ function wrapText(text: string, fontSize: number, maxWidth: number): string[] {
 }
 
 /**
- * Render text overlay onto a background image.
- *
- * @param backgroundBuffer - Raw image buffer (e.g. WebP from OpenAI)
- * @param width  - Canvas width in pixels
- * @param height - Canvas height in pixels
- * @param input  - Text content to overlay
- * @returns Composited image buffer (WebP)
+ * Render text overlay onto a background image using a theme.
  */
 export async function renderTextOverlay(
   backgroundBuffer: Buffer,
   width: number,
   height: number,
-  input: TextOverlayInput
+  input: TextOverlayInput,
+  theme: ThemeConfig
 ): Promise<RenderResult> {
-  const svg = buildSvg(width, height, input)
+  const svg = buildSvg(width, height, input, theme)
 
   const result = await sharp(backgroundBuffer)
     .resize(width, height, { fit: 'cover', position: 'centre' })
@@ -169,77 +175,38 @@ export async function renderTextOverlay(
     buffer: result,
     width,
     height,
-    textCharsOverlaid: textChars
+    textCharsOverlaid: textChars,
+    themeKey: theme.key,
   }
 }
 
 /**
- * Extract a CTA from caption or return a sensible default.
- */
-export function extractCta(metadata: { format?: string; objective?: string; caption?: string }): string {
-  const format = (metadata.format || '').toLowerCase()
-  const objective = (metadata.objective || '').toLowerCase()
-
-  if (format.includes('educational') || objective.includes('educate')) return 'เรียนรู้เพิ่มเติม'
-  if (format.includes('q&a') || objective.includes('qa')) return 'ถามเราเลย'
-  if (format.includes('myth') || objective.includes('myth')) return 'รู้จริง รู้ทัน'
-  if (format.includes('checklist') || objective.includes('checklist')) return 'ดาวน์โหลดเช็คลิสต์'
-  if (format.includes('compliance') || objective.includes('compliance')) return 'ตรวจสอบ PDPA'
-  if (format.includes('tip') || objective.includes('tips')) return 'ดูเคล็ดลับเพิ่มเติม'
-  if (format.includes('news') || objective.includes('update')) return 'อ่านอัปเดตล่าสุด'
-
-  return 'ดูรายละเอียดเพิ่มเติม'
-}
-
-/**
- * QA gate: validate text overlay integrity before accepting an image option.
- *
- * Rejects if:
- *  - title is empty or missing
- *  - body is empty or missing
- *  - total text_chars < 30 (insufficient readable content)
- *  - output buffer < 5000 bytes (likely corrupt or empty)
- *  - rendered dimensions don't match requested platform size
+ * QA gate: validate text overlay integrity.
+ * Rejects if title/body missing, text_chars < 30, buffer < 5000 bytes, or size mismatch.
  */
 export function qaCheckTextRendered(
   result: RenderResult,
   input: QaInput
 ): QaResult {
-  // 1. Title missing or empty
   const titleTrimmed = (input.title || '').trim()
-  if (!titleTrimmed) {
-    return { pass: false, reason: 'title_missing' }
-  }
+  if (!titleTrimmed) return { pass: false, reason: 'title_missing' }
 
-  // 2. Body missing or empty
   const bodyTrimmed = (input.body || '').trim()
-  if (!bodyTrimmed) {
-    return { pass: false, reason: 'body_missing' }
-  }
+  if (!bodyTrimmed) return { pass: false, reason: 'body_missing' }
 
-  // 3. Total overlaid characters below threshold
   if (result.textCharsOverlaid < 30) {
-    return {
-      pass: false,
-      reason: `text_chars_too_low: ${result.textCharsOverlaid} (minimum 30)`
-    }
+    return { pass: false, reason: `text_chars_too_low: ${result.textCharsOverlaid} (minimum 30)` }
   }
 
-  // 4. Output buffer too small (corrupt / empty)
   if (result.buffer.length < 5000) {
-    return {
-      pass: false,
-      reason: `buffer_too_small: ${result.buffer.length} bytes (minimum 5000)`
-    }
+    return { pass: false, reason: `buffer_too_small: ${result.buffer.length} bytes (minimum 5000)` }
   }
 
-  // 5. Platform image size mismatch
   if (result.width !== input.platformWidth || result.height !== input.platformHeight) {
-    return {
-      pass: false,
-      reason: `size_mismatch: got ${result.width}x${result.height}, expected ${input.platformWidth}x${input.platformHeight}`
-    }
+    return { pass: false, reason: `size_mismatch: got ${result.width}x${result.height}, expected ${input.platformWidth}x${input.platformHeight}` }
   }
 
   return { pass: true }
 }
+
+export { resolveCta } from './template-resolver'

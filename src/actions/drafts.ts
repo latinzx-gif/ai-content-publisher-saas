@@ -6,7 +6,8 @@ import { z } from 'zod'
 import { PostMetadata } from '@/types'
 import { decrypt } from '@/lib/encryption'
 import OpenAI from 'openai'
-import { renderTextOverlay, extractCta, qaCheckTextRendered } from '@/lib/image/renderer'
+import { renderTextOverlay, qaCheckTextRendered } from '@/lib/image/renderer'
+import { resolveTheme, resolveCta } from '@/lib/image/template-resolver'
 
 const UpdatePostSchema = z.object({
   id: z.string().uuid(),
@@ -251,7 +252,7 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
 
   const { data: brand, error: brandError } = await supabase
     .from('brands')
-    .select('name, image_rules')
+    .select('name, image_rules, template_key')
     .eq('user_id', user.id)
     .single()
   if (brandError || !brand) throw new Error('Brand profile not found.')
@@ -292,7 +293,16 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
   const apiKey = decrypt(integration.encrypted_value)
   const openai = new OpenAI({ apiKey })
 
-  // 4. Generate background/illustration via AI (no text).
+  // 4. Resolve template theme from brand's template_key
+  const theme = resolveTheme({
+    templateKey: brand.template_key,
+    name: brand.name,
+    targetAudience: initialMetadata.audience || '',
+    tone: initialMetadata.tone || '',
+    personality: initialMetadata.personality || '',
+  })
+
+  // 5. Generate background/illustration via AI (no text).
   const imagePrompt = buildImagePrompt(initialMetadata, brand.image_rules)
   const imageOptions: PostMetadata['image_options'] = []
 
@@ -318,16 +328,16 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
       if (!bgResponse.ok) throw new Error(`Failed to download background: HTTP ${bgResponse.status}`)
       const backgroundBuffer = Buffer.from(await bgResponse.arrayBuffer())
 
-      // Step C: Composite text overlay via Sharp + SVG
+      // Step C: Composite text overlay via Sharp + SVG using resolved theme
       const [imgWidth, imgHeight] = getImageSize(initialMetadata.platform_format).split('x').map(Number)
       const brandName = brand.name || 'Smoke Legal Advisory'
-      const cta = extractCta(initialMetadata)
+      const cta = resolveCta(initialMetadata, theme)
       const renderResult = await renderTextOverlay(backgroundBuffer, imgWidth, imgHeight, {
         title: initialMetadata.title,
         body: initialMetadata.caption || initialMetadata.title,
         cta,
         brandName
-      })
+      }, theme)
 
       // Step D: QA gate — verify text overlay integrity
       const qa = qaCheckTextRendered(renderResult, {
