@@ -118,6 +118,6 @@ The following are explicitly **not covered** under any support tier:
 
 ## Contact
 
-**Support email:** support@example.com  
+**Support email:** latinzx@gmail.com  
 **Response time:** Within 2 business days (Basic), 1 business day (Standard)  
 **Emergency:** Urgent support available on Standard/Premium tiers only

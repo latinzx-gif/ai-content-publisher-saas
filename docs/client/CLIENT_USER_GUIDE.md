@@ -207,4 +207,4 @@
 
 ## Need Help?
 
-For technical support, contact support@example.com.
+For technical support, contact latinzx@gmail.com.

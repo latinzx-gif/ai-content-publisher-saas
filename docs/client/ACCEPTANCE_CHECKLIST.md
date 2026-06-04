@@ -188,4 +188,4 @@ Review each item below. Check the box if the feature works as described. Leave a
 | Known Limitations | 6 | ☐/6 | |
 | **Total** | **58** | **☐/58** | |
 
-All items must pass for final acceptance. For any failed items, contact support@example.com to schedule a resolution before signing off.
+All items must pass for final acceptance. For any failed items, contact latinzx@gmail.com to schedule a resolution before signing off.

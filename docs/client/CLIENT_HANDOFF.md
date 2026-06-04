@@ -114,6 +114,6 @@ These are potential future improvements, listed by priority:
 
 ## Contact
 
-**Technical support:** support@example.com  
+**Technical support:** latinzx@gmail.com  
 **Emergency:** Available on Standard/Premium support tiers only  
 **Response time:** Within 2 business days (Basic)

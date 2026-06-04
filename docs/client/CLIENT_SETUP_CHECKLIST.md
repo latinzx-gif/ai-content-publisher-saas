@@ -114,4 +114,4 @@ Have the following information ready:
 
 Once all items above are checked, proceed to the **Client User Guide** for step-by-step usage instructions.
 
-For questions or setup assistance, contact support@example.com.
+For questions or setup assistance, contact latinzx@gmail.com.
