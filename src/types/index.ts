@@ -34,6 +34,15 @@ export interface PostMetadata {
     source: 'openai' | 'placeholder';
     prompt?: string;
     warning?: string;
+    overlay_meta?: {
+      text_chars: number;
+      qa_pass: boolean;
+      qa_reason?: string;
+      model: string;
+      input_tokens?: number;
+      output_tokens?: number;
+      total_tokens?: number;
+    };
   }>;
   selected_image?: {
     id: string;

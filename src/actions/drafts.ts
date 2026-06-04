@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { PostMetadata } from '@/types'
 import { decrypt } from '@/lib/encryption'
 import OpenAI from 'openai'
+import { renderTextOverlay, extractCta, qaCheckTextRendered } from '@/lib/image/renderer'
 
 const UpdatePostSchema = z.object({
   id: z.string().uuid(),
@@ -50,12 +51,16 @@ function getImageSize(platformFormat?: string) {
 function buildImagePrompt(metadata: PostMetadata, imageRules?: string | null) {
   const platformFormat = metadata.platform_format || 'facebook_post'
   return [
-    'Create a polished social media image for a professional content post.',
+    'Generate a clean background illustration for a social media post.',
+    'DO NOT render any text, words, letters, or characters in the image.',
+    'DO NOT include any readable text, quotes, labels, or captions.',
+    'The image should be a professional background or illustration only.',
+    'Leave empty negative space in the center area for text overlay.',
     `Platform format: ${platformFormat.replace(/_/g, ' ')}.`,
     `Topic: ${metadata.topic || metadata.title}.`,
-    `Caption context: ${metadata.caption?.slice(0, 900) || metadata.title}.`,
+    `Context: ${metadata.caption?.slice(0, 300) || metadata.title}.`,
     imageRules ? `Brand image rules: ${imageRules}` : 'Visual style: clean, professional, trustworthy, business-friendly.',
-    'Avoid small unreadable text. Do not include legal claims not present in the caption.'
+    'Color palette: professional, muted backgrounds with good contrast for white text overlay.'
   ].join('\n')
 }
 
@@ -246,7 +251,7 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
 
   const { data: brand, error: brandError } = await supabase
     .from('brands')
-    .select('image_rules')
+    .select('name, image_rules')
     .eq('user_id', user.id)
     .single()
   if (brandError || !brand) throw new Error('Brand profile not found.')
@@ -287,14 +292,14 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
   const apiKey = decrypt(integration.encrypted_value)
   const openai = new OpenAI({ apiKey })
 
-  // 4. Generate prompt and images.
+  // 4. Generate background/illustration via AI (no text).
   const imagePrompt = buildImagePrompt(initialMetadata, brand.image_rules)
   const imageOptions: PostMetadata['image_options'] = []
 
   for (let i = 0; i < validatedCount; i++) {
     try {
       const response = await openai.images.generate({
-        model: 'gpt-image-1-mini',
+        model: 'gpt-image-2',
         prompt: imagePrompt,
         n: 1,
         quality: 'low',
@@ -303,21 +308,89 @@ export async function generateImageOptions(postId: string, count: 1 | 2 | 3) {
         output_compression: 80
       })
       const image = response.data?.[0]
-      let url: string | null = null
-      if (image?.b64_json) {
-        // Upload base64 to Supabase Storage and use the public HTTPS URL
-        url = await uploadToStorage(image.b64_json, user.id, postId, i + 1)
-      } else if (image?.url) {
-        url = image.url
+      if (!image?.b64_json) throw new Error('No image data returned from OpenAI')
+
+      // Step A: Upload raw background to storage (preserve original for fallback)
+      const rawUrl = await uploadToStorage(image.b64_json, user.id, postId, i + 1)
+
+      // Step B: Download background from storage into buffer
+      const bgResponse = await fetch(rawUrl)
+      if (!bgResponse.ok) throw new Error(`Failed to download background: HTTP ${bgResponse.status}`)
+      const backgroundBuffer = Buffer.from(await bgResponse.arrayBuffer())
+
+      // Step C: Composite text overlay via Sharp + SVG
+      const [imgWidth, imgHeight] = getImageSize(initialMetadata.platform_format).split('x').map(Number)
+      const brandName = brand.name || 'Smoke Legal Advisory'
+      const cta = extractCta(initialMetadata)
+      const renderResult = await renderTextOverlay(backgroundBuffer, imgWidth, imgHeight, {
+        title: initialMetadata.title,
+        body: initialMetadata.caption || initialMetadata.title,
+        cta,
+        brandName
+      })
+
+      // Step D: QA gate — verify text overlay integrity
+      const qa = qaCheckTextRendered(renderResult, {
+        title: initialMetadata.title,
+        body: initialMetadata.caption || initialMetadata.title,
+        platformWidth: imgWidth,
+        platformHeight: imgHeight
+      })
+      if (!qa.pass) {
+        // QA failed — mark as failed, do NOT include in selectable options
+        console.warn(`QA gate rejected image option ${i + 1}: ${qa.reason}`)
+        await supabase.from('workflow_logs').insert({
+          user_id: user.id,
+          action: 'image_overlay_qa_failed',
+          topic: `postId=${postId}, platform_format=${initialMetadata.platform_format || 'unknown'}, text_chars=${renderResult.textCharsOverlaid}, reason=${qa.reason}`,
+          status: 'failed'
+        })
+        // Skip this iteration — no image option added
+        continue
       }
-      if (url) {
-        imageOptions.push({ id: `openai-${Date.now()}-${i + 1}`, url, source: 'openai', prompt: imagePrompt })
-      } else {
-        throw new Error('No URL returned from OpenAI')
+
+      // Step E: Upload composited final image (QA passed)
+      const compositedFilename = `${user.id}/${postId}/${Date.now()}_${i + 1}_composited.webp`
+      const { error: compUploadError } = await supabase.storage
+        .from('post-images')
+        .upload(compositedFilename, renderResult.buffer, {
+          contentType: 'image/webp',
+          upsert: false
+        })
+      if (compUploadError) throw new Error(`Composited upload failed: ${compUploadError.message}`)
+
+      const { data: { publicUrl: compositedUrl } } = supabase.storage
+        .from('post-images')
+        .getPublicUrl(compositedFilename)
+
+      // Step F: Cost logging — capture gpt-image-2 usage metadata
+      const usage = response.usage
+      if (usage) {
+        await supabase.from('workflow_logs').insert({
+          user_id: user.id,
+          action: 'image_gen_usage_v2',
+          topic: `input_tokens=${usage.input_tokens}, output_tokens=${usage.output_tokens}, image_tokens=${usage.output_tokens_details?.image_tokens || 0}, total_tokens=${usage.total_tokens}`,
+          status: 'completed'
+        })
       }
+
+      imageOptions.push({
+        id: `openai-${Date.now()}-${i + 1}`,
+        url: compositedUrl,
+        source: 'openai',
+        prompt: imagePrompt,
+        overlay_meta: {
+          text_chars: renderResult.textCharsOverlaid,
+          qa_pass: true,
+          model: 'gpt-image-2',
+          input_tokens: usage?.input_tokens,
+          output_tokens: usage?.output_tokens,
+          total_tokens: usage?.total_tokens
+        }
+      })
     } catch (error) {
-      console.error(`OpenAI image generation failed (iteration ${i + 1}):`, error)
-      const warning = error instanceof Error ? error.message : 'OpenAI image generation failed.'
+      console.error(`Image generation failed (iteration ${i + 1}):`, error)
+      const warning = error instanceof Error ? error.message : 'Image generation failed.'
       imageOptions.push(placeholderOption(i + 1, imagePrompt, warning))
     }
   }
