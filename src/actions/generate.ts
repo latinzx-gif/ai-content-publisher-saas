@@ -35,6 +35,14 @@ const SUMMARY_LANGUAGE_LABELS: Record<ContentLanguage, string> = {
   JP: 'Japanese',
 }
 
+const DEFAULT_WORD_COUNT = '500'
+
+function normalizeRequestedWordCount(wordCount?: string) {
+  const parsed = Number.parseInt(String(wordCount || ''), 10)
+  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_WORD_COUNT
+  return String(parsed)
+}
+
 function normalizeHashtags(hashtags: string, maxCount: HashtagCount): string {
   if (maxCount === 0) return ''
 
@@ -138,6 +146,7 @@ function getGenerationErrorMessage(error: unknown): string {
 
 export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) {
   const validated = GeneratePostsSchema.parse(input)
+  const requestedWordCount = normalizeRequestedWordCount(validated.wordCount)
   const supabase = await getDbClient()
   const user = await requireOwner()
 
@@ -215,7 +224,7 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
       audience: validated.audience,
       objective: validated.objective,
       format: validated.format,
-      wordCount: validated.wordCount,
+      wordCount: requestedWordCount,
       hashtagCount: validated.hashtagCount as HashtagCount,
       manualHashtags: validated.manualHashtags,
       knowledgeContext: summarizedContext || undefined
@@ -223,7 +232,10 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
   )
 
   // 6. Call OpenAI
-  const result = await callOpenAI(apiKey, prompt).catch(error => {
+  const result = await callOpenAI(apiKey, prompt, {
+    wordCount: requestedWordCount,
+    postCount: validated.postCount
+  }).catch(error => {
     return { error: getGenerationErrorMessage(error) }
   })
 
@@ -270,9 +282,9 @@ export async function generatePosts(input: z.infer<typeof GeneratePostsSchema>) 
         format: validated.format,
         output_mode: validated.outputMode,
         secondary_language: validated.secondaryLanguage,
-        requested_word_count: validated.wordCount,
+        requested_word_count: requestedWordCount,
         actual_word_count: countApproxWords(post.caption),
-        wordCount: validated.wordCount,
+        wordCount: requestedWordCount,
         platform_format: validated.platformFormat,
         creative_status: creativeStatus,
         image_url: null,
